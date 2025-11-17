@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from 'react';
-import { Code2, Smartphone, Brain, Layers, Globe, Mail, Github, Linkedin, ExternalLink, Sparkles, Zap, Database, Palette, Moon, Sun, GraduationCap, Briefcase, Calendar, Award, ChevronRight } from 'lucide-react';
+import { Code2, Smartphone, Brain, Layers, Globe, Mail, Github, Linkedin, Sparkles, Zap, Database, Moon, Sun, GraduationCap, Briefcase, Calendar, Award, ChevronRight } from 'lucide-react';
 
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
-  const [activeCard, setActiveCard] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [selectedSkillCategory, setSelectedSkillCategory] = useState('ai');
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -16,12 +16,49 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const skills = {
-    mobile: ['Swift', 'SwiftUI', 'Flutter', 'React Native', 'UIKit'],
-    backend: ['Django', 'RESTful APIs', 'CloudKit', 'CoreData', 'RealmDB'],
-    frontend: ['React', 'Next.js', 'Astro', 'Tailwind CSS'],
-    ai: ['Data Science', 'Machine Learning', 'AI Integration']
-  };
+  const navLinks = [
+    { label: 'Inicio', href: '#overview' },
+    { label: 'Expertise', href: '#expertise' },
+    { label: 'Proyectos', href: '#projects' },
+    { label: 'Educación', href: '#education' },
+    { label: 'Tech Stack', href: '#skills' },
+    { label: 'Contacto', href: '#contacto' }
+  ];
+
+  const skillCategories = [
+    {
+      key: 'mobile',
+      label: 'Mobile Development',
+      gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
+      description: 'Native iOS and cross-platform builds with buttery-smooth experiences.',
+      emphasis: 'Crafted 15+ consumer and enterprise apps.',
+      skills: ['Swift', 'SwiftUI', 'Flutter', 'React Native', 'UIKit', 'Core Animation']
+    },
+    {
+      key: 'backend',
+      label: 'Backend & Data',
+      gradient: 'from-orange-500 via-amber-500 to-red-600',
+      description: 'Reliable APIs, realtime sync, and data pipelines powering products.',
+      emphasis: 'Designing resilient services with observability baked in.',
+      skills: ['Django', 'RESTful APIs', 'CloudKit', 'CoreData', 'RealmDB', 'PostgreSQL']
+    },
+    {
+      key: 'frontend',
+      label: 'Frontend & Design',
+      gradient: 'from-green-500 via-emerald-500 to-lime-500',
+      description: 'Immersive web experiences with meticulous attention to detail.',
+      emphasis: 'Responsive design systems crafted with accessibility in mind.',
+      skills: ['React', 'Next.js', 'Astro', 'Tailwind CSS', 'Framer Motion', 'Mapbox']
+    },
+    {
+      key: 'ai',
+      label: 'AI & Innovation',
+      gradient: 'from-purple-500 via-pink-500 to-rose-500',
+      description: 'Bringing AI-assisted features into products through data science rigor.',
+      emphasis: 'UTS Master’s research focused on ML-powered UX enhancements.',
+      skills: ['Data Science', 'Machine Learning', 'AI Integration', 'TensorFlow', 'LangChain', 'Data Storytelling']
+    }
+  ];
 
   const expertise = [
     {
@@ -56,28 +93,32 @@ export default function Home() {
       description: 'Full-featured iOS shopping application with real-time inventory, payment integration, and personalized recommendations.',
       tech: ['Swift', 'SwiftUI', 'CoreData', 'CloudKit'],
       color: 'from-cyan-500 to-blue-600',
-      icon: Smartphone
+      icon: Smartphone,
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'
     },
     {
       title: 'Health Tracking Platform',
       description: 'Cross-platform health monitoring app with ML-powered insights and seamless data synchronization.',
       tech: ['Flutter', 'Django', 'TensorFlow', 'PostgreSQL'],
       color: 'from-purple-500 to-pink-600',
-      icon: Brain
+      icon: Brain,
+      image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=900&q=80'
     },
     {
       title: 'GIS Analytics Dashboard',
       description: 'Interactive web-based GIS platform for spatial data visualization and real-time geographic analysis.',
       tech: ['React', 'Mapbox', 'Python', 'PostGIS'],
       color: 'from-green-500 to-emerald-600',
-      icon: Globe
+      icon: Globe,
+      image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80'
     },
     {
       title: 'Social Media Mobile Client',
       description: 'High-performance social networking app with real-time messaging, media sharing, and engagement features.',
       tech: ['React Native', 'Firebase', 'Redux', 'WebSocket'],
       color: 'from-orange-500 to-red-600',
-      icon: Layers
+      icon: Layers,
+      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80'
     }
   ];
 
@@ -98,45 +139,25 @@ export default function Home() {
     }
   ];
 
-  const experience = [
-    {
-      role: 'Senior Mobile Developer',
-      company: 'Tech Company',
-      period: '2020 - Present',
-      highlights: [
-        'Led development of flagship iOS applications using Swift and SwiftUI',
-        'Implemented CI/CD pipelines reducing deployment time by 40%',
-        'Mentored junior developers in mobile best practices'
-      ]
-    },
-    {
-      role: 'Full-Stack Developer',
-      company: 'Freelance',
-      period: '2018 - Present',
-      highlights: [
-        'Delivered 20+ web and mobile projects for international clients',
-        'Specialized in GIS solutions and location-based services',
-        'Built scalable backends with Django and RESTful APIs'
-      ]
-    }
-  ];
-
   // Theme classes
   const bgClass = darkMode 
     ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
-    : 'bg-gradient-to-br from-slate-50 via-white to-slate-50';
+    : 'bg-gradient-to-br from-slate-50 via-gray-300 to-slate-50';
   
   const textClass = darkMode ? 'text-white' : 'text-slate-900';
   const textSecondaryClass = darkMode ? 'text-slate-300' : 'text-slate-700';
   const textTertiaryClass = darkMode ? 'text-slate-400' : 'text-slate-600';
   
   const cardBgClass = darkMode 
-    ? 'backdrop-blur-xl bg-white/5 border-white/10' 
-    : 'backdrop-blur-xl bg-white/80 border-slate-200/60 shadow-lg';
+    ? 'backdrop-blur-2xl bg-white/5 border-white/10' 
+    : 'backdrop-blur-2xl bg-white/60 border-white/40';
   
   const cardHoverClass = darkMode 
     ? 'hover:bg-white/10' 
-    : 'hover:bg-white/95 hover:shadow-xl';
+    : 'hover:bg-white/80';
+
+  const activeSkillCategory = skillCategories.find((category) => category.key === selectedSkillCategory) ?? skillCategories[0];
+  const aiCategory = skillCategories.find((category) => category.key === 'ai');
 
   const orbColorDark = darkMode ? 'bg-cyan-500/20' : 'bg-cyan-500/10';
   const orbColorPurple = darkMode ? 'bg-purple-500/20' : 'bg-purple-500/10';
@@ -166,9 +187,22 @@ export default function Home() {
         )}
       </button>
 
+      {/* Navigation */}
+      <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-40 flex flex-wrap items-center justify-center gap-4 px-6 py-3 rounded-3xl border ${cardBgClass} ${cardHoverClass}`}>
+        {navLinks.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            className={`text-sm font-semibold tracking-wide uppercase ${textTertiaryClass} hover:text-cyan-400 transition-colors`}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header Section */}
-        <header className="mb-20 mt-12">
+        <header id="overview" className="mb-24 mt-16 scroll-mt-32">
           <div className="flex items-center gap-3 mb-6 group cursor-pointer">
             <div className="relative">
               <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-500"></div>
@@ -190,7 +224,7 @@ export default function Home() {
           <p className={`text-lg ${textSecondaryClass} max-w-3xl leading-relaxed mb-8 ${cardBgClass} p-6 rounded-2xl border`}>
             Multidisciplinary developer with <span className="text-cyan-400 font-semibold">7+ years</span> building mobile applications, 
             expanding into <span className="text-purple-400 font-semibold">AI & Data Science</span>, and crafting exceptional 
-            user experiences across platforms. Currently pursuing a Master's in Data Science & Innovation at UTS.
+            user experiences across platforms. Currently pursuing a Master&rsquo;s in Data Science & Innovation at UTS.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -213,18 +247,16 @@ export default function Home() {
         </header>
 
         {/* Bento Grid - Expertise Areas */}
-        <section className="mb-20">
+        <section id="expertise" className="mb-24 scroll-mt-24">
           <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
             <Zap className="w-8 h-8 text-yellow-400" />
             Expertise
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {expertise.map((item, idx) => (
               <div
                 key={idx}
-                onMouseEnter={() => setActiveCard(idx)}
-                onMouseLeave={() => setActiveCard(null)}
-                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer`}
+                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500 hover:scale-105 cursor-pointer`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
                 <div className="relative z-10">
@@ -241,78 +273,89 @@ export default function Home() {
         </section>
 
         {/* Projects Section */}
-        <section className="mb-20">
+        <section id="projects" className="mb-24 scroll-mt-24">
           <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
             <Briefcase className="w-8 h-8 text-purple-400" />
             Featured Projects
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {projects.map((project, idx) => (
-              <div
-                key={idx}
-                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300`}
+              <article
+                key={project.title}
+                className={`group flex flex-col ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500`}
               >
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${project.color} opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
-                <div className="relative z-10">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${project.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <project.icon className="w-8 h-8 text-white" />
+                <div className="relative h-48 rounded-2xl overflow-hidden mb-6">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    priority={idx === 0}
+                    sizes="(min-width: 1280px) 30vw, (min-width: 1024px) 45vw, 90vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 px-4 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wide text-white uppercase">
+                    Case Study
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <div className={`w-14 h-14 bg-gradient-to-br ${project.color} rounded-2xl flex items-center justify-center mb-4`}>
+                    <project.icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
-                  <p className={`${textSecondaryClass} mb-4 leading-relaxed`}>{project.description}</p>
+                  <p className={`${textSecondaryClass} mb-5 leading-relaxed`}>{project.description}</p>
                   <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech, techIdx) => (
+                    {project.tech.map((tech) => (
                       <span
-                        key={techIdx}
-                        className={`px-3 py-1 ${darkMode ? 'bg-white/10 border-white/20' : 'bg-slate-100 border-slate-300'} border rounded-full text-xs font-medium ${textTertiaryClass}`}
+                        key={tech}
+                        className={`px-3 py-1 rounded-full border text-xs font-semibold ${darkMode ? 'bg-white/5 border-white/15 text-white' : 'bg-white/70 border-slate-200/60 text-slate-700'}`}
                       >
                         {tech}
                       </span>
                     ))}
                   </div>
-                  <button className="mt-6 flex items-center gap-2 text-cyan-500 font-semibold hover:gap-3 transition-all duration-300">
-                    View Details <ChevronRight className="w-4 h-4" />
-                  </button>
                 </div>
-              </div>
+
+                <button className="mt-6 inline-flex items-center gap-2 text-cyan-400 font-semibold hover:gap-3 transition-all">
+                  Ver proyecto
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </article>
             ))}
           </div>
         </section>
 
         {/* Education Section */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        <section id="education" className="mb-24 scroll-mt-24">
+          <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
             <GraduationCap className="w-8 h-8 text-cyan-400" />
-            Education
+            Educación
           </h2>
-          <div className="space-y-6">
-            {education.map((edu, idx) => (
-              <div
-                key={idx}
-                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300`}
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-start gap-3 mb-2">
-                      <Award className={`w-6 h-6 ${edu.status === 'In Progress' ? 'text-purple-500' : 'text-green-500'} mt-1 flex-shrink-0`} />
-                      <div>
-                        <h3 className="text-2xl font-bold mb-1">{edu.degree}</h3>
-                        <p className="text-lg text-cyan-500 font-semibold">{edu.institution}</p>
-                      </div>
-                    </div>
-                    <p className={`${textSecondaryClass} leading-relaxed mt-3`}>{edu.description}</p>
+          <div className="relative pl-8">
+            <div className={`absolute left-4 top-0 bottom-0 w-px ${darkMode ? 'bg-white/15' : 'bg-slate-200/70'} rounded-full`}></div>
+            {education.map((edu) => (
+              <div key={edu.degree} className="relative pb-12 last:pb-0">
+                <div className="absolute -left-1 top-1 w-6 h-6">
+                  <div className={`w-full h-full rounded-full border-2 ${edu.status === 'In Progress' ? 'border-purple-400' : 'border-emerald-400'} ${darkMode ? 'bg-slate-900/70' : 'bg-white/70'} backdrop-blur`}>
+                    <div className="absolute inset-0 rounded-full blur-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className={`flex items-center gap-2 px-4 py-2 ${darkMode ? 'bg-white/10' : 'bg-slate-100'} rounded-full`}>
-                      <Calendar className="w-4 h-4" />
-                      <span className={`text-sm font-medium ${textTertiaryClass}`}>{edu.period}</span>
+                </div>
+                <div className={`relative ml-6 ${cardBgClass} rounded-3xl border px-6 py-6 ${cardHoverClass}`}>
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.2em] text-cyan-400 flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        {edu.status}
+                      </p>
+                      <h3 className="text-2xl font-bold mt-2">{edu.degree}</h3>
+                      <p className="text-lg text-cyan-500 font-semibold">{edu.institution}</p>
+                      <p className={`${textSecondaryClass} mt-4 leading-relaxed`}>{edu.description}</p>
                     </div>
-                    <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
-                      edu.status === 'In Progress' 
-                        ? 'bg-purple-500/20 text-purple-600 border border-purple-500/30' 
-                        : 'bg-green-500/20 text-green-600 border border-green-500/30'
-                    }`}>
-                      {edu.status}
-                    </span>
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${darkMode ? 'border-white/10 bg-white/5' : 'border-white/40 bg-white/50'}`}>
+                      <Calendar className="w-4 h-4" />
+                      <span className={`text-sm font-semibold ${textTertiaryClass}`}>{edu.period}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -320,85 +363,78 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Technical Skills - Bento Grid */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        {/* Technical Skills */}
+        <section id="skills" className="mb-24 scroll-mt-24">
+          <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
             <Database className="w-8 h-8 text-orange-400" />
             Technical Arsenal
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Mobile Development */}
-            <div className={`${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300 group`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Smartphone className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold">Mobile Development</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.mobile.map((skill, idx) => (
-                  <span key={idx} className={`px-4 py-2 ${darkMode ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-300' : 'bg-cyan-50 border-cyan-200 text-cyan-700'} border rounded-full text-sm font-medium hover:scale-105 transition-transform duration-200`}>
+          <p className={`${textSecondaryClass} mb-6 max-w-3xl`}>
+            Cambia entre las áreas de especialización para explorar herramientas, frameworks y metodologías clave.
+          </p>
+          <div className="flex flex-wrap gap-3 mb-10">
+            {skillCategories.map((category) => {
+              const isActive = selectedSkillCategory === category.key;
+              return (
+                <button
+                  key={category.key}
+                  onClick={() => setSelectedSkillCategory(category.key)}
+                  className={`px-5 py-2 rounded-full border text-sm font-semibold transition-all duration-300 ${
+                    isActive
+                      ? `text-white bg-gradient-to-r ${category.gradient} shadow-lg shadow-pink-500/20`
+                      : `${textTertiaryClass} ${darkMode ? 'border-white/15 bg-white/5' : 'border-white/40 bg-white/60'}`
+                  }`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`lg:col-span-2 ${cardBgClass} rounded-3xl border p-8 ${cardHoverClass}`}>
+              <p className="text-sm uppercase tracking-[0.4em] text-cyan-400 mb-3">
+                {activeSkillCategory.label}
+              </p>
+              <h3 className="text-3xl font-bold mb-4">{activeSkillCategory.emphasis}</h3>
+              <p className={`${textSecondaryClass} max-w-2xl`}>{activeSkillCategory.description}</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-8">
+                {activeSkillCategory.skills.map((skill) => (
+                  <div
+                    key={skill}
+                    className={`px-4 py-3 rounded-2xl border text-sm font-semibold ${darkMode ? 'border-white/10 bg-white/5' : 'border-white/60 bg-white/70'}`}
+                  >
                     {skill}
-                  </span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Backend Development */}
-            <div className={`${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300 group`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Database className="w-6 h-6 text-white" />
+            {aiCategory && (
+              <div className={`relative overflow-hidden ${cardBgClass} rounded-3xl border p-8 flex flex-col justify-between`}>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 via-pink-500/30 to-cyan-400/20 blur-3xl" />
+                <div className="relative z-10">
+                  <p className="text-sm uppercase tracking-[0.4em] text-white/70">Focus</p>
+                  <h3 className="text-3xl font-bold mt-3 text-white">AI & Innovation</h3>
+                  <p className="text-white/80 mt-4">
+                    Integrando modelos predictivos, copilots y analítica avanzada para potenciar productos móviles.
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold">Backend & Data</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.backend.map((skill, idx) => (
-                  <span key={idx} className={`px-4 py-2 ${darkMode ? 'bg-orange-500/20 border-orange-500/30 text-orange-300' : 'bg-orange-50 border-orange-200 text-orange-700'} border rounded-full text-sm font-medium hover:scale-105 transition-transform duration-200`}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Frontend Development */}
-            <div className={`${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300 group`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Palette className="w-6 h-6 text-white" />
+                <div className="relative z-10 mt-8 flex flex-wrap gap-2">
+                  {aiCategory.skills.slice(0, 4).map((skill) => (
+                    <span key={skill} className="px-3 py-1 text-xs font-semibold rounded-full bg-white/15 text-white">
+                      {skill}
+                    </span>
+                  ))}
                 </div>
-                <h3 className="text-2xl font-bold">Frontend & Design</h3>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.frontend.map((skill, idx) => (
-                  <span key={idx} className={`px-4 py-2 ${darkMode ? 'bg-green-500/20 border-green-500/30 text-green-300' : 'bg-green-50 border-green-200 text-green-700'} border rounded-full text-sm font-medium hover:scale-105 transition-transform duration-200`}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* AI & Data Science */}
-            <div className={`${cardBgClass} rounded-3xl border p-8 ${cardHoverClass} transition-all duration-300 group`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Brain className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold">AI & Innovation</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.ai.map((skill, idx) => (
-                  <span key={idx} className={`px-4 py-2 ${darkMode ? 'bg-purple-500/20 border-purple-500/30 text-purple-300' : 'bg-purple-50 border-purple-200 text-purple-700'} border rounded-full text-sm font-medium hover:scale-105 transition-transform duration-200`}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
         {/* About Section - Large Feature Card */}
-        <section className="mb-20">
+        <section id="about" className="mb-24 scroll-mt-24">
           <div className={`relative overflow-hidden ${cardBgClass} rounded-3xl border p-10`}>
             <div className={`absolute top-0 right-0 w-64 h-64 ${darkMode ? 'bg-gradient-to-br from-cyan-500/20 to-purple-500/20' : 'bg-gradient-to-br from-cyan-500/10 to-purple-500/10'} rounded-full blur-3xl`}></div>
             <div className="relative z-10">
@@ -408,24 +444,24 @@ export default function Home() {
               </h2>
               <div className={`space-y-4 ${textSecondaryClass} leading-relaxed`}>
                 <p>
-                  I'm a <span className="text-cyan-500 font-semibold">mobile developer with over seven years</span> of experience building 
+                  I&rsquo;m a <span className="text-cyan-500 font-semibold">mobile developer with over seven years</span> of experience building 
                   high-quality mobile applications using native technologies like <span className={`${darkMode ? 'text-white' : 'text-slate-900'} font-medium`}>Swift</span> and hybrid 
                   frameworks such as <span className={`${darkMode ? 'text-white' : 'text-slate-900'} font-medium`}>Flutter</span> and <span className={`${darkMode ? 'text-white' : 'text-slate-900'} font-medium`}>React Native</span>.
                 </p>
                 <p>
-                  Throughout my career, I've worked with a variety of libraries including Alamofire, RealmDB, CloudKit, CoreData, and UIKit. 
-                  I'm skilled in designing custom user interfaces using both <span className="text-purple-500 font-semibold">SwiftUI</span> and traditional 
+                  Throughout my career, I&rsquo;ve worked with a variety of libraries including Alamofire, RealmDB, CloudKit, CoreData, and UIKit. 
+                  I&rsquo;m skilled in designing custom user interfaces using both <span className="text-purple-500 font-semibold">SwiftUI</span> and traditional 
                   tools like Storyboards, with a focus on clean, scalable code.
                 </p>
                 <p>
-                  Beyond mobile, I've expanded into <span className="text-orange-500 font-semibold">backend development with Django</span> and 
+                  Beyond mobile, I&rsquo;ve expanded into <span className="text-orange-500 font-semibold">backend development with Django</span> and 
                   <span className="text-green-500 font-semibold"> frontend web development</span> using ReactJS, Astro, and Tailwind. As the tech industry 
-                  evolves, I've developed a strong interest in <span className="text-pink-500 font-semibold">artificial intelligence</span> and 
+                  evolves, I&rsquo;ve developed a strong interest in <span className="text-pink-500 font-semibold">artificial intelligence</span> and 
                   its real-world applications.
                 </p>
                 <p>
-                  This passion led me to pursue a <span className="text-purple-500 font-semibold">Master's in Data Science and Innovation at UTS</span>, 
-                  where I'm exploring how AI and emerging technologies are transforming software development and product design. I bring a 
+                  This passion led me to pursue a <span className="text-purple-500 font-semibold">Master&rsquo;s in Data Science and Innovation at UTS</span>, 
+                  where I&rsquo;m exploring how AI and emerging technologies are transforming software development and product design. I bring a 
                   multidisciplinary mindset, combining technical excellence with a passion for design, innovation, and continuous learning.
                 </p>
               </div>
@@ -434,9 +470,9 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="text-center pb-12">
+        <footer id="contacto" className="text-center pb-12 scroll-mt-24">
           <div className={`${cardBgClass} rounded-3xl border p-8`}>
-            <p className={`${textTertiaryClass} mb-4`}>Let's build something amazing together</p>
+            <p className={`${textTertiaryClass} mb-4`}>Let&rsquo;s build something amazing together</p>
             <div className="flex justify-center gap-6">
               <a href="mailto:contact@nelkit.dev" className="text-cyan-500 hover:text-cyan-600 transition-colors hover:scale-110 transform duration-200">
                 <Mail className="w-6 h-6" />
