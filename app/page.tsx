@@ -9,6 +9,7 @@ export default function Home() {
   const [scrollY, setScrollY] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
   const [selectedSkillCategory, setSelectedSkillCategory] = useState('ai');
+  const [selectedExpertise, setSelectedExpertise] = useState('ai');
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -17,15 +18,22 @@ export default function Home() {
   }, []);
 
   const navLinks = [
-    { label: 'Inicio', href: '#overview' },
-    { label: 'Expertise', href: '#expertise' },
-    { label: 'Proyectos', href: '#projects' },
-    { label: 'Educación', href: '#education' },
+    { label: 'Home', href: '#overview' },
+    { label: 'Projects', href: '#projects' },
     { label: 'Tech Stack', href: '#skills' },
+    { label: 'Education', href: '#education' },
     { label: 'Contacto', href: '#contacto' }
   ];
 
   const skillCategories = [
+    {
+      key: 'ai',
+      label: 'AI & Innovation',
+      gradient: 'from-purple-500 via-pink-500 to-rose-500',
+      description: 'Bringing AI-assisted features into products through data science rigor.',
+      emphasis: 'UTS Master’s research focused on ML-powered UX enhancements.',
+      skills: ['Data Science', 'Machine Learning', 'AI Integration', 'TensorFlow', 'LangChain', 'Data Storytelling']
+    },
     {
       key: 'mobile',
       label: 'Mobile Development',
@@ -49,37 +57,33 @@ export default function Home() {
       description: 'Immersive web experiences with meticulous attention to detail.',
       emphasis: 'Responsive design systems crafted with accessibility in mind.',
       skills: ['React', 'Next.js', 'Astro', 'Tailwind CSS', 'Framer Motion', 'Mapbox']
-    },
-    {
-      key: 'ai',
-      label: 'AI & Innovation',
-      gradient: 'from-purple-500 via-pink-500 to-rose-500',
-      description: 'Bringing AI-assisted features into products through data science rigor.',
-      emphasis: 'UTS Master’s research focused on ML-powered UX enhancements.',
-      skills: ['Data Science', 'Machine Learning', 'AI Integration', 'TensorFlow', 'LangChain', 'Data Storytelling']
     }
   ];
 
   const expertise = [
     {
-      title: 'Mobile Innovation',
-      icon: Smartphone,
-      color: 'from-cyan-500 to-blue-600',
-      description: '7+ years crafting native & hybrid mobile experiences'
-    },
-    {
+      code: 'ai',
       title: 'AI & Data Science',
       icon: Brain,
       color: 'from-purple-500 to-pink-600',
       description: 'Master\'s in Data Science & Innovation at UTS'
     },
     {
+      code: 'mobile',
+      title: 'Mobile Innovation',
+      icon: Smartphone,
+      color: 'from-cyan-500 to-blue-600',
+      description: '7+ years crafting native & hybrid mobile experiences'
+    },
+    {
+      code: 'full-stack',
       title: 'Full-Stack Dev',
       icon: Layers,
       color: 'from-orange-500 to-red-600',
       description: 'Backend with Django, Frontend with modern frameworks'
     },
     {
+      code: 'gis',
       title: 'GIS & Web',
       icon: Globe,
       color: 'from-green-500 to-emerald-600',
@@ -94,6 +98,7 @@ export default function Home() {
       tech: ['Swift', 'SwiftUI', 'CoreData', 'CloudKit'],
       color: 'from-cyan-500 to-blue-600',
       icon: Smartphone,
+      expertise_area: 'mobile',
       image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'
     },
     {
@@ -102,6 +107,7 @@ export default function Home() {
       tech: ['Flutter', 'Django', 'TensorFlow', 'PostgreSQL'],
       color: 'from-purple-500 to-pink-600',
       icon: Brain,
+      expertise_area: 'ai',
       image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=900&q=80'
     },
     {
@@ -110,6 +116,7 @@ export default function Home() {
       tech: ['React', 'Mapbox', 'Python', 'PostGIS'],
       color: 'from-green-500 to-emerald-600',
       icon: Globe,
+      expertise_area: 'gis',
       image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80'
     },
     {
@@ -118,6 +125,7 @@ export default function Home() {
       tech: ['React Native', 'Firebase', 'Redux', 'WebSocket'],
       color: 'from-orange-500 to-red-600',
       icon: Layers,
+      expertise_area: 'full-stack',
       image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80'
     }
   ];
@@ -158,6 +166,8 @@ export default function Home() {
 
   const activeSkillCategory = skillCategories.find((category) => category.key === selectedSkillCategory) ?? skillCategories[0];
   const aiCategory = skillCategories.find((category) => category.key === 'ai');
+
+  const activeExpertiseArea = expertise.find((item) => item.code === selectedExpertise) ?? expertise[0];
 
   const orbColorDark = darkMode ? 'bg-cyan-500/20' : 'bg-cyan-500/10';
   const orbColorPurple = darkMode ? 'bg-purple-500/20' : 'bg-purple-500/10';
@@ -246,38 +256,33 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Bento Grid - Expertise Areas */}
-        <section id="expertise" className="mb-24 scroll-mt-24">
-          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-            <Zap className="w-8 h-8 text-yellow-400" />
-            Expertise
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {expertise.map((item, idx) => (
-              <div
-                key={idx}
-                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500 hover:scale-105 cursor-pointer`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
-                <div className="relative z-10">
-                  <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform duration-500`}>
-                    <item.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className={`${textTertiaryClass} text-sm`}>{item.description}</p>
-                </div>
-                <div className={`absolute -bottom-2 -right-2 w-24 h-24 bg-gradient-to-br ${item.color} rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500`}></div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Projects Section */}
         <section id="projects" className="mb-24 scroll-mt-24">
-          <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+          <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
             <Briefcase className="w-8 h-8 text-purple-400" />
             Featured Projects
           </h2>
+          <p className={`${textSecondaryClass} mb-6 max-w-3xl`}>
+            {activeExpertiseArea.description}
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            {expertise.map((item, idx) => (
+              <button
+                key={idx}
+                onClick={()=>setSelectedExpertise(item.code)}
+                className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-4 ${cardHoverClass} transition-all duration-500 hover:scale-105 cursor-pointer`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${activeExpertiseArea.code == item.code ? 'opacity-10': ''}`}></div>
+                <div className="flex items-center gap-2 relative z-10">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500`}>
+                    <item.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold">{item.title}</h3>
+                </div>
+                <div className={`absolute -bottom-2 -right-2 w-24 h-24 bg-gradient-to-br ${item.color} rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 ${activeExpertiseArea.code == item.code ? 'opacity-30': ''}`}></div>
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {projects.map((project, idx) => (
               <article
@@ -326,43 +331,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Education Section */}
-        <section id="education" className="mb-24 scroll-mt-24">
-          <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
-            <GraduationCap className="w-8 h-8 text-cyan-400" />
-            Educación
-          </h2>
-          <div className="relative pl-8">
-            <div className={`absolute left-4 top-0 bottom-0 w-px ${darkMode ? 'bg-white/15' : 'bg-slate-200/70'} rounded-full`}></div>
-            {education.map((edu) => (
-              <div key={edu.degree} className="relative pb-12 last:pb-0">
-                <div className="absolute -left-1 top-1 w-6 h-6">
-                  <div className={`w-full h-full rounded-full border-2 ${edu.status === 'In Progress' ? 'border-purple-400' : 'border-emerald-400'} ${darkMode ? 'bg-slate-900/70' : 'bg-white/70'} backdrop-blur`}>
-                    <div className="absolute inset-0 rounded-full blur-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
-                  </div>
-                </div>
-                <div className={`relative ml-6 ${cardBgClass} rounded-3xl border px-6 py-6 ${cardHoverClass}`}>
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.2em] text-cyan-400 flex items-center gap-2">
-                        <Award className="w-4 h-4" />
-                        {edu.status}
-                      </p>
-                      <h3 className="text-2xl font-bold mt-2">{edu.degree}</h3>
-                      <p className="text-lg text-cyan-500 font-semibold">{edu.institution}</p>
-                      <p className={`${textSecondaryClass} mt-4 leading-relaxed`}>{edu.description}</p>
-                    </div>
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${darkMode ? 'border-white/10 bg-white/5' : 'border-white/40 bg-white/50'}`}>
-                      <Calendar className="w-4 h-4" />
-                      <span className={`text-sm font-semibold ${textTertiaryClass}`}>{edu.period}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Technical Skills */}
         <section id="skills" className="mb-24 scroll-mt-24">
           <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
@@ -379,10 +347,10 @@ export default function Home() {
                 <button
                   key={category.key}
                   onClick={() => setSelectedSkillCategory(category.key)}
-                  className={`px-5 py-2 rounded-full border text-sm font-semibold transition-all duration-300 ${
+                  className={`px-5 py-2 cursor-pointer rounded-full text-sm font-semibold transition-all duration-300 ${
                     isActive
                       ? `text-white bg-gradient-to-r ${category.gradient} shadow-lg shadow-pink-500/20`
-                      : `${textTertiaryClass} ${darkMode ? 'border-white/15 bg-white/5' : 'border-white/40 bg-white/60'}`
+                      : `${textTertiaryClass} ${darkMode ? 'bg-white/5' : ' bg-white/60'}`
                   }`}
                 >
                   {category.label}
@@ -413,7 +381,7 @@ export default function Home() {
 
             {aiCategory && (
               <div className={`relative overflow-hidden ${cardBgClass} rounded-3xl border p-8 flex flex-col justify-between`}>
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 via-pink-500/30 to-cyan-400/20 blur-3xl" />
+                <div className={`absolute inset-0 bg-linear-to-br ${darkMode ? 'from-purple-500/40 via-pink-500/30 to-rose-500/20' : 'from-purple-500/70 via-pink-500/60 to-rose-500/50'}`} />
                 <div className="relative z-10">
                   <p className="text-sm uppercase tracking-[0.4em] text-white/70">Focus</p>
                   <h3 className="text-3xl font-bold mt-3 text-white">AI & Innovation</h3>
@@ -430,6 +398,43 @@ export default function Home() {
                 </div>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* Education Section */}
+        <section id="education" className="mb-24 scroll-mt-24">
+          <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
+            <GraduationCap className="w-8 h-8 text-cyan-400" />
+            Educación
+          </h2>
+          <div className="relative pl-8">
+            <div className={`absolute left-4 top-0 bottom-0 w-px ${darkMode ? 'bg-white/15' : 'bg-slate-200/70'} rounded-full`}></div>
+            {education.map((edu) => (
+              <div key={edu.degree} className="relative pb-12 last:pb-0">
+                <div className="absolute -left-7 top-18 w-6 h-6">
+                  <div className={`w-full h-full rounded-full border-2 ${edu.status === 'In Progress' ? 'border-purple-400' : 'border-emerald-400'} ${darkMode ? 'bg-slate-900/30' : 'bg-white/30'} backdrop-blur`}>
+                    <div className="absolute inset-0 rounded-full blur-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
+                  </div>
+                </div>
+                <div className={`relative ml-6 ${cardBgClass} rounded-3xl border px-6 py-6 ${cardHoverClass}`}>
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.2em] text-cyan-400 flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        {edu.status}
+                      </p>
+                      <h3 className="text-2xl font-bold mt-2">{edu.degree}</h3>
+                      <p className="text-lg text-cyan-500 font-semibold">{edu.institution}</p>
+                      <p className={`${textSecondaryClass} mt-4 leading-relaxed`}>{edu.description}</p>
+                    </div>
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${darkMode ? 'border-white/10 bg-white/5' : 'border-white/40 bg-white/50'}`}>
+                      <Calendar className="w-4 h-4" />
+                      <span className={`text-sm font-semibold ${textTertiaryClass}`}>{edu.period}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
