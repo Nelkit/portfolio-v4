@@ -1,5 +1,18 @@
 import Image from 'next/image';
 import { Code2, Github, Linkedin, Mail, Sparkles } from 'lucide-react';
+import {BASE_URL} from "@/app/lib/constant";
+
+type LinkProps = {
+    label: string;
+    href: string;
+    type: string
+    isExternal?: boolean;
+}
+
+type AvatarImageProps = {
+    url: string;
+    alternativeText: string;
+}
 
 type HeroSectionProps = {
     textSecondaryClass: string;
@@ -8,6 +21,8 @@ type HeroSectionProps = {
     title: string;
     subtitle: string;
     description: string;
+    socialNetworkLinks?: LinkProps[];
+    avatarImage?: AvatarImageProps;
 };
 
 export function  HeroSection(
@@ -17,7 +32,9 @@ export function  HeroSection(
         cardHoverClass,
         title,
         subtitle,
-        description
+        description,
+        socialNetworkLinks,
+        avatarImage
     }: HeroSectionProps) {
     return (
         <header id="overview" className="mb-24 mt-16 scroll-mt-32">
@@ -49,31 +66,21 @@ export function  HeroSection(
                     ></div>
 
                     <div className="flex flex-wrap gap-4">
-                        <a
-                            href="mailto:contact@nelkit.dev"
-                            className="group flex items-center gap-2 px-6 py-3 bg-linear-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105"
-                        >
-                            <Mail className="w-5 h-5" />
-                            <span className="font-semibold">Get in Touch</span>
-                        </a>
-                        <a
-                            href="https://github.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`group flex items-center gap-2 px-6 py-3 ${cardBgClass} rounded-xl border ${cardHoverClass} transition-all duration-300 hover:scale-105`}
-                        >
-                            <Github className="w-5 h-5" />
-                            <span className="font-semibold">GitHub</span>
-                        </a>
-                        <a
-                            href="https://linkedin.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`group flex items-center gap-2 px-6 py-3 ${cardBgClass} rounded-xl border ${cardHoverClass} transition-all duration-300 hover:scale-105`}
-                        >
-                            <Linkedin className="w-5 h-5" />
-                            <span className="font-semibold">LinkedIn</span>
-                        </a>
+                        {socialNetworkLinks?.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                target={link.isExternal ? '_blank' : '_self'}
+                                rel={link.isExternal ? 'noopener noreferrer' : undefined}
+                                className={`group flex items-center gap-2 px-6 py-3 ${cardBgClass} ${link.type == "email"  ? "bg-linear-to-r from-cyan-500 to-blue-600 text-white" : " "} rounded-xl border ${cardHoverClass} transition-all duration-300 hover:scale-105`}
+                            >
+                                { link.type === 'github' && <Github className="w-5 h-5" /> }
+                                { link.type === 'linkedin' && <Linkedin className="w-5 h-5" /> }
+                                { link.type === 'email' && <Mail className="w-5 h-5" /> }
+
+                                <span className="font-semibold">{link.label}</span>
+                            </a>
+                        ))}
                     </div>
                 </div>
 
@@ -91,10 +98,9 @@ export function  HeroSection(
                             backdropFilter: 'blur(4px)',
                         }}
                     >
-                        <Image
-                            src="https://lh3.googleusercontent.com/a/ACg8ocLuzhCXi_qmYoL-siiltvqIwXoZQY6G-0sV4HdyH-zHiNim0Rk=s512-c-mo"
+                        <img
+                            src={`${BASE_URL}${avatarImage?.url}`}
                             alt="Profile"
-                            fill
                             className="object-cover"
                             style={{ clipPath: 'inherit' }}
                         />

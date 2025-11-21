@@ -1,4 +1,4 @@
-const BASE_URL = process.env.STRAPI_BASE_URL || 'http://localhost:1337';
+import {BASE_URL} from "@/app/lib/constant";
 
 export async function getStrapiData(url: string) {
     try {

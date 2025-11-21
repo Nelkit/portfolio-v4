@@ -30,7 +30,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 	const [darkMode, setDarkMode] = useState(true);
 	const [selectedSkillCategory, setSelectedSkillCategory] = useState('ai');
 	const [selectedExpertise, setSelectedExpertise] = useState('ai');
-	const {title, subtitle, short_description:description} = strapiData.data || {}
+	const {title, subtitle, description, avatarImage, socialNetworkLinks} = strapiData.data || {}
 
 	useEffect(() => {
 		const handleScroll = () => setScrollY(window.scrollY);
@@ -78,6 +78,8 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 					title={title}
 					subtitle={subtitle}
 					description={description}
+					socialNetworkLinks={socialNetworkLinks}
+					avatarImage={avatarImage}
 				/>
 
 				<ProjectsSection
