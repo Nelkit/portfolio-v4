@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { Expertise, Project } from '@/app/data/content';
 
 type ProjectsSectionProps = {
+  title?: string;
   expertise: Expertise[];
   projects: Project[];
   activeExpertiseArea: Expertise;
@@ -15,6 +16,7 @@ type ProjectsSectionProps = {
 };
 
 export function ProjectsSection({
+  title,
   expertise,
   projects,
   activeExpertiseArea,
@@ -29,7 +31,7 @@ export function ProjectsSection({
     <section id="projects" className="mb-24 scroll-mt-24">
       <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
         <activeExpertiseArea.icon className="w-8 h-8 text-purple-400" />
-        Featured Projects
+        {title || 'Projects'}
       </h2>
       <p className={`${textSecondaryClass} mb-6 max-w-3xl`}>{activeExpertiseArea.description}</p>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
@@ -64,7 +66,9 @@ export function ProjectsSection({
         })}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {projects.map((project, idx) => (
+        {projects
+          .filter((project) => project.expertise_area === selectedExpertise)
+          .map((project, idx) => (
           <article
             key={project.title}
             className={`group flex flex-col ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500`}

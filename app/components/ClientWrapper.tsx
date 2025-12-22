@@ -12,13 +12,13 @@ import { AboutSection } from '@/app/components/sections/AboutSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import {
 	navLinks,
-	skillCategories,
-	expertise,
-	projects,
-	education,
-	careerTimeline,
 	type SkillCategory,
 	type Expertise as ExpertiseType,
+	transformExpertiseAreas,
+	transformSkillCategories,
+	transformProjects,
+	transformEducationEntries,
+	transformCareerEntries,
 } from '@/app/data/content';
 
 type ClientWrapperProps = {
@@ -30,7 +30,38 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 	const [darkMode, setDarkMode] = useState(true);
 	const [selectedSkillCategory, setSelectedSkillCategory] = useState('ai');
 	const [selectedExpertise, setSelectedExpertise] = useState('ai');
-	const {title, subtitle, description, avatarImage, socialNetworkLinks} = strapiData.data || {}
+	
+	// Extract data from Strapi response
+	const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+	const data = strapiData?.data || {};
+	const { title, subtitle, description, avatarImage, socialNetworkLinks } = data;
+	
+	// Transform Strapi data using helper functions
+	const expertise = data.projectSection?.expertiseAreas 
+		? transformExpertiseAreas(data.projectSection.expertiseAreas)
+		: [];
+
+	const techStackSectionTitle = data.techStackSection?.title || 'Tech Stack';
+	const techStackSectionSubtitle = data.techStackSection?.subtitle || 'Tech Stack';
+	const skillCategories = data.techStackSection?.skillCategories
+		? transformSkillCategories(data.techStackSection.skillCategories)
+		: [];
+	
+	const projectSectionTitle = data.projectSection?.title || 'Projects';
+	const projects = data.projectSection?.projects
+		? transformProjects(data.projectSection.projects, strapiUrl)
+		: [];
+	
+	const educationSectionTitle = data.educationSection?.title || 'Education';
+	const education = data.educationSection?.educationEntries
+		? transformEducationEntries(data.educationSection.educationEntries)
+		: [];
+	
+	const aboutSectionTitle = data.aboutSection?.title || 'About Me';
+	const aboutSectionDescription = data.aboutSection?.description || '';
+	const careerTimeline = data.aboutSection?.careerEntries
+		? transformCareerEntries(data.aboutSection.careerEntries)
+		: [];
 
 	useEffect(() => {
 		const handleScroll = () => setScrollY(window.scrollY);
@@ -49,7 +80,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 
 	const activeSkillCategory =
 		skillCategories.find((category) => category.key === selectedSkillCategory) ?? skillCategories[0];
-	const aiCategory = skillCategories.find((category) => category.key === 'ai');
+	const featuredCategory = skillCategories.find((category) => category.isFeatured === true);
 
 	const activeExpertiseArea =
 		expertise.find((item) => item.code === selectedExpertise) ?? expertise[0];
@@ -83,6 +114,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				/>
 
 				<ProjectsSection
+					title={projectSectionTitle}
 					expertise={expertise}
 					projects={projects}
 					activeExpertiseArea={activeExpertiseArea as ExpertiseType}
@@ -95,11 +127,13 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				/>
 
 				<SkillsSection
+					title={techStackSectionTitle}
+					subtitle={techStackSectionSubtitle}
 					skillCategories={skillCategories}
 					selectedSkillCategory={selectedSkillCategory}
 					onSelectSkillCategory={setSelectedSkillCategory}
 					activeSkillCategory={activeSkillCategory as SkillCategory}
-					aiCategory={aiCategory}
+					featuredCategory={featuredCategory as SkillCategory}
 					textSecondaryClass={textSecondaryClass}
 					textTertiaryClass={textTertiaryClass}
 					cardBgClass={cardBgClass}
@@ -108,6 +142,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				/>
 
 				<EducationSection
+					title={educationSectionTitle}
 					education={education}
 					textSecondaryClass={textSecondaryClass}
 					textTertiaryClass={textTertiaryClass}
@@ -117,6 +152,8 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				/>
 
 				<AboutSection
+					title={aboutSectionTitle}
+					description={aboutSectionDescription}
 					textSecondaryClass={textSecondaryClass}
 					cardBgClass={cardBgClass}
 					careerTimeline={careerTimeline}

@@ -13,6 +13,7 @@ export type SkillCategory = {
   description: string;
   emphasis: string;
   skills: string[];
+  isFeatured: boolean;
 };
 
 export type Expertise = {
@@ -48,6 +49,63 @@ export type CareerTimelineItem = {
   accent: string;
 };
 
+// Icon mapping for Strapi data
+const iconMap: Record<string, LucideIcon> = {
+  brain: Brain,
+  globe: Globe,
+  layers: Layers,
+  smartphone: Smartphone,
+};
+
+// Gradient mapping for Strapi data (Tailwind CSS classes)
+const gradientMap: Record<string, string> = {
+  'from-purple-500 via-pink-500 to-rose-500': 'from-purple-500 via-pink-500 to-rose-500',
+  'from-cyan-500 via-blue-500 to-indigo-500': 'from-cyan-500 via-blue-500 to-indigo-500',
+  'from-orange-500 via-amber-500 to-red-600': 'from-orange-500 via-amber-500 to-red-600',
+  'from-green-500 via-emerald-500 to-lime-500': 'from-green-500 via-emerald-500 to-lime-500',
+  'from-gray-500 to-gray-600': 'from-gray-500 to-gray-600',
+};
+
+// Color mapping for Strapi data (Tailwind CSS classes)
+const colorMap: Record<string, string> = {
+  'from-purple-500 to-pink-600': 'from-purple-500 to-pink-600',
+  'from-cyan-500 to-blue-600': 'from-cyan-500 to-blue-600',
+  'from-orange-500 to-red-600': 'from-orange-500 to-red-600',
+  'from-green-500 to-emerald-600': 'from-green-500 to-emerald-600',
+};
+
+// Accent mapping for Strapi data (Tailwind CSS classes)
+const accentMap: Record<string, string> = {
+  'text-cyan-400': 'text-cyan-400',
+  'text-purple-400': 'text-purple-400',
+  'text-indigo-400': 'text-indigo-400',
+  'text-emerald-400': 'text-emerald-400',
+  'text-amber-400': 'text-amber-400',
+  'text-orange-400': 'text-orange-400',
+  'text-pink-400': 'text-pink-400',
+};
+
+// Function to get icon from string
+export function getIcon(iconName: string): LucideIcon {
+  return iconMap[iconName] || Brain;
+}
+
+// Function to get gradient class from string
+export function getGradient(gradient: string): string {
+  return gradientMap[gradient] || 'from-gray-500 to-gray-600';
+}
+
+// Function to get color class from string
+export function getColor(color: string): string {
+  return colorMap[color] || 'from-gray-500 to-gray-600';
+}
+
+// Function to get accent class from string
+export function getAccent(accent: string): string {
+  return accentMap[accent] || 'text-gray-400';
+}
+
+// Default nav links (fallback if not provided by Strapi)
 export const navLinks: NavLink[] = [
   { label: 'Home', href: '#overview' },
   { label: 'Projects', href: '#projects' },
@@ -57,189 +115,67 @@ export const navLinks: NavLink[] = [
   { label: 'Blog', href: '/blog' },
 ];
 
-export const skillCategories: SkillCategory[] = [
-  {
-    key: 'ai',
-    label: 'AI & Innovation',
-    gradient: 'from-purple-500 via-pink-500 to-rose-500',
-    description:
-      'Bringing AI-assisted features into products through data science rigor.',
-    emphasis: 'UTS Master’s research focused on ML-powered UX enhancements.',
-    skills: [
-      'Data Science',
-      'Machine Learning',
-      'AI Integration',
-      'TensorFlow',
-      'LangChain',
-      'Data Storytelling',
-    ],
-  },
-  {
-    key: 'mobile',
-    label: 'Mobile Development',
-    gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
-    description:
-      'Native iOS and cross-platform builds with buttery-smooth experiences.',
-    emphasis: 'Crafted 15+ consumer and enterprise apps.',
-    skills: ['Swift', 'SwiftUI', 'Flutter', 'React Native', 'UIKit', 'Core Animation'],
-  },
-  {
-    key: 'backend',
-    label: 'Backend & Data',
-    gradient: 'from-orange-500 via-amber-500 to-red-600',
-    description: 'Reliable APIs, realtime sync, and data pipelines powering products.',
-    emphasis: 'Designing resilient services with observability baked in.',
-    skills: ['Django', 'RESTful APIs', 'CloudKit', 'CoreData', 'RealmDB', 'PostgreSQL'],
-  },
-  {
-    key: 'frontend',
-    label: 'Frontend & Design',
-    gradient: 'from-green-500 via-emerald-500 to-lime-500',
-    description: 'Immersive web experiences with meticulous attention to detail.',
-    emphasis: 'Responsive design systems crafted with accessibility in mind.',
-    skills: ['React', 'Next.js', 'Astro', 'Tailwind CSS', 'Framer Motion', 'Mapbox'],
-  },
-];
+// Transform Strapi expertise areas to Expertise type
+export function transformExpertiseAreas(strapiAreas: any[]): Expertise[] {
+  return strapiAreas.map((area) => ({
+    code: area.code,
+    title: area.title,
+    icon: getIcon(area.icon),
+    color: getColor(area.color),
+    description: area.description,
+  }));
+}
 
-export const expertise: Expertise[] = [
-  {
-    code: 'ai',
-    title: 'AI & Data Science',
-    icon: Brain,
-    color: 'from-purple-500 to-pink-600',
-    description: "Master's in Data Science & Innovation at UTS",
-  },
-  {
-    code: 'mobile',
-    title: 'Mobile Innovation',
-    icon: Smartphone,
-    color: 'from-cyan-500 to-blue-600',
-    description: '7+ years crafting native & hybrid mobile experiences',
-  },
-  {
-    code: 'full-stack',
-    title: 'Full-Stack Dev',
-    icon: Layers,
-    color: 'from-orange-500 to-red-600',
-    description: 'Backend with Django, Frontend with modern frameworks',
-  },
-  {
-    code: 'gis',
-    title: 'GIS & Web',
-    icon: Globe,
-    color: 'from-green-500 to-emerald-600',
-    description: 'Freelance GIS development & web solutions',
-  },
-];
+// Transform Strapi skill categories to SkillCategory type
+export function transformSkillCategories(strapiCategories: any[]): SkillCategory[] {
+  return strapiCategories.map((category) => ({
+    key: category.code,
+    label: category.label,
+    gradient: getGradient(category.gradient),
+    description: category.description,
+    emphasis: category.emphasis,
+    skills: category.skills?.map((s: any) => s.title) || [],
+    isFeatured: category.isFeatured || false,
+  }));
+}
 
-export const projects: Project[] = [
-  {
-    title: 'E-Commerce Mobile App',
-    description:
-      'Full-featured iOS shopping application with real-time inventory, payment integration, and personalized recommendations.',
-    tech: ['Swift', 'SwiftUI', 'CoreData', 'CloudKit'],
-    color: 'from-cyan-500 to-blue-600',
-    icon: Smartphone,
-    expertise_area: 'mobile',
-    image:
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    title: 'Health Tracking Platform',
-    description:
-      'Cross-platform health monitoring app with ML-powered insights and seamless data synchronization.',
-    tech: ['Flutter', 'Django', 'TensorFlow', 'PostgreSQL'],
-    color: 'from-purple-500 to-pink-600',
-    icon: Brain,
-    expertise_area: 'ai',
-    image:
-      'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    title: 'GIS Analytics Dashboard',
-    description:
-      'Interactive web-based GIS platform for spatial data visualization and real-time geographic analysis.',
-    tech: ['React', 'Mapbox', 'Python', 'PostGIS'],
-    color: 'from-green-500 to-emerald-600',
-    icon: Globe,
-    expertise_area: 'gis',
-    image:
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    title: 'Social Media Mobile Client',
-    description:
-      'High-performance social networking app with real-time messaging, media sharing, and engagement features.',
-    tech: ['React Native', 'Firebase', 'Redux', 'WebSocket'],
-    color: 'from-orange-500 to-red-600',
-    icon: Layers,
-    expertise_area: 'full-stack',
-    image:
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80',
-  },
-];
+// Transform Strapi projects to Project type
+export function transformProjects(strapiProjects: any[], strapiUrl: string = ''): Project[] {
+  return strapiProjects.map((project) => ({
+    title: project.title,
+    description: project.description,
+    tech: project.skills?.map((s: any) => s.title) || [],
+    color: getColor(project.color),
+    icon: getIcon(project.icon),
+    expertise_area: project.expertiseArea?.code || 'full-stack',
+    image: project.image?.url ? `${strapiUrl}${project.image.url}` : '',
+  }));
+}
 
-export const education: EducationItem[] = [
-  {
-    degree: 'Master of Data Science and Innovation',
-    institution: 'University of Technology Sydney (UTS)',
-    period: '2024 - Present',
-    description:
-      'Specializing in artificial intelligence, machine learning, and innovative technology applications in software development.',
-    status: 'In Progress',
-  },
-  {
-    degree: 'Bachelor of Software Engineering',
-    institution: 'University',
-    period: '2013 - 2017',
-    description:
-      'Foundation in computer science, software architecture, algorithms, and mobile application development.',
-    status: 'Completed',
-  },
-];
+// Transform Strapi education entries to EducationItem type
+export function transformEducationEntries(strapiEntries: any[]): EducationItem[] {
+  return strapiEntries.map((entry) => ({
+    degree: entry.degree,
+    institution: entry.institution,
+    period: entry.period,
+    description: entry.description,
+    status: entry.completionStatus === 'In Progress' ? 'In Progress' : 'Completed',
+  }));
+}
 
-export const careerTimeline: CareerTimelineItem[] = [
-  {
-    period: '2025 – Present',
-    title: 'AI Engineer in Training',
-    detail: 'Master of Data Science & Innovation · UTS',
-    accent: 'text-cyan-400',
-  },
-  {
-    period: 'Oct 2022 – Feb 2025',
-    title: 'Freelance Web & GIS Developer',
-    detail: 'Consultant',
-    accent: 'text-purple-400',
-  },
-  {
-    period: 'Sep 2021 – Sep 2022',
-    title: 'Sr Mobile Apps Engineer',
-    detail: 'Sumadi',
-    accent: 'text-indigo-400',
-  },
-  {
-    period: 'May 2019 – Oct 2021',
-    title: 'Senior iOS Developer',
-    detail: 'Ryte',
-    accent: 'text-emerald-400',
-  },
-  {
-    period: 'Apr 2017 – May 2019',
-    title: 'Mobile Developer',
-    detail: 'Locstatt',
-    accent: 'text-amber-400',
-  },
-  {
-    period: 'Jan 2016 – Apr 2017',
-    title: 'Mobile and Web Developer',
-    detail: 'Crayon Star',
-    accent: 'text-orange-400',
-  },
-  {
-    period: 'Jan 2011 – Dec 2015',
-    title: 'Bachelor of Engineering in Information Technology and Communications',
-    detail: 'Universidad Politécnica de Ingeniería',
-    accent: 'text-pink-400',
-  },
-];
+// Transform Strapi career entries to CareerTimelineItem type
+export function transformCareerEntries(strapiEntries: any[]): CareerTimelineItem[] {
+  return strapiEntries.map((entry) => ({
+    period: entry.period,
+    title: entry.title,
+    detail: entry.detail,
+    accent: getAccent(entry.accent),
+  }));
+}
 
+// Fallback/empty data - will be populated from Strapi
+export const skillCategories: SkillCategory[] = [];
+export const expertise: Expertise[] = [];
+export const projects: Project[] = [];
+export const education: EducationItem[] = [];
+export const careerTimeline: CareerTimelineItem[] = [];

@@ -2,6 +2,7 @@ import { Award, Calendar, GraduationCap } from 'lucide-react';
 import { EducationItem } from '@/app/data/content';
 
 type EducationSectionProps = {
+  title: string;
   education: EducationItem[];
   textSecondaryClass: string;
   textTertiaryClass: string;
@@ -11,6 +12,7 @@ type EducationSectionProps = {
 };
 
 export function EducationSection({
+  title,
   education,
   textSecondaryClass,
   textTertiaryClass,
@@ -22,7 +24,7 @@ export function EducationSection({
     <section id="education" className="mb-24 scroll-mt-24">
       <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
         <GraduationCap className="w-8 h-8 text-cyan-400" />
-        Educación
+        {title || 'Education'}
       </h2>
       <div className="relative pl-8">
         <div className={`absolute left-4 top-0 bottom-0 w-px ${darkMode ? 'bg-white/15' : 'bg-slate-200/70'} rounded-full`} />

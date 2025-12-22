@@ -2,11 +2,13 @@ import { Database } from 'lucide-react';
 import { SkillCategory } from '@/app/data/content';
 
 type SkillsSectionProps = {
+  title?: string;
+  subtitle?: string;
   skillCategories: SkillCategory[];
   selectedSkillCategory: string;
   onSelectSkillCategory: (key: string) => void;
   activeSkillCategory: SkillCategory;
-  aiCategory?: SkillCategory;
+  featuredCategory?: SkillCategory;
   textSecondaryClass: string;
   textTertiaryClass: string;
   cardBgClass: string;
@@ -15,11 +17,13 @@ type SkillsSectionProps = {
 };
 
 export function SkillsSection({
+  title,
+  subtitle,
   skillCategories,
   selectedSkillCategory,
   onSelectSkillCategory,
   activeSkillCategory,
-  aiCategory,
+  featuredCategory,
   textSecondaryClass,
   textTertiaryClass,
   cardBgClass,
@@ -32,25 +36,27 @@ export function SkillsSection({
         <span className="w-10 h-10 rounded-2xl bg-orange-400/15 flex items-center justify-center text-orange-300">
           <Database className="w-6 h-6" />
         </span>
-        Technical Arsenal
+        {title || 'Tech Stack'}
       </h2>
       <p className={`${textSecondaryClass} mb-6 max-w-3xl`}>
-        Cambia entre las áreas de especialización para explorar herramientas, frameworks y metodologías clave.
+        {subtitle || ''}
       </p>
       <div className="flex flex-wrap gap-3 mb-10">
         {skillCategories.map((category) => {
           const isActive = selectedSkillCategory === category.key;
-          return (
+          const isFeatured = category.isFeatured;
+
+          return !isFeatured && (
             <button
               key={category.key}
               onClick={() => onSelectSkillCategory(category.key)}
               className={`px-5 py-2 cursor-pointer rounded-full text-sm font-semibold transition-all duration-300 ${
                 isActive
-                  ? `text-white bg-linear-to-r ${category.gradient} shadow-lg shadow-pink-500/20`
+                  ? `text-white bg-linear-to-r ${category.gradient} shadow-lg shadow-slate-500/20`
                   : `${textTertiaryClass} ${darkMode ? 'bg-white/5' : 'bg-white/60'}`
               }`}
             >
-              {category.label}
+              {category.label} {category.isFeatured}
             </button>
           );
         })}
@@ -76,7 +82,7 @@ export function SkillsSection({
           </div>
         </div>
 
-        {aiCategory && (
+        {featuredCategory && (
           <div className={`relative overflow-hidden ${cardBgClass} rounded-3xl border p-8 flex flex-col justify-between`}>
             <div
               className={`absolute inset-0 bg-linear-to-br ${
@@ -84,14 +90,14 @@ export function SkillsSection({
               }`}
             />
             <div className="relative z-10">
-              <p className="text-sm uppercase tracking-[0.4em] text-white/70">Focus</p>
-              <h3 className="text-3xl font-bold mt-3 text-white">AI & Innovation</h3>
+              <p className="text-sm uppercase tracking-[0.4em] text-white/70">{featuredCategory.label}</p>
+              <h3 className="text-3xl font-bold mt-3 text-white">{featuredCategory.description }</h3>
               <p className="text-white/80 mt-4">
-                Integrando modelos predictivos, copilots y analítica avanzada para potenciar productos móviles.
+                {featuredCategory.emphasis}
               </p>
             </div>
             <div className="relative z-10 mt-8 flex flex-wrap gap-2">
-              {aiCategory.skills.slice(0, 4).map((skill) => (
+              {featuredCategory.skills.map((skill) => (
                 <span key={skill} className="px-3 py-1 text-xs font-semibold rounded-full bg-white/15 text-white">
                   {skill}
                 </span>
