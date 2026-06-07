@@ -107,12 +107,12 @@ export function getAccent(accent: string): string {
 
 // Default nav links (fallback if not provided by Strapi)
 export const navLinks: NavLink[] = [
-  { label: 'Home', href: '#overview' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Tech Stack', href: '#skills' },
-  { label: 'Education', href: '#education' },
-  { label: 'About Me', href: '#about' },
-  { label: 'Blog', href: '/blog' },
+  { label: 'Overview', href: '#overview' },
+  { label: 'Work', href: '#projects' },
+  { label: 'Stack', href: '#skills' },
+  { label: 'Career', href: '#about' },
+  { label: 'Writing', href: '#writing' },
+  { label: 'Contact', href: '#contacto' },
 ];
 
 // Transform Strapi expertise areas to Expertise type

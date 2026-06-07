@@ -1,171 +1,173 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { BackgroundOrbs } from '@/app/components/BackgroundOrbs';
-import { ThemeToggle } from '@/app/components/ThemeToggle';
-import { MainNav } from '@/app/components/MainNav';
+import { useEffect, useRef, useState } from 'react';
 import { HeroSection } from '@/app/components/sections/HeroSection';
 import { ProjectsSection } from '@/app/components/sections/ProjectsSection';
 import { SkillsSection } from '@/app/components/sections/SkillsSection';
+import { CareerSection } from '@/app/components/sections/CareerSection';
 import { EducationSection } from '@/app/components/sections/EducationSection';
-import { AboutSection } from '@/app/components/sections/AboutSection';
+import { RecentWritingSection } from '@/app/components/sections/RecentWritingSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
+import { MainNav } from '@/app/components/MainNav';
 import {
-	navLinks,
 	type SkillCategory,
 	type Expertise as ExpertiseType,
 	transformExpertiseAreas,
 	transformSkillCategories,
 	transformProjects,
-	transformEducationEntries,
 	transformCareerEntries,
+	transformEducationEntries,
 } from '@/app/data/content';
 
-type ClientWrapperProps = {
-	strapiData: any; // Adjust type as needed
-};
+// SVG icon helpers (inline, no dep)
+const IHelp = () => (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+		<circle cx="12" cy="12" r="9"/>
+		<path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.8 2.5-2.8 2.5"/>
+		<path d="M12 17h.01"/>
+	</svg>
+);
+
+type ClientWrapperProps = { strapiData: any };
+
+const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
 export function ClientWrapper({ strapiData }: ClientWrapperProps) {
-	const [scrollY, setScrollY] = useState(0);
-	const [darkMode, setDarkMode] = useState(true);
-	const [selectedSkillCategory, setSelectedSkillCategory] = useState('ai');
-	const [selectedExpertise, setSelectedExpertise] = useState('ai');
-	
-	// Extract data from Strapi response
+	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
+	const [navShow, setNavShow] = useState(false);
+	const heroRef = useRef<HTMLElement | null>(null);
+
 	const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 	const data = strapiData?.data || {};
 	const { title, subtitle, description, avatarImage, socialNetworkLinks } = data;
-	
-	// Transform Strapi data using helper functions
-	const expertise = data.projectSection?.expertiseAreas 
+
+	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
 		? transformExpertiseAreas(data.projectSection.expertiseAreas)
 		: [];
 
-	const techStackSectionTitle = data.techStackSection?.title || 'Tech Stack';
-	const techStackSectionSubtitle = data.techStackSection?.subtitle || 'Tech Stack';
-	const skillCategories = data.techStackSection?.skillCategories
+	const skillCategories: SkillCategory[] = data.techStackSection?.skillCategories
 		? transformSkillCategories(data.techStackSection.skillCategories)
 		: [];
-	
-	const projectSectionTitle = data.projectSection?.title || 'Projects';
+
+	const projectSectionTitle: string = data.projectSection?.title || 'Selected work';
 	const projects = data.projectSection?.projects
 		? transformProjects(data.projectSection.projects, strapiUrl)
 		: [];
-	
-	const educationSectionTitle = data.educationSection?.title || 'Education';
-	const education = data.educationSection?.educationEntries
-		? transformEducationEntries(data.educationSection.educationEntries)
-		: [];
-	
-	const aboutSectionTitle = data.aboutSection?.title || 'About Me';
-	const aboutSectionDescription = data.aboutSection?.description || '';
+
 	const careerTimeline = data.aboutSection?.careerEntries
 		? transformCareerEntries(data.aboutSection.careerEntries)
 		: [];
 
+	const education = data.educationSection?.educationEntries
+		? transformEducationEntries(data.educationSection.educationEntries)
+		: [];
+
+	// Apply theme to <html>
 	useEffect(() => {
-		const handleScroll = () => setScrollY(window.scrollY);
-		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
+		document.documentElement.setAttribute('data-theme', theme);
+		// persist
+		try { localStorage.setItem('portfolio-theme', theme); } catch {}
+	}, [theme]);
+
+	// Restore persisted theme
+	useEffect(() => {
+		try {
+			const saved = localStorage.getItem('portfolio-theme') as 'plum' | 'light' | null;
+			if (saved && THEME_CYCLE.includes(saved)) setTheme(saved);
+		} catch {}
 	}, []);
 
-	const bgClass = darkMode
-		? 'bg-linear-to-br from-slate-950 via-slate-900 to-slate-950'
-		: 'bg-linear-to-br from-slate-50 via-gray-300 to-slate-50';
-	const textClass = darkMode ? 'text-white' : 'text-slate-900';
-	const textSecondaryClass = darkMode ? 'text-slate-300' : 'text-slate-700';
-	const textTertiaryClass = darkMode ? 'text-slate-400' : 'text-slate-600';
-	const cardBgClass = darkMode ? 'backdrop-blur-2xl bg-white/5 border-white/10' : 'backdrop-blur-2xl bg-white/60 border-white/40';
-	const cardHoverClass = darkMode ? 'hover:bg-white/10' : 'hover:bg-white/80';
+	// Floating nav scroll trigger
+	useEffect(() => {
+		const onScroll = () => {
+			const h = heroRef.current;
+			const trigger = h ? h.offsetHeight - 140 : window.innerHeight * 0.7;
+			setNavShow(window.scrollY > trigger);
+		};
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll);
+		return () => {
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
+		};
+	}, []);
 
-	const activeSkillCategory =
-		skillCategories.find((category) => category.key === selectedSkillCategory) ?? skillCategories[0];
-	const featuredCategory = skillCategories.find((category) => category.isFeatured === true);
+	const toggleTheme = () => {
+		const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+		setTheme(next);
+	};
 
-	const activeExpertiseArea =
-		expertise.find((item) => item.code === selectedExpertise) ?? expertise[0];
+	const navTo = (id: string) => {
+		if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+		const el = document.getElementById(id);
+		if (el) {
+			const y = el.getBoundingClientRect().top + window.scrollY - 76;
+			window.scrollTo({ top: y, behavior: 'smooth' });
+		}
+	};
+
+	const askAgent = (q: string, key: string) => {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+		if ((window as any).__askAgent) (window as any).__askAgent(q, key);
+	};
 
 	return (
-		<div className={`min-h-screen ${bgClass} ${textClass} overflow-hidden transition-colors duration-500`}>
-			<BackgroundOrbs scrollY={scrollY} darkMode={darkMode} />
-			<ThemeToggle
-				darkMode={darkMode}
-				onToggle={() => setDarkMode((prev) => !prev)}
-				cardBgClass={cardBgClass}
-				cardHoverClass={cardHoverClass}
-			/>
-			<MainNav
-				links={navLinks}
-				textTertiaryClass={textTertiaryClass}
-				cardBgClass={cardBgClass}
-				cardHoverClass={cardHoverClass}
+		<>
+			{/* Atmospheric background layers */}
+			<div className="bg-fx" aria-hidden="true">
+				<div className="glow" />
+				<div className="glow-2" />
+				<div className="grid" />
+				<div className="grain" />
+			</div>
+
+			<MainNav show={navShow} theme={theme} onToggleTheme={toggleTheme} onNav={navTo} />
+
+			<HeroSection
+				heroRef={heroRef}
+				onNav={navTo}
+				title={title}
+				subtitle={subtitle}
+				description={description}
+				socialNetworkLinks={socialNetworkLinks}
+				avatarImage={avatarImage}
 			/>
 
-			<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-				<HeroSection
-					textSecondaryClass={textSecondaryClass}
-					cardBgClass={cardBgClass}
-					cardHoverClass={cardHoverClass}
-					title={title}
-					subtitle={subtitle}
-					description={description}
-					socialNetworkLinks={socialNetworkLinks}
-					avatarImage={avatarImage}
-				/>
-
+			<div className="wrap">
 				<ProjectsSection
 					title={projectSectionTitle}
-					expertise={expertise}
 					projects={projects}
-					activeExpertiseArea={activeExpertiseArea as ExpertiseType}
-					selectedExpertise={selectedExpertise}
-					onSelectExpertise={setSelectedExpertise}
-					textSecondaryClass={textSecondaryClass}
-					cardBgClass={cardBgClass}
-					cardHoverClass={cardHoverClass}
-					darkMode={darkMode}
+					onNav={navTo}
 				/>
 
 				<SkillsSection
-					title={techStackSectionTitle}
-					subtitle={techStackSectionSubtitle}
 					skillCategories={skillCategories}
-					selectedSkillCategory={selectedSkillCategory}
-					onSelectSkillCategory={setSelectedSkillCategory}
-					activeSkillCategory={activeSkillCategory as SkillCategory}
-					featuredCategory={featuredCategory as SkillCategory}
-					textSecondaryClass={textSecondaryClass}
-					textTertiaryClass={textTertiaryClass}
-					cardBgClass={cardBgClass}
-					cardHoverClass={cardHoverClass}
-					darkMode={darkMode}
 				/>
 
-				<EducationSection
-					title={educationSectionTitle}
-					education={education}
-					textSecondaryClass={textSecondaryClass}
-					textTertiaryClass={textTertiaryClass}
-					cardBgClass={cardBgClass}
-					cardHoverClass={cardHoverClass}
-					darkMode={darkMode}
-				/>
-
-				<AboutSection
-					title={aboutSectionTitle}
-					description={aboutSectionDescription}
-					textSecondaryClass={textSecondaryClass}
-					cardBgClass={cardBgClass}
+				<CareerSection
 					careerTimeline={careerTimeline}
-					darkMode={darkMode}
 				/>
+
+				<EducationSection education={education} />
+
+				<RecentWritingSection />
 
 				<FooterSection
-					cardBgClass={cardBgClass}
-					textTertiaryClass={textTertiaryClass}
-					darkMode={darkMode}
+					socialNetworkLinks={socialNetworkLinks}
+					onNav={navTo}
 				/>
 			</div>
-		</div>
+
+			{/* Floating ask-the-agent launcher */}
+			<button
+				className="ask-fab"
+				aria-label="Ask the agent about Nelkit"
+				onClick={() => askAgent('Tell me about your ML work', 'ml')}
+			>
+				<span className="pop">Ask the agent →</span>
+				<IHelp />
+			</button>
+		</>
 	);
 }

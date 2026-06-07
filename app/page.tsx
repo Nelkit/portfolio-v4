@@ -2,6 +2,8 @@ import { ClientWrapper } from '@/app/components/ClientWrapper';
 import { getStrapiData } from '@/app/lib/strapi';
 import qs from 'qs';
 
+export const revalidate = 60;
+
 const HOME_PAGE_QUERY = {
     populate: {
         avatarImage: {
@@ -65,7 +67,6 @@ function buildQueryString(query: object): string {
 }
 
 async function fetchHomePageData() {
-    'use cache';
     const queryString = buildQueryString(HOME_PAGE_QUERY);
     const url = `/api/home-page?${queryString}`;
     console.log('Fetching Home Page Data from URL:', url);

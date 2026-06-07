@@ -3,28 +3,32 @@ import { Moon, Sun } from 'lucide-react';
 type ThemeToggleProps = {
   darkMode: boolean;
   onToggle: () => void;
-  cardBgClass: string;
-  cardHoverClass: string;
 };
 
-export function ThemeToggle({
-  darkMode,
-  onToggle,
-  cardBgClass,
-  cardHoverClass,
-}: ThemeToggleProps) {
+export function ThemeToggle({ darkMode, onToggle }: ThemeToggleProps) {
   return (
     <button
       onClick={onToggle}
-      className={`fixed top-6 right-6 z-50 p-4 ${cardBgClass} rounded-2xl border ${cardHoverClass} transition-all duration-300 hover:scale-110 group`}
       aria-label="Toggle theme"
+      style={{
+        position: 'fixed',
+        top: '24px',
+        right: '24px',
+        zIndex: 50,
+        width: '36px',
+        height: '36px',
+        borderRadius: '8px',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'background 0.15s',
+        color: 'var(--text-secondary)',
+      }}
     >
-      {darkMode ? (
-        <Sun className="w-6 h-6 text-yellow-400 group-hover:rotate-180 transition-transform duration-500" />
-      ) : (
-        <Moon className="w-6 h-6 text-slate-700 group-hover:rotate-180 transition-transform duration-500" />
-      )}
+      {darkMode ? <Sun size={15} /> : <Moon size={15} />}
     </button>
   );
 }
-
