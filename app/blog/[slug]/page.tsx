@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getStrapiData } from '@/app/lib/strapi';
@@ -6,6 +7,39 @@ import { IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
 
 export const revalidate = 60;
+
+export async function generateMetadata(
+	{ params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+	const { slug } = await params;
+	const post = await fetchPost(slug);
+	if (!post) return {};
+
+	const url = `https://nelkit.dev/blog/${slug}`;
+	const ogImage = post.coverImage || 'https://nelkit.dev/img/og-image.jpg';
+
+	return {
+		title: post.title,
+		description: post.summary,
+		alternates: { canonical: url },
+		openGraph: {
+			type: 'article',
+			url,
+			title: post.title,
+			description: post.summary,
+			images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
+			publishedTime: post.publishedDate,
+			authors: ['Nelkit Chavez'],
+			tags: post.tags,
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: post.title,
+			description: post.summary,
+			images: [ogImage],
+		},
+	};
+}
 
 async function fetchPost(slug: string) {
 	const query = qs.stringify({

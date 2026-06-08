@@ -1,8 +1,20 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
 import qs from 'qs';
 import { IGithub, ILinkedin } from '@/app/components/icons';
+
+export const metadata: Metadata = {
+  title: 'Writing',
+  description: 'Articles on ML engineering, mobile development, and shipping AI products.',
+  alternates: { canonical: 'https://nelkit.dev/blog' },
+  openGraph: {
+    url: 'https://nelkit.dev/blog',
+    title: 'Writing · Nelkit Chavez',
+    description: 'Articles on ML engineering, mobile development, and shipping AI products.',
+  },
+};
 
 async function fetchSocialLinks() {
 	const query = qs.stringify({

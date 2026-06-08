@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
 import { mediaUrl } from '@/app/lib/constant';
@@ -56,6 +57,37 @@ async function fetchOtherProjects(currentSlug: string) {
 		[all[i], all[j]] = [all[j], all[i]];
 	}
 	return all.slice(0, 3);
+}
+
+export async function generateMetadata(
+	{ params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+	const { slug } = await params;
+	const project = await fetchProject(slug);
+	if (!project) return {};
+
+	const url = `https://nelkit.dev/projects/${slug}`;
+	const ogImage = mediaUrl(project.image?.url) || 'https://nelkit.dev/img/og-image.jpg';
+	const description = project.summary || project.description || '';
+
+	return {
+		title: project.title,
+		description,
+		alternates: { canonical: url },
+		openGraph: {
+			type: 'website',
+			url,
+			title: `${project.title} · Nelkit Chavez`,
+			description,
+			images: [{ url: ogImage, width: 1200, height: 630, alt: project.title }],
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: `${project.title} · Nelkit Chavez`,
+			description,
+			images: [ogImage],
+		},
+	};
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
