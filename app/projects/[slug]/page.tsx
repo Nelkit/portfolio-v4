@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
-import { BASE_URL } from '@/app/lib/constant';
+import { mediaUrl } from '@/app/lib/constant';
 import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
@@ -67,13 +67,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
 	if (!project) notFound();
 
-	const image = project.image?.url ? `${BASE_URL}${project.image.url}` : null;
+	const image = mediaUrl(project.image?.url) || null;
 	const tech: string[] = project.skills?.map((s: any) => s.title) || [];
 	const area: string = project.expertiseArea?.title || project.expertiseArea?.code || '';
 	const screenshots: { url: string; alt: string }[] = project.screenshots
 		? (Array.isArray(project.screenshots)
-			? project.screenshots.map((s: any) => ({ url: `${BASE_URL}${s.url}`, alt: s.alternativeText || project.title }))
-			: [{ url: `${BASE_URL}${project.screenshots.url}`, alt: project.title }])
+			? project.screenshots.map((s: any) => ({ url: mediaUrl(s.url), alt: s.alternativeText || project.title }))
+			: [{ url: mediaUrl(project.screenshots.url), alt: project.title }])
 		: [];
 	const links: { label: string; url: string; type: string; isExternal: boolean }[] = project.links?.map((l: any) => ({
 		label: l.label || l.href || '',
@@ -170,7 +170,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 							<p className="proj-aside-label">More projects</p>
 							<div className="proj-aside-list">
 								{others.map((p: any) => {
-									const thumb = p.image?.url ? `${BASE_URL}${p.image.url}` : null;
+									const thumb = mediaUrl(p.image?.url) || null;
 									const areaLabel = p.expertiseArea?.title || p.expertiseArea?.code || '';
 									return (
 										<Link

@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { Brain, Globe, Layers, Smartphone } from 'lucide-react';
+import { mediaUrl } from '@/app/lib/constant';
 
 export type NavLink = {
   label: string;
@@ -152,7 +153,7 @@ export function transformSkillCategories(strapiCategories: any[]): SkillCategory
 }
 
 // Transform Strapi projects to Project type
-export function transformProjects(strapiProjects: any[], strapiUrl: string = ''): Project[] {
+export function transformProjects(strapiProjects: any[], _strapiUrl: string = ''): Project[] {
   return strapiProjects.map((project) => ({
     slug: project.documentId || String(project.id),
     title: project.title,
@@ -163,11 +164,11 @@ export function transformProjects(strapiProjects: any[], strapiUrl: string = '')
     color: '',
     icon: getIcon(''),
     expertise_area: project.expertiseArea?.code || '',
-    image: project.image?.url ? `${strapiUrl}${project.image.url}` : '',
+    image: mediaUrl(project.image?.url),
     screenshots: project.screenshots
       ? (Array.isArray(project.screenshots)
-          ? project.screenshots.map((s: any) => `${strapiUrl}${s.url}`)
-          : [`${strapiUrl}${project.screenshots.url}`])
+          ? project.screenshots.map((s: any) => mediaUrl(s.url))
+          : [mediaUrl(project.screenshots.url)])
       : [],
     links: project.links?.map((l: any) => ({
       label: l.label || l.href || '',
@@ -209,7 +210,7 @@ export type BlogEntry = {
   coverImage?: string;
 };
 
-export function transformBlogEntries(strapiEntries: any[], strapiUrl: string = ''): BlogEntry[] {
+export function transformBlogEntries(strapiEntries: any[], _strapiUrl: string = ''): BlogEntry[] {
   return strapiEntries.map((e) => ({
     slug: e.slug || e.documentId || String(e.id),
     title: e.title,
@@ -217,7 +218,7 @@ export function transformBlogEntries(strapiEntries: any[], strapiUrl: string = '
     publishedDate: e.publishedDate || e.publishedAt || '',
     readingTime: e.readingTime || 0,
     tags: Array.isArray(e.blog_tags) ? e.blog_tags.map((t: any) => t.title || t) : [],
-    coverImage: e.featuredImage?.url ? `${strapiUrl}${e.featuredImage.url}` : undefined,
+    coverImage: mediaUrl(e.featuredImage?.url) || undefined,
   }));
 }
 

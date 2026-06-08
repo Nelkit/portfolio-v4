@@ -9,7 +9,7 @@ import { EducationSection } from '@/app/components/sections/EducationSection';
 import { RecentWritingSection } from '@/app/components/sections/RecentWritingSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
-import { BASE_URL } from '@/app/lib/constant';
+import { mediaUrl } from '@/app/lib/constant';
 import {
 	type SkillCategory,
 	type Expertise as ExpertiseType,
@@ -34,7 +34,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 
 	const data = strapiData?.data || {};
 	const { title, subtitle, description, headline, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
-	const resumeUrl = resume?.url ? `${BASE_URL}${resume.url}` : undefined;
+	const resumeUrl = mediaUrl(resume?.url) || undefined;
 
 	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
 		? transformExpertiseAreas(data.projectSection.expertiseAreas)
@@ -46,7 +46,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 
 	const projectSectionTitle: string = data.projectSection?.title || 'Selected work';
 	const projects = data.projectSection?.projects
-		? transformProjects(data.projectSection.projects, BASE_URL)
+		? transformProjects(data.projectSection.projects)
 		: [];
 
 	const careerSectionTitle: string = data.careerSection?.title || 'Career';
