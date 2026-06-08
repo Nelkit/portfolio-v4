@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
-import { BASE_URL } from '@/app/lib/constant';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
@@ -23,7 +22,7 @@ async function fetchPosts(page: number): Promise<{ posts: BlogEntry[]; total: nu
 	const data = await getStrapiData(`/api/blog-entries?${query}`);
 	if (!data?.data) return { posts: [], total: 0 };
 	return {
-		posts: transformBlogEntries(data.data, BASE_URL),
+		posts: transformBlogEntries(data.data),
 		total: data.meta?.pagination?.total ?? 0,
 	};
 }

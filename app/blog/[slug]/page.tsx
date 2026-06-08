@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getStrapiData } from '@/app/lib/strapi';
-import { BASE_URL } from '@/app/lib/constant';
+import { mediaUrl } from '@/app/lib/constant';
 import { IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
 
@@ -29,7 +29,7 @@ async function fetchPost(slug: string) {
 		publishedDate: entry.publishedDate || '',
 		readingTime: entry.readingTime || 0,
 		tags: Array.isArray(entry.blog_tags) ? entry.blog_tags.map((t: any) => t.title || t) : [],
-		coverImage: entry.featuredImage?.url ? `${BASE_URL}${entry.featuredImage.url}` : null,
+		coverImage: mediaUrl(entry.featuredImage?.url) || null,
 		coverAlt: entry.featuredImage?.alternativeText || entry.title,
 	};
 }

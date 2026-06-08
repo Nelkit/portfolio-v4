@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, RefObject } from 'react';
 import Image from 'next/image';
-import { BASE_URL } from '@/app/lib/constant';
+import { mediaUrl } from '@/app/lib/constant';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark, IArrowUR,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon,
@@ -213,7 +213,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 					{avatarImage?.url ? (
 						<img
 							className="avatar"
-							src={`${BASE_URL}${avatarImage.url}`}
+							src={mediaUrl(avatarImage.url)}
 							alt={avatarImage.alternativeText || title || 'Profile'}
 						/>
 					) : (

@@ -1,7 +1,6 @@
 import { ClientWrapper } from '@/app/components/ClientWrapper';
 import { getStrapiData } from '@/app/lib/strapi';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
-import { BASE_URL } from '@/app/lib/constant';
 import qs from 'qs';
 
 export const revalidate = 60;
@@ -93,7 +92,7 @@ async function fetchHomePageData() {
 async function fetchRecentPosts(): Promise<BlogEntry[]> {
     const data = await getStrapiData(`/api/blog-entries?${BLOG_QUERY}`);
     if (!data?.data?.length) return FALLBACK_POSTS;
-    return transformBlogEntries(data.data, BASE_URL);
+    return transformBlogEntries(data.data);
 }
 
 export default async function Home() {
