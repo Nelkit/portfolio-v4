@@ -25,6 +25,7 @@ export type Expertise = {
 };
 
 export type Project = {
+  slug: string;
   title: string;
   description: string;
   tech: string[];
@@ -142,6 +143,7 @@ export function transformSkillCategories(strapiCategories: any[]): SkillCategory
 // Transform Strapi projects to Project type
 export function transformProjects(strapiProjects: any[], strapiUrl: string = ''): Project[] {
   return strapiProjects.map((project) => ({
+    slug: project.documentId || String(project.id),
     title: project.title,
     description: project.description,
     tech: project.skills?.map((s: any) => s.title) || [],

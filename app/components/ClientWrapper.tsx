@@ -132,6 +132,8 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				description={description}
 				socialNetworkLinks={socialNetworkLinks}
 				avatarImage={avatarImage}
+				theme={theme}
+				onToggleTheme={toggleTheme}
 			/>
 
 			<div className="wrap">

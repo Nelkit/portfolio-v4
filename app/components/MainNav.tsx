@@ -1,5 +1,7 @@
 'use client';
 
+import Image from "next/image";
+
 const ISun = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
 		<circle cx="12" cy="12" r="4"/>
@@ -31,7 +33,7 @@ export function MainNav({ show, theme, onToggleTheme, onNav }: MainNavProps) {
 	return (
 		<nav className={'floating-nav' + (show ? ' show' : '')}>
 			<a className="fn-brand" href="#top" onClick={(e) => { e.preventDefault(); onNav('top'); }}>
-				<span className="mark">nc</span>
+				<Image src="/img/logo.webp" alt="Nelkit Chavez Logo" width={80} height={80} className="mark" />
 				<b>Nelkit Chavez</b>
 			</a>
 

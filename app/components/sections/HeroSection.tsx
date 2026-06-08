@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, RefObject } from 'react';
+import Image from 'next/image';
 import { BASE_URL } from '@/app/lib/constant';
 
 /* ---- Icons ---- */
@@ -18,6 +19,8 @@ const ILayers = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const IRoute = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H14a3.5 3.5 0 0 0 0-7H10a3.5 3.5 0 0 1 0-7h5.5"/></svg>;
 const IPen = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>;
 const IAt = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>;
+const ISun = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.36 5.64l1.41-1.41"/></svg>;
+const IMoon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
 
 const NAV_ITEMS = [
 	{ id: 'work',    label: 'Work',    sub: '7 projects · shipped',  meta: '01', Icon: IBriefcase },
@@ -74,9 +77,11 @@ function Message({ m, onNav }: { m: Msg; onNav: (id: string) => void }) {
 }
 
 /* ---- Sidebar ---- */
-function Sidebar({ onNav, socialNetworkLinks }: {
+function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme }: {
 	onNav: (id: string) => void;
 	socialNetworkLinks?: { type: string; href: string }[];
+	theme: 'plum' | 'light';
+	onToggleTheme: () => void;
 }) {
 	const github = socialNetworkLinks?.find((l) => l.type === 'github')?.href || 'https://github.com/nelkit';
 	const linkedin = socialNetworkLinks?.find((l) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
@@ -85,10 +90,10 @@ function Sidebar({ onNav, socialNetworkLinks }: {
 	return (
 		<aside className="sidebar">
 			<div className="brand">
-				<div className="mark">nc</div>
+				<Image src="/img/logo.webp" alt="Nelkit Chavez Logo" width={80} height={80} className="mark" />
 				<div className="wm">
 					<b>Nelkit Chavez</b>
-					<span><i className="dot-live" />portfolio agent · online</span>
+					<span><i className="dot-live" />Portfolio agent · online</span>
 				</div>
 			</div>
 
@@ -125,6 +130,9 @@ function Sidebar({ onNav, socialNetworkLinks }: {
 					<a className="soc" href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
 						<ILinkedin />
 					</a>
+					<button className="soc theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+						{theme === 'light' ? <IMoon /> : <ISun />}
+					</button>
 				</div>
 				<div className="loc">Sydney · AUS<br />UTC+10 · 2026</div>
 			</div>
@@ -288,6 +296,8 @@ type HeroSectionProps = {
 	description?: string;
 	socialNetworkLinks?: { type: string; href: string; label: string; isExternal?: boolean }[];
 	avatarImage?: { url: string; alternativeText: string };
+	theme: 'plum' | 'light';
+	onToggleTheme: () => void;
 };
 
 const SCROLL_DISTANCE = 320;
@@ -296,7 +306,7 @@ const PAD_END   = 15;   // px — minimum margin, never goes below this
 const RADIUS_START = 26;
 const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 
-export function HeroSection({ heroRef, onNav, title, subtitle, description, socialNetworkLinks, avatarImage }: HeroSectionProps) {
+export function HeroSection({ heroRef, onNav, title, subtitle, description, socialNetworkLinks, avatarImage, theme, onToggleTheme }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 
@@ -346,7 +356,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, soci
 				style={{ position: 'sticky', top: 0, height: '100svh' }}
 			>
 				<div ref={shellRef} className="app-shell">
-					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} />
+					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} />
 					<ChatMain onNav={onNav} title={title} description={description} subtitle={subtitle} avatarImage={avatarImage} />
 				</div>
 			</header>
