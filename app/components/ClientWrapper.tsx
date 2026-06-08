@@ -12,6 +12,7 @@ import { MainNav } from '@/app/components/MainNav';
 import {
 	type SkillCategory,
 	type Expertise as ExpertiseType,
+	type BlogEntry,
 	transformExpertiseAreas,
 	transformSkillCategories,
 	transformProjects,
@@ -19,20 +20,13 @@ import {
 	transformEducationEntries,
 } from '@/app/data/content';
 
-// SVG icon helpers (inline, no dep)
-const IHelp = () => (
-	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-		<circle cx="12" cy="12" r="9"/>
-		<path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.8 2.5-2.8 2.5"/>
-		<path d="M12 17h.01"/>
-	</svg>
-);
+import { IHelp } from '@/app/components/icons';
 
-type ClientWrapperProps = { strapiData: any };
+type ClientWrapperProps = { strapiData: any; recentPosts: BlogEntry[] };
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
@@ -112,6 +106,25 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 		if ((window as any).__askAgent) (window as any).__askAgent(q, key);
 	};
 
+	const totalTools = skillCategories.reduce((a, c) => a + c.skills.length, 0);
+	const totalDomains = skillCategories.length;
+	const careerYears = (() => {
+		if (!careerTimeline.length) return 0;
+		const last = careerTimeline[careerTimeline.length - 1];
+		const year = parseInt(last.period?.match(/\d{4}/)?.[0] ?? '0');
+		const first = careerTimeline[0];
+		const firstYear = parseInt(first.period?.match(/\d{4}/)?.[0] ?? '0');
+		return firstYear && year ? new Date().getFullYear() - firstYear : 0;
+	})();
+
+	const navItems = [
+		{ id: 'work',    label: 'Work',    sub: `${projects.length} project${projects.length !== 1 ? 's' : ''} · shipped`,  meta: '01' },
+		{ id: 'stack',   label: 'Stack',   sub: `${totalTools || '—'} tools · ${totalDomains || '—'} domains`,               meta: '02' },
+		{ id: 'career',  label: 'Career',  sub: `${careerYears ? `${careerYears} years` : '—'} · ${careerTimeline.length} roles`, meta: '03' },
+		{ id: 'writing', label: 'Writing', sub: 'Recent notes',                                                               meta: '04' },
+		{ id: 'contact', label: 'Contact', sub: 'Open to roles · 2026',                                                      meta: '05' },
+	];
+
 	return (
 		<>
 			{/* Atmospheric background layers */}
@@ -134,6 +147,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 				avatarImage={avatarImage}
 				theme={theme}
 				onToggleTheme={toggleTheme}
+				navItems={navItems}
 			/>
 
 			<div className="wrap">
@@ -153,7 +167,7 @@ export function ClientWrapper({ strapiData }: ClientWrapperProps) {
 
 				<EducationSection education={education} />
 
-				<RecentWritingSection />
+				<RecentWritingSection posts={recentPosts} />
 
 				<FooterSection
 					socialNetworkLinks={socialNetworkLinks}

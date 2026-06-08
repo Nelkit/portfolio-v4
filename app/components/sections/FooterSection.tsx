@@ -1,11 +1,11 @@
+import { IMail } from '@/app/components/icons';
+
 type LinkItem = { label: string; href: string; type: string; isExternal?: boolean };
 
 type FooterSectionProps = {
 	socialNetworkLinks?: LinkItem[];
 	onNav: (id: string) => void;
 };
-
-const IMail = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>;
 
 const FALLBACK_LINKS = [
 	{ label: 'github.com/nelkit',       href: 'https://github.com/nelkit',  type: 'github',   tag: 'GitHub' },

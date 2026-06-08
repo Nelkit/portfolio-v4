@@ -13,16 +13,15 @@ async function fetchSocialLinks() {
 	return data?.data?.socialNetworkLinks ?? [];
 }
 
-export default async function ProjectsLayout({ children }: { children: React.ReactNode }) {
+export default async function BlogLayout({ children }: { children: React.ReactNode }) {
 	const socialLinks: any[] = await fetchSocialLinks();
 
-	const github   = socialLinks.find((l) => l.type === 'github')?.href   || 'https://github.com/nelkit';
-	const linkedin = socialLinks.find((l) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
-	const email    = socialLinks.find((l) => l.type === 'email')?.href    || 'mailto:hello@nelkit.dev';
+	const github   = socialLinks.find((l: any) => l.type === 'github')?.href   || 'https://github.com/nelkit';
+	const linkedin = socialLinks.find((l: any) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
+	const email    = socialLinks.find((l: any) => l.type === 'email')?.href    || 'mailto:hello@nelkit.dev';
 
 	return (
 		<>
-			{/* Top bar */}
 			<header className="proj-topbar">
 				<div className="proj-topbar-inner">
 					<Link href="/" className="proj-topbar-brand">
@@ -38,7 +37,6 @@ export default async function ProjectsLayout({ children }: { children: React.Rea
 
 			{children}
 
-			{/* Footer */}
 			<div className="wrap">
 				<footer className="proj-simple-footer">
 					<div className="foot-row">

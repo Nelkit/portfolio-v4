@@ -1,18 +1,7 @@
 'use client';
 
 import Image from "next/image";
-
-const ISun = () => (
-	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-		<circle cx="12" cy="12" r="4"/>
-		<path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>
-	</svg>
-);
-const IMoon = () => (
-	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-		<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
-	</svg>
-);
+import { ISun, IMoon } from '@/app/components/icons';
 
 const NAV_ITEMS = [
 	{ id: 'work',    label: 'Work' },

@@ -1,10 +1,13 @@
-const POSTS = [
-	{ date: 'May 2026', title: 'Why I bet my career on on-device ML',       read: '6 min', href: '/blog' },
-	{ date: 'Mar 2026', title: 'Six rules for shipping mobile at scale',     read: '9 min', href: '/blog' },
-	{ date: 'Jan 2026', title: 'From Honduras to UTS: notes on bridging',    read: '4 min', href: '/blog' },
-];
+import Link from 'next/link';
+import { type BlogEntry } from '@/app/data/content';
+import { IArrowUR } from '@/app/components/icons';
 
-export function RecentWritingSection() {
+function formatDate(date: string) {
+	if (!date) return '';
+	return new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+export function RecentWritingSection({ posts }: { posts: BlogEntry[] }) {
 	return (
 		<section id="writing" className="section">
 			<div className="sec-head">
@@ -13,13 +16,26 @@ export function RecentWritingSection() {
 			</div>
 
 			<div className="write-list">
-				{POSTS.map((p) => (
-					<a key={p.title} className="write-row" href={p.href}>
-						<span className="date">{p.date}</span>
-						<span className="ti">{p.title}</span>
-						<span className="read">{p.read} →</span>
-					</a>
+				{posts.map((p) => (
+					<Link key={p.slug} className="write-row" href={`/blog/${p.slug}`}>
+						<span className="wr-date">{formatDate(p.publishedDate)}</span>
+						<span className="wr-body">
+							<span className="wr-title">{p.title}</span>
+							{p.tags.length > 0 && (
+								<span className="wr-tags">
+									{p.tags.map((t) => <span key={t} className="wr-tag">{t}</span>)}
+								</span>
+							)}
+						</span>
+						<span className="wr-read">{p.readingTime > 0 ? `${p.readingTime} min` : ''} <IArrowUR /></span>
+					</Link>
 				))}
+			</div>
+
+			<div className="write-foot">
+				<Link href="/blog" className="btn btn-outline write-all">
+					View all writing <IArrowUR />
+				</Link>
 			</div>
 		</section>
 	);

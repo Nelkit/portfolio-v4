@@ -2,20 +2,23 @@ import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
 import qs from 'qs';
 import { notFound } from 'next/navigation';
+import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
+
+const ILink = () => (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+		<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+		<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+	</svg>
+);
+
+const LINK_ICONS: Record<string, () => JSX.Element> = {
+	github:   IGithub,
+	linkedin: ILinkedin,
+	email:    IMail,
+	link:     ILink,
+};
 
 export const revalidate = 60;
-
-const IArrowLeft = () => (
-	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
-		<path d="M19 12H5m0 0 6 6m-6-6 6-6"/>
-	</svg>
-);
-
-const IArrowUR = () => (
-	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
-		<path d="M7 17 17 7M9 7h8v8"/>
-	</svg>
-);
 
 async function fetchProject(slug: string) {
 	const query = qs.stringify({
@@ -24,6 +27,8 @@ async function fetchProject(slug: string) {
 			image: { fields: ['url', 'alternativeText'] },
 			skills: { fields: ['title'] },
 			expertiseArea: { fields: ['code', 'title'] },
+			screenshots: { fields: ['url', 'alternativeText', 'width', 'height'] },
+			links: '*',
 		},
 	}, { encodeValuesOnly: true });
 
@@ -66,6 +71,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 	const image = project.image?.url ? `${strapiUrl}${project.image.url}` : null;
 	const tech: string[] = project.skills?.map((s: any) => s.title) || [];
 	const area: string = project.expertiseArea?.title || project.expertiseArea?.code || '';
+	const screenshots: { url: string; alt: string }[] = project.screenshots
+		? (Array.isArray(project.screenshots)
+			? project.screenshots.map((s: any) => ({ url: `${strapiUrl}${s.url}`, alt: s.alternativeText || project.title }))
+			: [{ url: `${strapiUrl}${project.screenshots.url}`, alt: project.title }])
+		: [];
+	const links: { label: string; url: string; type: string; isExternal: boolean }[] = project.links?.map((l: any) => ({
+		label: l.label || l.href || '',
+		url: l.href || l.url || '',
+		type: l.type || 'link',
+		isExternal: l.isExternal ?? true,
+	})) || [];
 
 	return (
 		<div className="proj-detail-root">
@@ -85,10 +101,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 					{/* Main article */}
 					<article className="proj-detail">
 						<header className="proj-header">
-							{area && <div className="proj-meta"><span className="proj-area">{area}</span></div>}
+							<div className="proj-meta">
+								{area && <span className="proj-area">{area}</span>}
+								{project.company && <span className="proj-company">{project.company}</span>}
+							</div>
 							<h1 className="proj-title">{project.title}</h1>
-							{project.description && (
-								<p className="proj-desc">{project.description}</p>
+							{project.summary && (
+								<p className="proj-summary">{project.summary}</p>
 							)}
 						</header>
 
@@ -98,12 +117,48 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 							</div>
 						)}
 
+						{links.length > 0 && (
+							<div className="proj-links-inline">
+								{links.map((l) => {
+									const Icon = LINK_ICONS[l.type] || ILink;
+									return (
+										<a
+											key={l.url}
+											href={l.url}
+											target={l.isExternal ? '_blank' : undefined}
+											rel={l.isExternal ? 'noopener noreferrer' : undefined}
+											className="proj-link"
+										>
+											<Icon /> {l.label}
+										</a>
+									);
+								})}
+							</div>
+						)}
+
+						{project.description && (
+							<p className="proj-desc proj-desc-body">{project.description}</p>
+						)}
+
 						{tech.length > 0 && (
-							<div className="proj-section">
+							<div className="proj-section proj-section-stack">
 								<h2 className="proj-section-title">Tech stack</h2>
 								<div className="proj-tags">
 									{tech.map((t: string) => (
 										<span key={t} className="proj-tag">{t}</span>
+									))}
+								</div>
+							</div>
+						)}
+
+						{screenshots.length > 0 && (
+							<div className="proj-section">
+								<h2 className="proj-section-title">Screenshots</h2>
+								<div className="proj-screenshots">
+									{screenshots.map((s) => (
+										<div key={s.url} className="proj-screenshot-wrap">
+											<img src={s.url} alt={s.alt} className="proj-screenshot" />
+										</div>
 									))}
 								</div>
 							</div>
