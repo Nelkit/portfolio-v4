@@ -12,7 +12,7 @@ const ILink = () => (
 	</svg>
 );
 
-const LINK_ICONS: Record<string, () => JSX.Element> = {
+const LINK_ICONS: Record<string, () => React.ReactElement> = {
 	github:   IGithub,
 	linkedin: ILinkedin,
 	email:    IMail,
