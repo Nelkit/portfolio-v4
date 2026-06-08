@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, RefObject } from 'react';
+import { useState, useRef, useEffect, RefObject } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 import { mediaUrl } from '@/app/lib/constant';
 import {
-	IMail, IDown, IArrowUp, IPlus, IMic, ISpark, IArrowUR,
+	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon,
 } from '@/app/components/icons';
 
@@ -35,46 +38,6 @@ const SUGGESTIONS = [
 	{ q: 'Are you open to remote roles?', key: 'remote' },
 	{ q: 'Tell me about your ML work',    key: 'ml' },
 ];
-
-const CANNED: Record<string, { text: string; link: { id: string; label: string } }> = {
-	stack:  { text: 'Three stacks, really. Mobile is home base — Swift, SwiftUI, Kotlin, Flutter, React Native. For ML I live in Python with CoreML, TensorFlow and LangChain. Backend when I need it: FastAPI, Django, Postgres, Redis.', link: { id: 'stack', label: 'See the full stack' } },
-	remote: { text: 'Yes — open to senior IC roles in mobile, ML engineering, or wherever the two intersect. Remote, hybrid, or in person in Sydney are all on the table for 2026.', link: { id: 'contact', label: 'Get in touch' } },
-	ml:     { text: 'Seven years shipping mobile, now teaching those products to think. I do applied on-device ML research at UTS, and I\'ve shipped CoreML vision (SightlineQA), a 3M/day recommender, and a grounded support copilot.', link: { id: 'work', label: 'See selected work' } },
-};
-
-type Msg = {
-	id: string;
-	role: 'user' | 'agent';
-	text?: string;
-	link?: { id: string; label: string };
-	typing?: boolean;
-};
-
-/* ---- Message ---- */
-function Message({ m, onNav }: { m: Msg; onNav: (id: string) => void }) {
-	if (m.typing) {
-		return (
-			<div className="msg agent">
-				<div className="av">nc</div>
-				<div className="bubble"><div className="typing"><i/><i/><i/></div></div>
-			</div>
-		);
-	}
-	return (
-		<div className={'msg ' + m.role}>
-			{m.role === 'agent' && <div className="av">nc</div>}
-			<div className="bubble">
-				{m.text}
-				{m.link && (
-					<a className="seclink" href={'#' + m.link.id}
-					   onClick={(e) => { e.preventDefault(); onNav(m.link!.id); }}>
-						<IArrowUR /> {m.link.label}
-					</a>
-				)}
-			</div>
-		</div>
-	);
-}
 
 /* ---- Sidebar ---- */
 function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, resumeUrl }: {
@@ -145,19 +108,24 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 }
 
 /* ---- Chat Main ---- */
-function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }: {
+function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, onReset }: {
 	onNav: (id: string) => void;
 	title?: string;
 	subtitle?: string;
 	description?: string;
 	headline?: RichTextBlock[] | string;
 	avatarImage?: { url: string; alternativeText: string };
+	onReset: () => void;
 }) {
-	const [messages, setMessages] = useState<Msg[]>([]);
-	const [input, setInput] = useState('');
-	const [busy, setBusy] = useState(false);
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const [inputVal, setInputVal] = useState('');
+
+	const { messages, sendMessage, status } = useChat({
+		transport: new DefaultChatTransport({ api: '/api/chat' }),
+	});
+
+	const isLoading = status === 'streaming' || status === 'submitted';
 	const started = messages.length > 0;
 
 	useEffect(() => {
@@ -165,43 +133,20 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [messages]);
 
-	const pushAgent = useCallback((payload: Partial<Msg>, delay = 720) => {
-		setBusy(true);
-		setMessages((m) => [...m, { role: 'agent', typing: true, id: 't' + Date.now() }]);
-		setTimeout(() => {
-			setMessages((m) => {
-				const out = m.filter((x) => !x.typing);
-				return [...out, { role: 'agent', id: Date.now().toString(), ...payload }];
-			});
-			setBusy(false);
-		}, delay);
-	}, []);
+	const ask = (text: string) => {
+		if (!text.trim() || isLoading) return;
+		sendMessage({ text });
+		setInputVal('');
+	};
 
-	const ask = useCallback(async (text: string, cannedKey?: string) => {
-		if (!text.trim() || busy) return;
-		setMessages((m) => [...m, { role: 'user', text, id: Date.now().toString() }]);
-		setInput('');
-
-		if (cannedKey && CANNED[cannedKey]) {
-			pushAgent(CANNED[cannedKey]);
-			return;
-		}
-		setBusy(true);
-		setMessages((m) => [...m, { role: 'agent', typing: true, id: 't' + Date.now() }]);
-		const fallback = "Good question — that one's best answered directly. Reach out via Contact and I'll get back to you. In the meantime, the Work and Stack threads cover most of it.";
-		setMessages((m) => {
-			const out = m.filter((x) => !x.typing);
-			return [...out, { role: 'agent', id: Date.now().toString(), text: fallback, link: { id: 'contact', label: 'Get in touch' } }];
-		});
-		setBusy(false);
-	}, [busy, pushAgent]);
-
-	const reset = () => { setMessages([]); setInput(''); setBusy(false); };
-
+	// Expose ask globally so the FAB in ClientWrapper can trigger it
 	useEffect(() => {
-		(window as any).__askAgent = (q: string, key: string) => ask(q, key);
-		return () => { delete (window as any).__askAgent; };
-	}, [ask]);
+		(window as { __askAgent?: (q: string) => void }).__askAgent = (q: string) => ask(q);
+		return () => { delete (window as { __askAgent?: (q: string) => void }).__askAgent; };
+	});
+
+	const getMessageText = (m: (typeof messages)[number]): string =>
+		m.parts.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map((p) => p.text).join('');
 
 	return (
 		<main className="chat">
@@ -227,9 +172,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 			</div>
 
 			<div className={'stage' + (started ? ' thread-on' : '')}>
-				{/* Default: headline */}
 				<div className="headline-wrap">
-			
 					<h1 className="headline">
 						{parseHeadline(headline)}
 						<span className="ac">.</span>
@@ -239,15 +182,31 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 					</p>
 				</div>
 
-				{/* Active: thread */}
 				{started && (
 					<div className="thread" ref={threadRef}>
 						<div className="thread-head">
 							<span className="lbl"><i className="dot-live" /> Conversation</span>
-							<button className="new-chat" onClick={reset}><ISpark /> New chat</button>
+							<button className="new-chat" onClick={onReset}><ISpark /> New chat</button>
 						</div>
 						<div className="msgs">
-							{messages.map((m, i) => <Message key={m.id || i} m={m} onNav={onNav} />)}
+							{messages.map((m) => (
+								<div key={m.id} className={'msg ' + (m.role === 'user' ? 'user' : 'agent')}>
+									{m.role === 'assistant' && <div className="av">nc</div>}
+									<div className="bubble">
+										{getMessageText(m)
+											? <ReactMarkdown>{getMessageText(m)}</ReactMarkdown>
+											: (isLoading && m === messages[messages.length - 1]
+												? <div className="typing"><i/><i/><i/></div>
+												: null)}
+									</div>
+								</div>
+							))}
+							{isLoading && messages[messages.length - 1]?.role === 'user' && (
+								<div className="msg agent">
+									<div className="av">nc</div>
+									<div className="bubble"><div className="typing"><i/><i/><i/></div></div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}
@@ -257,21 +216,21 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 				{!started && (
 					<div className="chips">
 						{SUGGESTIONS.map((s) => (
-							<button key={s.key} className="chip" onClick={() => ask(s.q, s.key)}>
+							<button key={s.key} className="chip" onClick={() => ask(s.q)}>
 								{s.q}
 							</button>
 						))}
 					</div>
 				)}
-				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(input); }}>
+				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(inputVal); }}>
 					<button type="button" className="io-lead" aria-label="New conversation"
-					        onClick={() => { if (started) reset(); inputRef.current?.focus(); }}>
+					        onClick={() => { onReset(); inputRef.current?.focus(); }}>
 						<IPlus />
 					</button>
 					<input
 						ref={inputRef}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
+						value={inputVal}
+						onChange={(e) => setInputVal(e.target.value)}
 						placeholder={started ? 'Ask a follow-up…' : 'Ask me anything about Nelkit…'}
 						aria-label="Message"
 					/>
@@ -279,13 +238,13 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }
 					        onClick={() => inputRef.current?.focus()}>
 						<IMic />
 					</button>
-					<button className="send" type="submit" disabled={!input.trim() || busy} aria-label="Send">
+					<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label="Send">
 						<IArrowUp />
 					</button>
 				</form>
 				<div className="hint">
-					<span>↩ to send · powered by an on-page agent</span>
-					<span>{started ? messages.filter((m) => !m.typing).length + ' messages' : '3 quick prompts above'}</span>
+					<span>↩ to send · built for academic & learning purposes · responses may not be accurate</span>
+					<span>{started ? messages.length + ' messages' : '3 quick prompts above'}</span>
 				</div>
 			</div>
 		</main>
@@ -317,6 +276,7 @@ const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
+	const [chatKey, setChatKey] = useState(0);
 
 	useEffect(() => {
 		const hero = heroRef.current as HTMLElement | null;
@@ -370,7 +330,14 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 			>
 				<div ref={shellRef} className="app-shell">
 					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} />
-					<ChatMain onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} />
+					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} />
+				</div>
+
+				<div className="scroll-hint" onClick={() => onNav('work')}>
+					<span className="scroll-hint-label">Explore the traditional portfolio</span>
+					<span className="scroll-hint-arrow">
+						<IDown />
+					</span>
 				</div>
 			</header>
 		</div>
