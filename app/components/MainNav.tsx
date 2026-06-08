@@ -1,33 +1,106 @@
-import Link from 'next/link';
-import { NavLink } from '@/app/data/content';
+'use client';
+
+import { useState } from 'react';
+import Image from "next/image";
+import { ISun, IMoon } from '@/app/components/icons';
+
+const NAV_ITEMS = [
+	{ id: 'work',      label: 'Work' },
+	{ id: 'stack',     label: 'Stack' },
+	{ id: 'career',    label: 'Career' },
+	{ id: 'education', label: 'Education' },
+	{ id: 'writing',   label: 'Writing' },
+	{ id: 'contact',   label: 'Contact' },
+];
+
+const IMenu = () => (
+	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+		<path d="M4 6h16M4 12h16M4 18h16"/>
+	</svg>
+);
+
+const IClose = () => (
+	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+		<path d="M18 6 6 18M6 6l12 12"/>
+	</svg>
+);
 
 type MainNavProps = {
-  links: NavLink[];
-  textTertiaryClass: string;
-  cardBgClass: string;
-  cardHoverClass: string;
+	show: boolean;
+	theme: 'plum' | 'light';
+	onToggleTheme: () => void;
+	onNav: (id: string) => void;
 };
 
-export function MainNav({
-  links,
-  textTertiaryClass,
-  cardBgClass,
-  cardHoverClass,
-}: MainNavProps) {
-  return (
-    <nav
-      className={`fixed top-4 left-1/2 -translate-x-1/2 z-40 flex flex-wrap items-center justify-center gap-4 px-6 py-3 rounded-3xl border ${cardBgClass} ${cardHoverClass}`}
-    >
-      {links.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className={`text-sm font-semibold tracking-wide uppercase ${textTertiaryClass} hover:text-cyan-400 transition-colors`}
-        >
-          {link.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
+export function MainNav({ show, theme, onToggleTheme, onNav }: MainNavProps) {
+	const [open, setOpen] = useState(false);
 
+	const handleNav = (id: string) => {
+		onNav(id);
+		setOpen(false);
+	};
+
+	return (
+		<>
+			<nav className={'floating-nav' + (show ? ' show' : '')}>
+				<a className="fn-brand" href="#top" onClick={(e) => { e.preventDefault(); handleNav('top'); }}>
+					<Image src="/img/logo.webp" alt="Nelkit Chavez Logo" width={80} height={80} className="mark" />
+					<b>Nelkit Chavez</b>
+				</a>
+
+				{/* Desktop links */}
+				<div className="fn-links">
+					{NAV_ITEMS.map((n) => (
+						<a key={n.id} href={'#' + n.id}
+						   onClick={(e) => { e.preventDefault(); handleNav(n.id); }}>
+							{n.label}
+						</a>
+					))}
+					<button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+						{theme === 'light' ? <IMoon /> : <ISun />}
+					</button>
+					<a className="fn-cta" href="#contact"
+					   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
+						Get in touch
+					</a>
+				</div>
+
+				{/* Mobile hamburger */}
+				<button className="fn-hamburger" onClick={() => setOpen((v) => !v)} aria-label="Menu">
+					{open ? <IClose /> : <IMenu />}
+				</button>
+			</nav>
+
+			{/* Mobile drawer */}
+			{open && (
+				<div className="fn-drawer-overlay" onClick={() => setOpen(false)}>
+					<div className="fn-drawer" onClick={(e) => e.stopPropagation()}>
+						<div className="fn-drawer-head">
+							<span className="fn-drawer-label">Navigate</span>
+							<button className="fn-drawer-close" onClick={() => setOpen(false)}><IClose /></button>
+						</div>
+						<nav className="fn-drawer-nav">
+							{NAV_ITEMS.map((n, i) => (
+								<a key={n.id} href={'#' + n.id}
+								   className="fn-drawer-item"
+								   onClick={(e) => { e.preventDefault(); handleNav(n.id); }}>
+									<span className="fn-drawer-num">{String(i + 1).padStart(2, '0')}</span>
+									{n.label}
+								</a>
+							))}
+						</nav>
+						<div className="fn-drawer-foot">
+							<button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+								{theme === 'light' ? <IMoon /> : <ISun />}
+							</button>
+							<a className="btn btn-accent fn-drawer-cta" href="#contact"
+							   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
+								Get in touch
+							</a>
+						</div>
+					</div>
+				</div>
+			)}
+		</>
+	);
+}

@@ -24,14 +24,26 @@ export type Expertise = {
   description: string;
 };
 
+export type ProjectLink = {
+  label: string;
+  url: string;
+  type: 'github' | 'linkedin' | 'email' | 'link';
+  isExternal: boolean;
+};
+
 export type Project = {
+  slug: string;
   title: string;
   description: string;
+  summary: string;
+  company: string;
   tech: string[];
   color: string;
   icon: LucideIcon;
   expertise_area: string;
   image: string;
+  screenshots: string[];
+  links: ProjectLink[];
 };
 
 export type EducationItem = {
@@ -107,12 +119,12 @@ export function getAccent(accent: string): string {
 
 // Default nav links (fallback if not provided by Strapi)
 export const navLinks: NavLink[] = [
-  { label: 'Home', href: '#overview' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Tech Stack', href: '#skills' },
-  { label: 'Education', href: '#education' },
-  { label: 'About Me', href: '#about' },
-  { label: 'Blog', href: '/blog' },
+  { label: 'Overview', href: '#overview' },
+  { label: 'Work', href: '#projects' },
+  { label: 'Stack', href: '#skills' },
+  { label: 'Career', href: '#about' },
+  { label: 'Writing', href: '#writing' },
+  { label: 'Contact', href: '#contacto' },
 ];
 
 // Transform Strapi expertise areas to Expertise type
@@ -142,13 +154,27 @@ export function transformSkillCategories(strapiCategories: any[]): SkillCategory
 // Transform Strapi projects to Project type
 export function transformProjects(strapiProjects: any[], strapiUrl: string = ''): Project[] {
   return strapiProjects.map((project) => ({
+    slug: project.documentId || String(project.id),
     title: project.title,
-    description: project.description,
+    description: project.description || '',
+    summary: project.summary || '',
+    company: project.company || '',
     tech: project.skills?.map((s: any) => s.title) || [],
-    color: getColor(project.color),
-    icon: getIcon(project.icon),
-    expertise_area: project.expertiseArea?.code || 'full-stack',
+    color: '',
+    icon: getIcon(''),
+    expertise_area: project.expertiseArea?.code || '',
     image: project.image?.url ? `${strapiUrl}${project.image.url}` : '',
+    screenshots: project.screenshots
+      ? (Array.isArray(project.screenshots)
+          ? project.screenshots.map((s: any) => `${strapiUrl}${s.url}`)
+          : [`${strapiUrl}${project.screenshots.url}`])
+      : [],
+    links: project.links?.map((l: any) => ({
+      label: l.label || l.href || '',
+      url: l.href || l.url || '',
+      type: l.type || 'link',
+      isExternal: l.isExternal ?? true,
+    })) || [],
   }));
 }
 
@@ -170,6 +196,28 @@ export function transformCareerEntries(strapiEntries: any[]): CareerTimelineItem
     title: entry.title,
     detail: entry.detail,
     accent: getAccent(entry.accent),
+  }));
+}
+
+export type BlogEntry = {
+  slug: string;
+  title: string;
+  summary: string;
+  publishedDate: string;
+  readingTime: number;
+  tags: string[];
+  coverImage?: string;
+};
+
+export function transformBlogEntries(strapiEntries: any[], strapiUrl: string = ''): BlogEntry[] {
+  return strapiEntries.map((e) => ({
+    slug: e.slug || e.documentId || String(e.id),
+    title: e.title,
+    summary: e.summary || '',
+    publishedDate: e.publishedDate || e.publishedAt || '',
+    readingTime: e.readingTime || 0,
+    tags: Array.isArray(e.blog_tags) ? e.blog_tags.map((t: any) => t.title || t) : [],
+    coverImage: e.featuredImage?.url ? `${strapiUrl}${e.featuredImage.url}` : undefined,
   }));
 }
 

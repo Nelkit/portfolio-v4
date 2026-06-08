@@ -1,121 +1,110 @@
-import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
-import { Expertise, Project } from '@/app/data/content';
+import Link from 'next/link';
+import { type Project, type ProjectLink } from '@/app/data/content';
+import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 
-type ProjectsSectionProps = {
-  title?: string;
-  expertise: Expertise[];
-  projects: Project[];
-  activeExpertiseArea: Expertise;
-  selectedExpertise: string;
-  onSelectExpertise: (code: string) => void;
-  textSecondaryClass: string;
-  cardBgClass: string;
-  cardHoverClass: string;
-  darkMode: boolean;
+const ILinkIcon = () => (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+		<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+		<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+	</svg>
+);
+
+const LINK_ICONS: Record<string, () => JSX.Element> = {
+	github:   IGithub,
+	linkedin: ILinkedin,
+	email:    IMail,
+	link:     ILinkIcon,
 };
 
-export function ProjectsSection({
-  title,
-  expertise,
-  projects,
-  activeExpertiseArea,
-  selectedExpertise,
-  onSelectExpertise,
-  textSecondaryClass,
-  cardBgClass,
-  cardHoverClass,
-  darkMode,
-}: ProjectsSectionProps) {
-  return (
-    <section id="projects" className="mb-24 scroll-mt-24">
-      <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
-        <activeExpertiseArea.icon className="w-8 h-8 text-purple-400" />
-        {title || 'Projects'}
-      </h2>
-      <p className={`${textSecondaryClass} mb-6 max-w-3xl`}>{activeExpertiseArea.description}</p>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-        {expertise.map((item) => {
-          const isActive = selectedExpertise === item.code;
-          return (
-            <button
-              key={item.code}
-              onClick={() => onSelectExpertise(item.code)}
-              className={`group relative overflow-hidden ${cardBgClass} rounded-3xl border p-4 ${cardHoverClass} transition-all duration-500 hover:scale-105 cursor-pointer`}
-            >
-              <div
-                className={`absolute inset-0 bg-linear-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${
-                  isActive ? 'opacity-10' : ''
-                }`}
-              />
-              <div className="flex items-center gap-2 relative z-10">
-                <div
-                  className={`w-10 h-10 bg-linear-to-br ${item.color} rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500`}
-                >
-                  <item.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold">{item.title}</h3>
-              </div>
-              <div
-                className={`absolute -bottom-2 -right-2 w-24 h-24 bg-linear-to-br ${item.color} rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 ${
-                  isActive ? 'opacity-30' : ''
-                }`}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {projects
-          .filter((project) => project.expertise_area === selectedExpertise)
-          .map((project, idx) => (
-          <article
-            key={project.title}
-            className={`group flex flex-col ${cardBgClass} rounded-3xl border p-6 ${cardHoverClass} transition-all duration-500`}
-          >
-            <div className="relative h-48 rounded-2xl overflow-hidden mb-6">
-              <Image
-                src={project.image}
-                alt={project.title}
-                fill
-                priority={idx === 0}
-                sizes="(min-width: 1280px) 30vw, (min-width: 1024px) 45vw, 90vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 px-4 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wide text-white uppercase">
-                Case Study
-              </div>
-            </div>
+type ProjectsSectionProps = {
+	title: string;
+	projects: Project[];
+	onNav: (id: string) => void;
+};
 
-            <div className="flex-1">
-              <div className={`w-14 h-14 bg-linear-to-br ${project.color} rounded-2xl flex items-center justify-center mb-4`}>
-                <project.icon className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
-              <p className={`${textSecondaryClass} mb-5 leading-relaxed`}>{project.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {project.tech.map((tech) => (
-                  <span
-                    key={tech}
-                    className={`px-3 py-1 rounded-full border text-xs font-semibold ${
-                      darkMode ? 'bg-white/5 border-white/15 text-white' : 'bg-white/70 border-slate-200/60 text-slate-700'
-                    }`}
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
+type CardItem = {
+	slug: string;
+	i: string;
+	k: string;
+	t: string;
+	d: string;
+	tags: string;
+	image: string;
+	links: ProjectLink[];
+};
 
-            <button className="mt-6 inline-flex items-center gap-2 text-cyan-400 font-semibold hover:gap-3 transition-all">
-              Ver proyecto
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+const FALLBACK_ITEMS: CardItem[] = [
+	{ slug: 'atlas-commerce',    i: '01', k: 'iOS · 2024',            t: 'Atlas Commerce',    d: 'iOS shopping app with real-time inventory, native checkout, and a personalised recommendations rail powered by a server-side ML ranker.', tags: 'Swift · SwiftUI · Postgres · Recsys', image: '', links: [] },
+	{ slug: 'pulse-recommender', i: '02', k: 'Microservice · 2024',   t: 'Pulse Recommender', d: 'Low-latency recommender microservice serving 3M+ daily ranked items, with feature-flag rollout and online A/B evaluation.',           tags: 'Python · FastAPI · Redis · TensorFlow', image: '', links: [] },
+	{ slug: 'terranova-gis',     i: '03', k: 'Cross-platform · 2023', t: 'Terranova GIS',     d: 'Offline-first field-survey app for remote utility crews. GPS capture, photo evidence, conflict-free sync over patchy links.',          tags: 'Flutter · PostGIS · Mapbox', image: '', links: [] },
+];
+
+export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
+	const items: CardItem[] = projects.length > 0
+		? projects.map((p, idx) => ({
+			slug: p.slug,
+			i: String(idx + 1).padStart(2, '0'),
+			k: p.expertise_area || '',
+			t: p.title,
+			d: p.summary || p.description,
+			tags: p.tech.join(' · '),
+			image: p.image,
+			links: p.links || [],
+		}))
+		: FALLBACK_ITEMS;
+
+	const count = items.length;
+
+	return (
+		<section id="work" className="section section-work">
+			<div className="sec-head">
+				<h2><span className="num">02</span> {title}<span className="ac">.</span></h2>
+				<span className="note">{count} projects · ordered by recency</span>
+			</div>
+			<div className="work-grid">
+				{items.map((w, idx) => (
+					<Link
+						key={w.i}
+						href={`/projects/${w.slug}`}
+						className={'work-card' + (idx === 0 ? ' feat' : '')}
+					>
+						{w.image ? (
+							<img className="work-shot" src={w.image} alt={w.t} />
+						) : (
+							<span className="work-shot-placeholder" aria-hidden="true" />
+						)}
+						<div className="wc-body">
+							<span className="idx">{w.i} · {w.k}</span>
+							<h3>{w.t}</h3>
+							<p className="desc">{w.d}</p>
+							{w.links.length > 0 && (
+								<div className="wc-links">
+									{w.links.map((l) => {
+										const Icon = LINK_ICONS[l.type] || ILinkIcon;
+										return (
+											<button
+												key={l.url}
+												className="wc-link"
+												onClick={(e) => {
+													e.preventDefault();
+													e.stopPropagation();
+													window.open(l.url, l.isExternal ? '_blank' : '_self');
+												}}
+											>
+												<Icon /> {l.label}
+											</button>
+										);
+									})}
+								</div>
+							)}
+							<div className="wc-foot">
+								<span className="tags">{w.tags}</span>
+								<span className="go"><IArrowUR /></span>
+							</div>
+						</div>
+					</Link>
+				))}
+			</div>
+		</section>
+	);
 }
-

@@ -5,7 +5,7 @@
       "name": "Next.js: dev (terminal)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run dev",
+      "command": "pnpm run dev",
       "env": {
         "BROWSER": "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
       },
