@@ -8,12 +8,26 @@ import {
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon,
 } from '@/app/components/icons';
 
+type RichTextBlock = { children?: { text?: string }[] };
+
+function parseHeadline(raw: RichTextBlock[] | string | undefined): React.ReactNode {
+	const fallback = <>Building <em className="ac">AI products</em> that actually ship</>;
+	if (!raw) return fallback;
+	const text = Array.isArray(raw)
+		? raw.map((b) => b.children?.map((c) => c.text || '').join('')).join('')
+		: String(raw);
+	const match = text.match(/^(.*?)<em[^>]*>(.*?)<\/em>(.*)$/s);
+	if (!match) return text || fallback;
+	return <>{match[1]}<em className="ac">{match[2]}</em>{match[3]}</>;
+}
+
 const NAV_ICONS: Record<string, () => React.ReactElement> = {
-	work:    IBriefcase,
-	stack:   ILayers,
-	career:  IRoute,
-	writing: IPen,
-	contact: IAt,
+	work:      IBriefcase,
+	stack:     ILayers,
+	career:    IRoute,
+	education: ISpark,
+	writing:   IPen,
+	contact:   IAt,
 };
 
 const SUGGESTIONS = [
@@ -63,16 +77,16 @@ function Message({ m, onNav }: { m: Msg; onNav: (id: string) => void }) {
 }
 
 /* ---- Sidebar ---- */
-function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems }: {
+function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, resumeUrl }: {
 	onNav: (id: string) => void;
 	socialNetworkLinks?: { type: string; href: string }[];
 	theme: 'plum' | 'light';
 	onToggleTheme: () => void;
 	navItems: { id: string; label: string; sub: string; meta: string }[];
+	resumeUrl?: string;
 }) {
 	const github = socialNetworkLinks?.find((l) => l.type === 'github')?.href || 'https://github.com/nelkit';
 	const linkedin = socialNetworkLinks?.find((l) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
-	const cvLink = socialNetworkLinks?.find((l) => l.type === 'cv')?.href;
 
 	return (
 		<aside className="sidebar">
@@ -87,12 +101,12 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems }: 
 			<div className="cta-stack">
 				<a className="btn btn-accent" href="#contact"
 				   onClick={(e) => { e.preventDefault(); onNav('contact'); }}>
-					<IMail /> Get in touch
+					<IMail /><span>Get in touch</span>
 				</a>
-				<a className="btn btn-outline" href={cvLink || '#'}
-				   target={cvLink ? '_blank' : undefined} rel={cvLink ? 'noopener noreferrer' : undefined}
-				   onClick={cvLink ? undefined : (e) => e.preventDefault()}>
-					<IDown /> Download CV
+				<a className="btn btn-outline" href={resumeUrl || '#'}
+				   target={resumeUrl ? '_blank' : undefined} rel={resumeUrl ? 'noopener noreferrer' : undefined}
+				   onClick={resumeUrl ? undefined : (e) => e.preventDefault()}>
+					<IDown /><span>Download CV</span>
 				</a>
 			</div>
 
@@ -131,11 +145,12 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems }: 
 }
 
 /* ---- Chat Main ---- */
-function ChatMain({ onNav, title, subtitle, description, avatarImage }: {
+function ChatMain({ onNav, title, subtitle, description, headline, avatarImage }: {
 	onNav: (id: string) => void;
 	title?: string;
 	subtitle?: string;
 	description?: string;
+	headline?: RichTextBlock[] | string;
 	avatarImage?: { url: string; alternativeText: string };
 }) {
 	const [messages, setMessages] = useState<Msg[]>([]);
@@ -216,8 +231,8 @@ function ChatMain({ onNav, title, subtitle, description, avatarImage }: {
 				<div className="headline-wrap">
 			
 					<h1 className="headline">
-						Applied ML <em className="ac">engineer.</em> Shipping intelligence into products<span className="ac">.</span>
-						 
+						{parseHeadline(headline)}
+						<span className="ac">.</span>
 					</h1>
 					<p className="sub">
 						{description}<span className="caret">_</span>
@@ -284,11 +299,13 @@ type HeroSectionProps = {
 	title?: string;
 	subtitle?: string;
 	description?: string;
+	headline?: RichTextBlock[] | string;
 	socialNetworkLinks?: { type: string; href: string; label: string; isExternal?: boolean }[];
 	avatarImage?: { url: string; alternativeText: string };
 	theme: 'plum' | 'light';
 	onToggleTheme: () => void;
 	navItems: { id: string; label: string; sub: string; meta: string }[];
+	resumeUrl?: string;
 };
 
 const SCROLL_DISTANCE = 320;
@@ -297,7 +314,7 @@ const PAD_END   = 15;   // px — minimum margin, never goes below this
 const RADIUS_START = 26;
 const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 
-export function HeroSection({ heroRef, onNav, title, subtitle, description, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems }: HeroSectionProps) {
+export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 
@@ -308,22 +325,27 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, soci
 			const shell = shellRef.current;
 			if (!outer || !shell || !hero) return;
 
+			// disable scroll effect on mobile
+			if (window.innerWidth < 768) {
+				hero.style.padding = '0px';
+				shell.style.borderRadius = '0px';
+				shell.style.height = '100svh';
+				shell.style.maxWidth = '100%';
+				return;
+			}
+
 			const top = outer.getBoundingClientRect().top;
 			const progress = Math.min(1, Math.max(0, -top / SCROLL_DISTANCE));
 
-			// padding: 34px → 15px (never below PAD_END)
 			const pad = Math.round(PAD_START + (PAD_END - PAD_START) * progress);
 			hero.style.padding = `${pad}px`;
 
-			// border-radius: 26px → 14px (keeps a subtle curve at full expansion)
 			const radius = RADIUS_START + (RADIUS_END - RADIUS_START) * progress;
 			shell.style.borderRadius = `${radius}px`;
 
-			// height: 86svh → 100svh minus 2×PAD_END so it respects the margin
 			const svh = 86 + progress * 14;
 			shell.style.height = `calc(${svh}svh - ${pad * 2}px)`;
 
-			// max-width: 1400px → min(1500px, 100vw) minus 2×PAD_END
 			const targetW = Math.min(1500, window.innerWidth) - PAD_END * 2;
 			const maxw = Math.round(1400 + (targetW - 1400) * progress);
 			shell.style.maxWidth = `${maxw}px`;
@@ -347,8 +369,8 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, soci
 				style={{ position: 'sticky', top: 0, height: '100svh' }}
 			>
 				<div ref={shellRef} className="app-shell">
-					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} />
-					<ChatMain onNav={onNav} title={title} description={description} subtitle={subtitle} avatarImage={avatarImage} />
+					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} />
+					<ChatMain onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} />
 				</div>
 			</header>
 		</div>

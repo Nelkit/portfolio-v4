@@ -1,6 +1,7 @@
 import { type CareerTimelineItem } from '@/app/data/content';
 
 type CareerSectionProps = {
+	title: string;
 	careerTimeline: CareerTimelineItem[];
 };
 
@@ -12,7 +13,7 @@ const FALLBACK_CAREER = [
 	{ period: '2016 — 2017', title: 'Mobile & Web Developer',    detail: 'First job out of uni — agency work, lots of bandwidth.', org: 'Crayon Star', cur: false },
 ];
 
-export function CareerSection({ careerTimeline }: CareerSectionProps) {
+export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 	const rows =
 		careerTimeline.length > 0
 			? careerTimeline.map((c) => ({
@@ -32,7 +33,7 @@ export function CareerSection({ careerTimeline }: CareerSectionProps) {
 	return (
 		<section id="career" className="section">
 			<div className="sec-head">
-				<h2><span className="num">04</span> Career<span className="ac">.</span></h2>
+				<h2><span className="num">04</span> {title}<span className="ac">.</span></h2>
 				<span className="note">{totalYears} years of receipts</span>
 			</div>
 

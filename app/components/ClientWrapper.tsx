@@ -9,6 +9,7 @@ import { EducationSection } from '@/app/components/sections/EducationSection';
 import { RecentWritingSection } from '@/app/components/sections/RecentWritingSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
+import { BASE_URL } from '@/app/lib/constant';
 import {
 	type SkillCategory,
 	type Expertise as ExpertiseType,
@@ -31,9 +32,9 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const [navShow, setNavShow] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
 
-	const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 	const data = strapiData?.data || {};
-	const { title, subtitle, description, avatarImage, socialNetworkLinks } = data;
+	const { title, subtitle, description, headline, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
+	const resumeUrl = resume?.url ? `${BASE_URL}${resume.url}` : undefined;
 
 	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
 		? transformExpertiseAreas(data.projectSection.expertiseAreas)
@@ -45,11 +46,12 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 
 	const projectSectionTitle: string = data.projectSection?.title || 'Selected work';
 	const projects = data.projectSection?.projects
-		? transformProjects(data.projectSection.projects, strapiUrl)
+		? transformProjects(data.projectSection.projects, BASE_URL)
 		: [];
 
-	const careerTimeline = data.aboutSection?.careerEntries
-		? transformCareerEntries(data.aboutSection.careerEntries)
+	const careerSectionTitle: string = data.careerSection?.title || 'Career';
+	const careerTimeline = data.careerSection?.careerEntries
+		? transformCareerEntries(data.careerSection.careerEntries)
 		: [];
 
 	const education = data.educationSection?.educationEntries
@@ -110,19 +112,21 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const totalDomains = skillCategories.length;
 	const careerYears = (() => {
 		if (!careerTimeline.length) return 0;
-		const last = careerTimeline[careerTimeline.length - 1];
-		const year = parseInt(last.period?.match(/\d{4}/)?.[0] ?? '0');
-		const first = careerTimeline[0];
-		const firstYear = parseInt(first.period?.match(/\d{4}/)?.[0] ?? '0');
-		return firstYear && year ? new Date().getFullYear() - firstYear : 0;
+		const years = careerTimeline
+			.flatMap((c) => [...(c.period.match(/\d{4}/g) ?? [])])
+			.map(Number)
+			.filter(Boolean);
+		if (!years.length) return 0;
+		return new Date().getFullYear() - Math.min(...years);
 	})();
 
 	const navItems = [
-		{ id: 'work',    label: 'Work',    sub: `${projects.length} project${projects.length !== 1 ? 's' : ''} · shipped`,  meta: '01' },
-		{ id: 'stack',   label: 'Stack',   sub: `${totalTools || '—'} tools · ${totalDomains || '—'} domains`,               meta: '02' },
-		{ id: 'career',  label: 'Career',  sub: `${careerYears ? `${careerYears} years` : '—'} · ${careerTimeline.length} roles`, meta: '03' },
-		{ id: 'writing', label: 'Writing', sub: 'Recent notes',                                                               meta: '04' },
-		{ id: 'contact', label: 'Contact', sub: 'Open to roles · 2026',                                                      meta: '05' },
+		{ id: 'work',      label: 'Work',      sub: `${projects.length} project${projects.length !== 1 ? 's' : ''} · shipped`,      meta: '01' },
+		{ id: 'stack',     label: 'Stack',     sub: `${totalTools || '—'} tools · ${totalDomains || '—'} domains`,                  meta: '02' },
+		{ id: 'career',    label: 'Career',    sub: `${careerYears ? `${careerYears} years` : '—'} · ${careerTimeline.length} roles`, meta: '03' },
+		{ id: 'education', label: 'Education', sub: `${education.length} entr${education.length !== 1 ? 'ies' : 'y'}`,              meta: '04' },
+		{ id: 'writing',   label: 'Writing',   sub: 'Recent notes',                                                                  meta: '05' },
+		{ id: 'contact',   label: 'Contact',   sub: 'Open to roles · 2026',                                                         meta: '06' },
 	];
 
 	return (
@@ -143,11 +147,13 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				title={title}
 				subtitle={subtitle}
 				description={description}
+				headline={headline}
 				socialNetworkLinks={socialNetworkLinks}
 				avatarImage={avatarImage}
 				theme={theme}
 				onToggleTheme={toggleTheme}
 				navItems={navItems}
+				resumeUrl={resumeUrl}
 			/>
 
 			<div className="wrap">
@@ -162,6 +168,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				/>
 
 				<CareerSection
+					title={careerSectionTitle}
 					careerTimeline={careerTimeline}
 				/>
 
@@ -171,6 +178,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 
 				<FooterSection
 					socialNetworkLinks={socialNetworkLinks}
+					ctaSection={ctaSection}
 					onNav={navTo}
 				/>
 			</div>

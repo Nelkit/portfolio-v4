@@ -16,7 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Nelkit Chavez — Software/ML/AI Engineer",
-  description: "Applied ML engineer. Shipping intelligence into products.",
+  description: "Building AI products that actually ship.",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
