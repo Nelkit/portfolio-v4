@@ -4,7 +4,7 @@ import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const PAGE_SIZE = 10;
 
@@ -19,7 +19,7 @@ async function fetchPosts(page: number): Promise<{ posts: BlogEntry[]; total: nu
 		pagination: { page, pageSize: PAGE_SIZE },
 	}, { encodeValuesOnly: true });
 
-	const data = await getStrapiData(`/api/blog-entries?${query}`);
+	const data = await getStrapiData(`/api/blog-entries?${query}`, 3600);
 	if (!data?.data) return { posts: [], total: 0 };
 	return {
 		posts: transformBlogEntries(data.data),
@@ -32,12 +32,6 @@ function formatDate(date: string) {
 	return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const FALLBACK: BlogEntry[] = [
-	{ slug: 'portfolio-v4', title: 'Building Portfolio v4: From Static HTML to an AI Agent Experience', summary: 'A walkthrough of why I rebuilt my portfolio from scratch — ditching the old static layout for a conversational AI agent interface built with Next.js 15, Strapi CMS, and a design system that actually reflects how I think about products.', publishedDate: '2026-05-01', readingTime: 4, tags: ['Next.js', 'Design', 'AI'] },
-	{ slug: 'on-device-ml', title: 'Why I bet my career on on-device ML', summary: 'On-device inference is not a constraint — it is a product feature. Here is how I came to see latency as a design surface.', publishedDate: '2026-03-10', readingTime: 6, tags: ['ML', 'Mobile'] },
-	{ slug: 'shipping-mobile', title: 'Six rules for shipping mobile at scale', summary: 'Hard-learned heuristics from five years of pushing mobile features to production.', publishedDate: '2026-01-20', readingTime: 9, tags: ['Mobile', 'Process'] },
-];
-
 export default async function BlogPage({
 	searchParams,
 }: {
@@ -48,8 +42,7 @@ export default async function BlogPage({
 	const { posts, total } = await fetchPosts(page);
 	const totalPages = Math.ceil(total / PAGE_SIZE);
 
-	const items = posts.length > 0 ? posts : FALLBACK;
-	const [featured, ...rest] = items;
+	const [featured, ...rest] = posts;
 
 	return (
 		<div className="proj-detail-root">
@@ -64,6 +57,9 @@ export default async function BlogPage({
 						<IArrowLeft /> Back
 					</Link>
 					<h1 className="blog-heading">Writing<span className="ac">.</span></h1>
+					{posts.length === 0 && (
+						<p className="blog-subheading" style={{ opacity: 0.5 }}>No posts yet — check back soon.</p>
+					)}
 					{total > 0 && <p className="blog-subheading">{total} posts · notes on building, mobile &amp; ML</p>}
 				</div>
 

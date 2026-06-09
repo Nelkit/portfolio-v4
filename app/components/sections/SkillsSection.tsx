@@ -7,18 +7,12 @@ type SkillsSectionProps = {
 	skillCategories: SkillCategory[];
 };
 
-const FALLBACK_STACKS: Record<string, string[]> = {
-	Mobile:  ['Swift', 'SwiftUI', 'Kotlin', 'Flutter', 'React Native', 'CoreML'],
-	Backend: ['FastAPI', 'Django', 'Postgres', 'Redis', 'WebSockets', 'Docker'],
-	'AI/ML': ['Python', 'TensorFlow', 'LangChain', 'CoreML', 'PyTorch', 'RAG'],
-	Web:     ['React', 'TypeScript', 'Vite', 'Tailwind', 'Node'],
-};
-
 export function SkillsSection({ skillCategories }: SkillsSectionProps) {
-	const stacks: Record<string, string[]> =
-		skillCategories.length > 0
-			? Object.fromEntries(skillCategories.map((c) => [c.label, c.skills]))
-			: FALLBACK_STACKS;
+	if (skillCategories.length === 0) return null;
+
+	const stacks: Record<string, string[]> = Object.fromEntries(
+		skillCategories.map((c) => [c.label, c.skills]),
+	);
 
 	const tabs = Object.keys(stacks);
 	const totalTools = Object.values(stacks).reduce((a, b) => a + b.length, 0);

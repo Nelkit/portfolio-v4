@@ -33,25 +33,19 @@ type CardItem = {
 	links: ProjectLink[];
 };
 
-const FALLBACK_ITEMS: CardItem[] = [
-	{ slug: 'atlas-commerce',    i: '01', k: 'iOS · 2024',            t: 'Atlas Commerce',    d: 'iOS shopping app with real-time inventory, native checkout, and a personalised recommendations rail powered by a server-side ML ranker.', tags: 'Swift · SwiftUI · Postgres · Recsys', image: '', links: [] },
-	{ slug: 'pulse-recommender', i: '02', k: 'Microservice · 2024',   t: 'Pulse Recommender', d: 'Low-latency recommender microservice serving 3M+ daily ranked items, with feature-flag rollout and online A/B evaluation.',           tags: 'Python · FastAPI · Redis · TensorFlow', image: '', links: [] },
-	{ slug: 'terranova-gis',     i: '03', k: 'Cross-platform · 2023', t: 'Terranova GIS',     d: 'Offline-first field-survey app for remote utility crews. GPS capture, photo evidence, conflict-free sync over patchy links.',          tags: 'Flutter · PostGIS · Mapbox', image: '', links: [] },
-];
-
 export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
-	const items: CardItem[] = projects.length > 0
-		? projects.map((p, idx) => ({
-			slug: p.slug,
-			i: String(idx + 1).padStart(2, '0'),
-			k: p.expertise_area || '',
-			t: p.title,
-			d: p.summary || p.description,
-			tags: p.tech.join(' · '),
-			image: p.image,
-			links: p.links || [],
-		}))
-		: FALLBACK_ITEMS;
+	const items: CardItem[] = projects.map((p, idx) => ({
+		slug: p.slug,
+		i: String(idx + 1).padStart(2, '0'),
+		k: p.expertise_area || '',
+		t: p.title,
+		d: p.summary || p.description,
+		tags: p.tech.join(' · '),
+		image: p.image,
+		links: p.links || [],
+	}));
+
+	if (items.length === 0) return null;
 
 	const count = items.length;
 
