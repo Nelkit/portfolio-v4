@@ -6,7 +6,7 @@ import { mediaUrl } from '@/app/lib/constant';
 import { IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata(
 	{ params }: { params: Promise<{ slug: string }> }
@@ -51,7 +51,7 @@ async function fetchPost(slug: string) {
 		},
 	}, { encodeValuesOnly: true });
 
-	const data = await getStrapiData(`/api/blog-entries?${query}`);
+	const data = await getStrapiData(`/api/blog-entries?${query}`, 3600);
 	const entry = data?.data?.[0] ?? null;
 	if (!entry) return null;
 

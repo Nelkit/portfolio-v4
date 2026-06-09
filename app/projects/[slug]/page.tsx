@@ -20,7 +20,7 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 	link:     ILink,
 };
 
-export const revalidate = 60;
+export const revalidate = 86400;
 
 async function fetchProject(slug: string) {
 	const query = qs.stringify({

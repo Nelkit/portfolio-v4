@@ -3,7 +3,7 @@ import { getStrapiData } from '@/app/lib/strapi';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import qs from 'qs';
 
-export const revalidate = 60;
+export const revalidate = 86400;
 
 const HOME_PAGE_QUERY = {
     populate: {
@@ -74,12 +74,6 @@ const BLOG_QUERY = qs.stringify({
     pagination: { pageSize: 3 },
 }, { encodeValuesOnly: true });
 
-const FALLBACK_POSTS: BlogEntry[] = [
-    { slug: 'portfolio-v4', title: 'Building Portfolio v4: From Static HTML to an AI Agent Experience', summary: '', publishedDate: '2026-05-01', readingTime: 4, tags: ['Next.js', 'Design', 'AI'] },
-    { slug: 'on-device-ml', title: 'Why I bet my career on on-device ML', summary: '', publishedDate: '2026-03-10', readingTime: 6, tags: ['ML', 'Mobile'] },
-    { slug: 'shipping-mobile', title: 'Six rules for shipping mobile at scale', summary: '', publishedDate: '2026-01-20', readingTime: 9, tags: ['Mobile', 'Process'] },
-];
-
 function buildQueryString(query: object): string {
     return qs.stringify(query, { encodeValuesOnly: true });
 }
@@ -91,7 +85,7 @@ async function fetchHomePageData() {
 
 async function fetchRecentPosts(): Promise<BlogEntry[]> {
     const data = await getStrapiData(`/api/blog-entries?${BLOG_QUERY}`);
-    if (!data?.data?.length) return FALLBACK_POSTS;
+    if (!data?.data?.length) return [];
     return transformBlogEntries(data.data);
 }
 

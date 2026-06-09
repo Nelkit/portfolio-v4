@@ -277,6 +277,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 	const [chatKey, setChatKey] = useState(0);
+	const [hintVisible, setHintVisible] = useState(true);
 
 	useEffect(() => {
 		const hero = heroRef.current as HTMLElement | null;
@@ -296,6 +297,9 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 
 			const top = outer.getBoundingClientRect().top;
 			const progress = Math.min(1, Math.max(0, -top / SCROLL_DISTANCE));
+
+			// hide hint once scroll has started
+			setHintVisible(progress < 0.15);
 
 			const pad = Math.round(PAD_START + (PAD_END - PAD_START) * progress);
 			hero.style.padding = `${pad}px`;
@@ -333,7 +337,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} />
 				</div>
 
-				<div className="scroll-hint" onClick={() => onNav('work')}>
+				<div className={'scroll-hint' + (hintVisible ? '' : ' scroll-hint-hidden')} onClick={() => onNav('work')}>
 					<span className="scroll-hint-label">Explore the traditional portfolio</span>
 					<span className="scroll-hint-arrow">
 						<IDown />
