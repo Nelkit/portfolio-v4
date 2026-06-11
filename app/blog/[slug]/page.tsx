@@ -11,6 +11,19 @@ import qs from 'qs';
 
 export const revalidate = 3600;
 
+// Pre-generate every blog post at build time so clicks are instant.
+// New posts published later are rendered on-demand and then cached (ISR).
+export async function generateStaticParams() {
+	const query = qs.stringify({
+		fields: ['slug'],
+		pagination: { pageSize: 100 },
+	}, { encodeValuesOnly: true });
+	const data = await getStrapiData(`/api/blog-entries?${query}`);
+	return (data?.data ?? [])
+		.filter((p: { slug?: string }) => p.slug)
+		.map((p: { slug: string }) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata(
 	{ params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {

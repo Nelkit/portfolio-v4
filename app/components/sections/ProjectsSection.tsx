@@ -63,7 +63,12 @@ export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
 						className={'work-card' + (idx === 0 ? ' feat' : '')}
 					>
 						{w.image ? (
-							<img className="work-shot" src={w.image} alt={w.t} />
+							<img
+								className="work-shot"
+								src={w.image}
+								alt={w.t}
+								style={{ viewTransitionName: `project-image-${w.slug}` }}
+							/>
 						) : (
 							<span className="work-shot-placeholder" aria-hidden="true" />
 						)}
