@@ -5,6 +5,7 @@ import { mediaUrl } from '@/app/lib/constant';
 import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
+import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -201,13 +202,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 						{screenshots.length > 0 && (
 							<div className="proj-section">
 								<h2 className="proj-section-title">Screenshots</h2>
-								<div className="proj-screenshots">
-									{screenshots.map((s) => (
-										<div key={s.url} className="proj-screenshot-wrap">
-											<img src={s.url} alt={s.alt} className="proj-screenshot" />
-										</div>
-									))}
-								</div>
+								<ScreenshotGallery screenshots={screenshots} />
 							</div>
 						)}
 					</article>

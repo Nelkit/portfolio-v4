@@ -59,7 +59,10 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* No global smooth-scroll — it animates page-to-page navigation jumps,
+     which feels jarring. In-page section scrolling uses JS scrollTo({ behavior:'smooth' })
+     where it's actually wanted (see ClientWrapper navTo). */
+  scroll-behavior: auto;
   scroll-padding-top: 88px;
 }
 
@@ -553,10 +556,12 @@ input { font-family: inherit; }
     animation-duration: 0.45s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
-  /* Cross-fade the rest of the page while the image morphs */
+  /* Disable the default whole-page (root) animation — keep only the
+     shared image morph. Prevents the page-wide fade/slide. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.35s;
+    animation: none;
+    mix-blend-mode: normal;
   }
 }
 
@@ -1146,8 +1151,41 @@ footer { padding: 60px 0 40px; margin-top: 90px; border-top: 1px solid var(--bor
 }
 .proj-link svg { flex: none; width: 16px; height: 16px; }
 .proj-screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.proj-screenshot-wrap { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-.proj-screenshot { display: block; width: 100%; height: auto; }
+.proj-screenshot-wrap {
+  position: relative; display: block; padding: 0; margin: 0;
+  border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  background: var(--surface-2); cursor: zoom-in;
+  transition: border-color .2s var(--ease), transform .2s var(--ease);
+}
+.proj-screenshot-wrap:hover { border-color: var(--accent); transform: translateY(-3px); }
+.proj-screenshot {
+  display: block; width: 100%; height: auto;
+  transition: transform .4s var(--ease);
+}
+.proj-screenshot-wrap:hover .proj-screenshot { transform: scale(1.04); }
+
+/* Hover overlay: subtle dim + centered zoom badge */
+.proj-screenshot-overlay {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: radial-gradient(circle at center,
+    rgba(10, 6, 16, 0.35) 0%, rgba(10, 6, 16, 0.55) 100%);
+  opacity: 0; transition: opacity .25s var(--ease);
+}
+.proj-screenshot-wrap:hover .proj-screenshot-overlay { opacity: 1; }
+.proj-screenshot-zoom {
+  display: grid; place-items: center; width: 46px; height: 46px;
+  border-radius: 50%; color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+  transform: scale(0.6); opacity: 0;
+  transition: transform .28s var(--ease), opacity .25s var(--ease);
+}
+.proj-screenshot-wrap:hover .proj-screenshot-zoom { transform: scale(1); opacity: 1; }
+
+/* Lightbox accent — match the portfolio theme */
+.yarl__root { --yarl__color_backdrop: rgba(10, 6, 16, 0.94); }
+.yarl__button { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
+.yarl__button:hover { color: var(--accent); }
 
 .proj-layout {
   display: grid;
