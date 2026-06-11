@@ -22,6 +22,17 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 
 export const revalidate = 86400;
 
+// Pre-generate every project page at build time so clicks are instant.
+// New projects added later are still rendered on-demand and then cached (ISR).
+export async function generateStaticParams() {
+	const query = qs.stringify({
+		fields: ['documentId'],
+		pagination: { pageSize: 100 },
+	}, { encodeValuesOnly: true });
+	const data = await getStrapiData(`/api/projects?${query}`);
+	return (data?.data ?? []).map((p: { documentId: string }) => ({ slug: p.documentId }));
+}
+
 async function fetchProject(slug: string) {
 	const query = qs.stringify({
 		filters: { documentId: { $eq: slug } },
@@ -144,7 +155,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
 						{image && (
 							<div className="proj-image-wrap">
-								<img src={image} alt={project.image?.alternativeText || project.title} className="proj-image" />
+								<img
+									src={image}
+									alt={project.image?.alternativeText || project.title}
+									className="proj-image"
+									style={{ viewTransitionName: `project-image-${slug}` }}
+								/>
 							</div>
 						)}
 
