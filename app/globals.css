@@ -553,10 +553,12 @@ input { font-family: inherit; }
     animation-duration: 0.45s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
-  /* Cross-fade the rest of the page while the image morphs */
+  /* Disable the default whole-page (root) animation — keep only the
+     shared image morph. Prevents the page-wide fade/slide. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.35s;
+    animation: none;
+    mix-blend-mode: normal;
   }
 }
 
