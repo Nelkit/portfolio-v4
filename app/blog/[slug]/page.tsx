@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation';
 import { getStrapiData } from '@/app/lib/strapi';
 import { mediaUrl } from '@/app/lib/constant';
 import { IArrowLeft } from '@/app/components/icons';
+import { PostBody } from '@/app/components/PostBody';
+import { highlightCode } from '@/app/lib/highlight';
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
 import qs from 'qs';
 
 export const revalidate = 3600;
@@ -73,77 +76,6 @@ function formatDate(date: string) {
 	return new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-function inlineMarkdown(text: string): string {
-	return text
-		.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-		.replace(/\*(.+?)\*/g, '<em>$1</em>')
-		.replace(/`(.+?)`/g, '<code>$1</code>');
-}
-
-function renderBody(body: any): string {
-	if (!body) return '';
-	if (typeof body === 'string') return `<p>${inlineMarkdown(body)}</p>`;
-	if (!Array.isArray(body)) return '';
-
-	const blocks: string[] = [];
-
-	for (const block of body) {
-		if (block.type === 'paragraph') {
-			const raw = block.children?.map((c: any) => {
-				let t = c.text || '';
-				if (c.bold) t = `<strong>${t}</strong>`;
-				if (c.italic) t = `<em>${t}</em>`;
-				if (c.code) t = `<code>${t}</code>`;
-				return t;
-			}).join('') || '';
-
-			const parsed = inlineMarkdown(raw);
-			if (!parsed.trim()) continue;
-
-			// Detect markdown list items inside a paragraph block
-			if (parsed.startsWith('- ')) {
-				const item = parsed.slice(2);
-				// group consecutive list items
-				const last = blocks[blocks.length - 1];
-				if (last?.startsWith('<ul>') && !last.endsWith('</ul>')) {
-					blocks[blocks.length - 1] += `<li>${item}</li>`;
-				} else {
-					blocks.push(`<ul><li>${item}</li>`);
-				}
-				continue;
-			}
-			// Close any open <ul>
-			if (blocks.length && blocks[blocks.length - 1].startsWith('<ul>') && !blocks[blocks.length - 1].endsWith('</ul>')) {
-				blocks[blocks.length - 1] += '</ul>';
-			}
-			blocks.push(`<p>${parsed}</p>`);
-		} else if (block.type === 'heading') {
-			const level = block.level || 2;
-			const text = inlineMarkdown(block.children?.map((c: any) => c.text || '').join('') || '');
-			blocks.push(`<h${level}>${text}</h${level}>`);
-		} else if (block.type === 'list') {
-			const tag = block.format === 'ordered' ? 'ol' : 'ul';
-			const items = block.children?.map((item: any) => {
-				const text = inlineMarkdown(item.children?.map((c: any) => c.text || '').join('') || '');
-				return `<li>${text}</li>`;
-			}).join('') || '';
-			blocks.push(`<${tag}>${items}</${tag}>`);
-		} else if (block.type === 'quote') {
-			const text = inlineMarkdown(block.children?.map((c: any) => c.text || '').join('') || '');
-			blocks.push(`<blockquote>${text}</blockquote>`);
-		} else if (block.type === 'code') {
-			const text = block.children?.map((c: any) => c.text || '').join('') || '';
-			blocks.push(`<pre><code>${text}</code></pre>`);
-		}
-	}
-
-	// Close any trailing open <ul>
-	if (blocks.length && blocks[blocks.length - 1].startsWith('<ul>') && !blocks[blocks.length - 1].endsWith('</ul>')) {
-		blocks[blocks.length - 1] += '</ul>';
-	}
-
-	return blocks.join('\n');
-}
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
 	const { slug } = await params;
@@ -151,7 +83,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
 	if (!post) notFound();
 
-	const bodyHtml = renderBody(post.body);
+	const blocks: BlocksContent | null = Array.isArray(post.body) ? (post.body as BlocksContent) : null;
+
+	// Pre-highlight every code block on the server, keyed by block index.
+	const highlighted: Record<number, string> = {};
+	if (blocks) {
+		await Promise.all(
+			blocks.map(async (block, idx) => {
+				if (block.type === 'code') {
+					const text = block.children?.map((c) => ('text' in c ? c.text : '')).join('') ?? '';
+					const lang = (block as { language?: string }).language;
+					highlighted[idx] = await highlightCode(text, lang);
+				}
+			}),
+		);
+	}
 
 	return (
 		<div className="proj-detail-root">
@@ -188,11 +134,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 						</div>
 					)}
 
-					{bodyHtml ? (
-						<div
-							className="post-body"
-							dangerouslySetInnerHTML={{ __html: bodyHtml }}
-						/>
+					{blocks && blocks.length > 0 ? (
+						<div className="post-body">
+							<PostBody content={blocks} highlighted={highlighted} />
+						</div>
 					) : (
 						<p className="post-body" style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>
 							Content coming soon.
