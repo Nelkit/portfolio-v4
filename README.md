@@ -1,5 +1,14 @@
 # Portfolio v4 — Nelkit Chavez
 
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Strapi](https://img.shields.io/badge/Strapi_v5-4945FF?style=for-the-badge&logo=strapi&logoColor=white)
+![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK_v6-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![OpenRouter](https://img.shields.io/badge/OpenRouter-6566F1?style=for-the-badge&logo=openai&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion_API-000000?style=for-the-badge&logo=notion&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on_Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
 Personal portfolio built as a full-stack application. The defining feature is an embedded AI chat agent that answers questions about me in real time, backed by a Notion knowledge base and routed through OpenRouter. All content (projects, blog, career, skills) is managed via a headless CMS (Strapi v5) with no data hardcoded in the frontend.
 
 Live: [nelkit.dev](https://nelkit.dev)
