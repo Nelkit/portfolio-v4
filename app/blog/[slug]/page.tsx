@@ -85,15 +85,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
 	const blocks: BlocksContent | null = Array.isArray(post.body) ? (post.body as BlocksContent) : null;
 
-	// Pre-highlight every code block on the server, keyed by block index.
-	const highlighted: Record<number, string> = {};
+	// Pre-highlight every code block on the server, keyed by the raw code text.
+	// Keying by content (not index) guarantees the client looks it up the same
+	// way → no SSR/CSR hydration mismatch.
+	const highlighted: Record<string, string> = {};
 	if (blocks) {
 		await Promise.all(
-			blocks.map(async (block, idx) => {
+			blocks.map(async (block) => {
 				if (block.type === 'code') {
 					const text = block.children?.map((c) => ('text' in c ? c.text : '')).join('') ?? '';
 					const lang = (block as { language?: string }).language;
-					highlighted[idx] = await highlightCode(text, lang);
+					highlighted[text] = await highlightCode(text, lang);
 				}
 			}),
 		);

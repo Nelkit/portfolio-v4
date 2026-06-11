@@ -7,11 +7,16 @@ const RETRY_DELAY_MS = 600;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function getStrapiData(url: string, revalidate = 86400) {
+    // In development, always fetch fresh — no caching, so new CMS content
+    // shows up immediately without clearing .next/cache.
+    const fetchOptions: RequestInit =
+        process.env.NODE_ENV === 'development'
+            ? { cache: 'no-store' }
+            : { next: { revalidate } };
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const response = await fetch(`${BASE_URL}${url}`, {
-                next: { revalidate },
-            });
+            const response = await fetch(`${BASE_URL}${url}`, fetchOptions);
 
             if (response.ok) {
                 return await response.json();

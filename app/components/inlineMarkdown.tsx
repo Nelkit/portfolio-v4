@@ -1,52 +1,68 @@
-import React from 'react';
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
 
-// Parses inline markdown (**bold**, *italic*, `code`) inside a plain string
-// into React nodes. Handles legacy Strapi content where markdown syntax was
-// typed literally instead of using the block editor's native modifiers.
-export function parseInlineMarkdown(text: string): React.ReactNode {
+// A single inline text node as Strapi stores it
+type TextNode = {
+	type: 'text';
+	text: string;
+	bold?: boolean;
+	italic?: boolean;
+	underline?: boolean;
+	strikethrough?: boolean;
+	code?: boolean;
+};
+
+// Splits a plain-text node containing literal markdown (**bold**, `code`,
+// *italic*) into multiple text nodes with the corresponding native modifiers.
+// This lets the official renderer style them, instead of showing raw ** / `.
+function splitTextNode(node: TextNode): TextNode[] {
+	const text = node.text;
 	if (!text || (!text.includes('**') && !text.includes('`') && !text.includes('*'))) {
-		return text;
+		return [node];
 	}
-	// Order matters: bold (**) before italic (*), and code (`) is independent.
-	const pattern = /(\*\*.+?\*\*|`[^`]+`|\*[^*\s][^*]*?\*)/g;
-	const parts = text.split(pattern);
 
-	return parts.map((part, i) => {
-		if (!part) return null;
+	const pattern = /(\*\*.+?\*\*|`[^`]+`|\*[^*\s][^*]*?\*)/g;
+	const parts = text.split(pattern).filter((p) => p !== '');
+
+	return parts.map((part) => {
 		if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-			return <strong key={i}>{part.slice(2, -2)}</strong>;
+			return { ...node, text: part.slice(2, -2), bold: true };
 		}
 		if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
-			return <code key={i} className="inline-code">{part.slice(1, -1)}</code>;
+			return { ...node, text: part.slice(1, -1), code: true };
 		}
 		if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
-			return <em key={i}>{part.slice(1, -1)}</em>;
+			return { ...node, text: part.slice(1, -1), italic: true };
 		}
-		return <React.Fragment key={i}>{part}</React.Fragment>;
+		return { ...node, text: part };
 	});
 }
 
-// Recursively walks children, applying inline markdown parsing to every string
-// leaf — even when nested inside React elements (e.g. links inside a paragraph).
-export function renderWithInlineMarkdown(children: React.ReactNode): React.ReactNode {
-	return React.Children.map(children, (child) => {
-		if (typeof child === 'string') {
-			return parseInlineMarkdown(child);
-		}
-		// Recurse into element children (links, spans from native modifiers, etc.)
-		// but skip code/strong — their content must stay literal.
-		if (React.isValidElement(child)) {
-			if (child.type === 'code' || child.type === 'strong' || child.type === 'pre') {
-				return child;
-			}
-			const el = child as React.ReactElement<{ children?: React.ReactNode }>;
-			if (el.props?.children) {
-				return React.cloneElement(el, {
-					...el.props,
-					children: renderWithInlineMarkdown(el.props.children),
-				});
-			}
-		}
-		return child;
-	});
+// Recursively transforms a blocks tree, expanding literal-markdown text nodes
+// into modifier-bearing nodes. Code blocks are left untouched (Shiki owns them).
+function transformNode(node: unknown): unknown {
+	if (!node || typeof node !== 'object') return node;
+	const n = node as { type?: string; children?: unknown[]; text?: string };
+
+	// Never rewrite inside code blocks — their text must stay literal.
+	if (n.type === 'code') return node;
+
+	// A text leaf — split it if it carries literal markdown
+	if (n.type === 'text' && typeof n.text === 'string') {
+		return splitTextNode(n as TextNode);
+	}
+
+	// A container with children — recurse and flatten (splitTextNode returns arrays)
+	if (Array.isArray(n.children)) {
+		const newChildren = n.children.flatMap((child) => {
+			const result = transformNode(child);
+			return Array.isArray(result) ? result : [result];
+		});
+		return { ...n, children: newChildren };
+	}
+
+	return node;
+}
+
+export function transformInlineMarkdown(content: BlocksContent): BlocksContent {
+	return content.map((block) => transformNode(block) as BlocksContent[number]);
 }

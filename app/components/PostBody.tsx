@@ -2,36 +2,33 @@
 
 import { BlocksRenderer, type BlocksContent } from '@strapi/blocks-react-renderer';
 import { mediaUrl } from '@/app/lib/constant';
-import { renderWithInlineMarkdown } from '@/app/components/inlineMarkdown';
+import { transformInlineMarkdown } from '@/app/components/inlineMarkdown';
 
 type PostBodyProps = {
 	content: BlocksContent;
-	// Pre-highlighted code HTML (from Shiki, server-side), keyed by block index
-	highlighted: Record<number, string>;
+	// Pre-highlighted code HTML (from Shiki, server-side), keyed by the raw code text.
+	// Keying by content (not index) keeps server and client render identical → no hydration mismatch.
+	highlighted: Record<string, string>;
 };
 
 export function PostBody({ content, highlighted }: PostBodyProps) {
-	// The renderer doesn't expose block indices, so we track code blocks in order.
-	// Code blocks are top-level only, so a running counter matches the server-side
-	// indexing as long as we count every code block the renderer emits.
-	const codeIndices = content
-		.map((b, i) => (b.type === 'code' ? i : -1))
-		.filter((i) => i >= 0);
-	let codeCounter = 0;
+	// Expand literal markdown (**bold**, `code`) into native modifier nodes so
+	// the renderer styles them. Done once on the raw block tree.
+	const normalized = transformInlineMarkdown(content);
 
 	return (
 		<BlocksRenderer
-			content={content}
+			content={normalized}
 			blocks={{
-				paragraph: ({ children }) => <p>{renderWithInlineMarkdown(children)}</p>,
+				paragraph: ({ children }) => <p>{children}</p>,
 				heading: ({ children, level }) => {
 					const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
-					return <Tag>{renderWithInlineMarkdown(children)}</Tag>;
+					return <Tag>{children}</Tag>;
 				},
 				list: ({ children, format }) =>
 					format === 'ordered' ? <ol>{children}</ol> : <ul>{children}</ul>,
-				'list-item': ({ children }) => <li>{renderWithInlineMarkdown(children)}</li>,
-				quote: ({ children }) => <blockquote>{renderWithInlineMarkdown(children)}</blockquote>,
+				'list-item': ({ children }) => <li>{children}</li>,
+				quote: ({ children }) => <blockquote>{children}</blockquote>,
 				link: ({ children, url }) => (
 					<a href={url} target="_blank" rel="noopener noreferrer">{children}</a>
 				),
@@ -39,9 +36,9 @@ export function PostBody({ content, highlighted }: PostBodyProps) {
 					<img src={mediaUrl(image.url)} alt={image.alternativeText || ''} className="post-body-img" />
 				),
 				code: (props) => {
-					const blockIndex = codeIndices[codeCounter++];
-					const html = highlighted[blockIndex];
+					const plainText = (props as { plainText?: string }).plainText ?? '';
 					const language = (props as { language?: string }).language;
+					const html = highlighted[plainText];
 
 					// Use Shiki's pre-rendered HTML if available; fall back to plain text
 					if (html) {
@@ -52,12 +49,11 @@ export function PostBody({ content, highlighted }: PostBodyProps) {
 							</div>
 						);
 					}
-					const plainText = (props as { plainText?: string }).plainText;
 					return (
-						<pre className="code-block" data-language={language || 'text'}>
+						<div className="code-block" data-language={language || 'text'}>
 							{language && <span className="code-lang">{language}</span>}
-							<code>{plainText ?? ''}</code>
-						</pre>
+							<pre className="code-fallback"><code>{plainText}</code></pre>
+						</div>
 					);
 				},
 			}}
