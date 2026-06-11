@@ -954,7 +954,11 @@ input { font-family: inherit; }
   color: var(--accent);
 }
 .post-body ul, .post-body ol { padding-left: 1.5em; margin: 0 0 1.4em; }
-.post-body li { margin-bottom: 0.4em; }
+.post-body ul { list-style: disc; }
+.post-body ol { list-style: decimal; }
+.post-body ul ul { list-style: circle; }
+.post-body li { margin-bottom: 0.4em; display: list-item; }
+.post-body li::marker { color: var(--accent); }
 .post-body blockquote {
   border-left: 3px solid var(--accent); margin: 1.8em 0;
   padding: 4px 0 4px 20px; color: var(--text-faint); font-style: italic;

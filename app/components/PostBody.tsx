@@ -2,6 +2,7 @@
 
 import { BlocksRenderer, type BlocksContent } from '@strapi/blocks-react-renderer';
 import { mediaUrl } from '@/app/lib/constant';
+import { renderWithInlineMarkdown } from '@/app/components/inlineMarkdown';
 
 type PostBodyProps = {
 	content: BlocksContent;
@@ -22,15 +23,15 @@ export function PostBody({ content, highlighted }: PostBodyProps) {
 		<BlocksRenderer
 			content={content}
 			blocks={{
-				paragraph: ({ children }) => <p>{children}</p>,
+				paragraph: ({ children }) => <p>{renderWithInlineMarkdown(children)}</p>,
 				heading: ({ children, level }) => {
 					const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
-					return <Tag>{children}</Tag>;
+					return <Tag>{renderWithInlineMarkdown(children)}</Tag>;
 				},
 				list: ({ children, format }) =>
 					format === 'ordered' ? <ol>{children}</ol> : <ul>{children}</ul>,
-				'list-item': ({ children }) => <li>{children}</li>,
-				quote: ({ children }) => <blockquote>{children}</blockquote>,
+				'list-item': ({ children }) => <li>{renderWithInlineMarkdown(children)}</li>,
+				quote: ({ children }) => <blockquote>{renderWithInlineMarkdown(children)}</blockquote>,
 				link: ({ children, url }) => (
 					<a href={url} target="_blank" rel="noopener noreferrer">{children}</a>
 				),
