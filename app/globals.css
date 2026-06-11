@@ -940,10 +940,10 @@ input { font-family: inherit; }
 .post-body .code-shiki pre.shiki code { background: none; padding: 0; font-family: inherit; }
 
 /* Fallback <pre> when Shiki is unavailable */
-.post-body pre.code-block {
-  background: var(--surface-2); padding: 20px; overflow-x: auto;
+.post-body pre.code-fallback {
+  margin: 0; background: var(--surface-2); padding: 20px; overflow-x: auto;
 }
-.post-body pre.code-block code {
+.post-body pre.code-fallback code {
   display: block; background: none; padding: 0;
   color: var(--text-dim); font-size: 13px; line-height: 1.6;
   white-space: pre; font-family: var(--font-mono);
