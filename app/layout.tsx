@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -61,12 +62,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Runs before first paint to set the theme — prevents a flash of the wrong
+  // theme. Priority: saved user choice > OS preference > 'plum'.
+  const themeScript = `(function(){try{var s=localStorage.getItem('portfolio-theme');var t=(s==='plum'||s==='light')?s:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'plum');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
-    <html lang="en" data-theme="plum" data-skin="terminal">
+    <html lang="en" data-theme="plum" data-skin="terminal" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
             style={{ fontFamily: "var(--font-space-grotesk, var(--font-sans))" }}>
         {children}
       </body>
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }
