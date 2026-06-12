@@ -1431,6 +1431,13 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.08);
   animation: scroll-bounce 2s ease-in-out infinite;
 }
+/* Light theme: the dark translucent circle has poor contrast on a light page.
+   Use a soft accent-tinted chip with the accent arrow so it clearly stands out. */
+[data-theme="light"] .scroll-hint-arrow {
+  background: color-mix(in oklab, var(--accent) 14%, white);
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+  color: var(--accent);
+}
 .scroll-hint-arrow svg {
   width: 16px;
   height: 16px;
