@@ -1,4 +1,4 @@
-import { IMail } from '@/app/components/icons';
+import { IMail, IGithub, ILinkedin } from '@/app/components/icons';
 
 type CtaLink = { label: string; href: string; isExternal?: boolean; type?: string };
 
@@ -83,10 +83,16 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 			<footer>
 				<div className="foot-row">
 					<span className="c">© {new Date().getFullYear()} Nelkit Chavez · Built in Sydney</span>
-					<div className="links">
-						<a href={github.startsWith('http') ? github : `https://${github}`} target="_blank" rel="noreferrer">GitHub</a>
-						<a href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} target="_blank" rel="noreferrer">LinkedIn</a>
-						<a href={emailHref}>Email</a>
+					<div className="foot-btns">
+						<a className="foot-btn" href={github.startsWith('http') ? github : `https://${github}`} target="_blank" rel="noreferrer" aria-label="GitHub">
+							<IGithub /> <span>GitHub</span>
+						</a>
+						<a className="foot-btn" href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+							<ILinkedin /> <span>LinkedIn</span>
+						</a>
+						<a className="foot-btn" href={emailHref} aria-label="Email">
+							<IMail /> <span>Email</span>
+						</a>
 					</div>
 				</div>
 			</footer>
