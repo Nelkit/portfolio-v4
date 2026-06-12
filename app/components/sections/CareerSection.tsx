@@ -10,7 +10,6 @@ export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 		period: c.period,
 		title: c.title,
 		detail: c.detail,
-		org: c.detail,
 		cur: c.period.toLowerCase().includes('now') || c.period.toLowerCase().includes('present'),
 	}));
 
@@ -32,7 +31,6 @@ export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 				<div className="career-row h">
 					<span>Period</span>
 					<span>Role</span>
-					<span>Organisation</span>
 					<span>Status</span>
 				</div>
 				{rows.map((c) => (
@@ -42,7 +40,6 @@ export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 							<b>{c.title}</b>
 							<span>{c.detail}</span>
 						</span>
-						<span className="org">{c.org}</span>
 						<span className={'badge' + (c.cur ? ' cur' : '')}>{c.cur ? 'Current' : 'Past'}</span>
 					</div>
 				))}
