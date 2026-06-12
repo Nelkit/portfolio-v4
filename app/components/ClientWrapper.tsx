@@ -58,19 +58,30 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 		? transformEducationEntries(data.educationSection.educationEntries)
 		: [];
 
-	// Apply theme to <html>
+	// On mount: read the theme the inline <head> script already applied to <html>
+	// (OS preference or saved choice) and sync React state to it. We never write
+	// back to the DOM here — the script is the single source of truth at load.
 	useEffect(() => {
-		document.documentElement.setAttribute('data-theme', theme);
-		// persist
-		try { localStorage.setItem('portfolio-theme', theme); } catch {}
-	}, [theme]);
+		const applied = document.documentElement.getAttribute('data-theme');
+		if (applied === 'plum' || applied === 'light') {
+			setTheme(applied);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-	// Restore persisted theme
+	// Follow OS changes — but ONLY while the user hasn't made an explicit choice.
 	useEffect(() => {
-		try {
-			const saved = localStorage.getItem('portfolio-theme') as 'plum' | 'light' | null;
-			if (saved && THEME_CYCLE.includes(saved)) setTheme(saved);
-		} catch {}
+		const mq = window.matchMedia('(prefers-color-scheme: light)');
+		const onChange = (e: MediaQueryListEvent) => {
+			try {
+				if (localStorage.getItem('portfolio-theme')) return; // user chose manually → ignore OS
+			} catch {}
+			const next = e.matches ? 'light' : 'plum';
+			setTheme(next);
+			document.documentElement.setAttribute('data-theme', next);
+		};
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
 	}, []);
 
 	// Floating nav scroll trigger
@@ -92,6 +103,9 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const toggleTheme = () => {
 		const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
 		setTheme(next);
+		document.documentElement.setAttribute('data-theme', next);
+		// Explicit user choice — persist it so it overrides OS preference from now on.
+		try { localStorage.setItem('portfolio-theme', next); } catch {}
 	};
 
 	const navTo = (id: string) => {

@@ -6,6 +6,7 @@ import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
+import { TrackProjectView } from '@/app/components/TrackProjectView';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -128,6 +129,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
 	return (
 		<div className="proj-detail-root">
+			<TrackProjectView slug={slug} title={project.title} />
 			<div className="bg-fx" aria-hidden="true">
 				<div className="glow" />
 				<div className="glow-2" />

@@ -6,6 +6,7 @@ import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { mediaUrl } from '@/app/lib/constant';
+import { trackEvent } from '@/app/lib/analytics';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon,
@@ -68,7 +69,7 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 				</a>
 				<a className="btn btn-outline" href={resumeUrl || '#'}
 				   target={resumeUrl ? '_blank' : undefined} rel={resumeUrl ? 'noopener noreferrer' : undefined}
-				   onClick={resumeUrl ? undefined : (e) => e.preventDefault()}>
+				   onClick={resumeUrl ? () => trackEvent('cv_downloaded') : (e) => e.preventDefault()}>
 					<IDown /><span>Download CV</span>
 				</a>
 			</div>
@@ -91,10 +92,12 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 			<div className="spacer" />
 			<div className="side-foot">
 				<div className="socials">
-					<a className="soc" href={github} target="_blank" rel="noreferrer" aria-label="GitHub">
+					<a className="soc" href={github} target="_blank" rel="noreferrer" aria-label="GitHub"
+					   onClick={() => trackEvent('contact_clicked', { channel: 'github' })}>
 						<IGithub />
 					</a>
-					<a className="soc" href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+					<a className="soc" href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"
+					   onClick={() => trackEvent('contact_clicked', { channel: 'linkedin' })}>
 						<ILinkedin />
 					</a>
 					<button className="soc theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
@@ -133,15 +136,16 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [messages]);
 
-	const ask = (text: string) => {
+	const ask = (text: string, source: 'input' | 'suggestion' | 'fab' = 'input') => {
 		if (!text.trim() || isLoading) return;
 		sendMessage({ text });
 		setInputVal('');
+		trackEvent('chat_message_sent', { source });
 	};
 
 	// Expose ask globally so the FAB in ClientWrapper can trigger it
 	useEffect(() => {
-		(window as { __askAgent?: (q: string) => void }).__askAgent = (q: string) => ask(q);
+		(window as { __askAgent?: (q: string) => void }).__askAgent = (q: string) => ask(q, 'fab');
 		return () => { delete (window as { __askAgent?: (q: string) => void }).__askAgent; };
 	});
 
@@ -216,17 +220,13 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 				{!started && (
 					<div className="chips">
 						{SUGGESTIONS.map((s) => (
-							<button key={s.key} className="chip" onClick={() => ask(s.q)}>
+							<button key={s.key} className="chip" onClick={() => { trackEvent('chat_suggestion_clicked', { question: s.q }); ask(s.q, 'suggestion'); }}>
 								{s.q}
 							</button>
 						))}
 					</div>
 				)}
 				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(inputVal); }}>
-					<button type="button" className="io-lead" aria-label="New conversation"
-					        onClick={() => { onReset(); inputRef.current?.focus(); }}>
-						<IPlus />
-					</button>
 					<input
 						ref={inputRef}
 						value={inputVal}
@@ -244,7 +244,6 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 				</form>
 				<div className="hint">
 					<span>↩ to send · built for academic & learning purposes · responses may not be accurate</span>
-					<span>{started ? messages.length + ' messages' : '3 quick prompts above'}</span>
 				</div>
 			</div>
 		</main>
