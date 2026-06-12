@@ -31,6 +31,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
+	const [chatInputFocused, setChatInputFocused] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
 
 	const data = strapiData?.data || {};
@@ -170,6 +171,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				navItems={navItems}
 				resumeUrl={resumeUrl}
 				onOpenMenu={() => setDrawerOpen(true)}
+				onChatInputFocusChange={setChatInputFocused}
 			/>
 
 			<div className="wrap">
@@ -199,9 +201,10 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				/>
 			</div>
 
-			{/* Floating ask-the-agent launcher */}
+			{/* Floating ask-the-agent launcher — hidden while the chat input is
+			    focused on mobile (keyboard open) so it doesn't overlap the keyboard. */}
 			<button
-				className="ask-fab"
+				className={'ask-fab' + (chatInputFocused ? ' ask-fab-hidden' : '')}
 				aria-label="Ask the agent about Nelkit"
 				onClick={() => askAgent('Tell me about your ML work', 'ml')}
 			>
