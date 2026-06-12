@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Image from "next/image";
-import { ISun, IMoon } from '@/app/components/icons';
+import { ISun, IMoon, IDown } from '@/app/components/icons';
+import { trackEvent } from '@/app/lib/analytics';
 
 const NAV_ITEMS = [
 	{ id: 'work',      label: 'Work' },
@@ -30,11 +30,12 @@ type MainNavProps = {
 	theme: 'plum' | 'light';
 	onToggleTheme: () => void;
 	onNav: (id: string) => void;
+	open: boolean;
+	setOpen: (open: boolean) => void;
+	resumeUrl?: string;
 };
 
-export function MainNav({ show, theme, onToggleTheme, onNav }: MainNavProps) {
-	const [open, setOpen] = useState(false);
-
+export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resumeUrl }: MainNavProps) {
 	const handleNav = (id: string) => {
 		onNav(id);
 		setOpen(false);
@@ -66,7 +67,7 @@ export function MainNav({ show, theme, onToggleTheme, onNav }: MainNavProps) {
 				</div>
 
 				{/* Mobile hamburger */}
-				<button className="fn-hamburger" onClick={() => setOpen((v) => !v)} aria-label="Menu">
+				<button className="fn-hamburger" onClick={() => setOpen(!open)} aria-label="Menu">
 					{open ? <IClose /> : <IMenu />}
 				</button>
 			</nav>
@@ -93,10 +94,19 @@ export function MainNav({ show, theme, onToggleTheme, onNav }: MainNavProps) {
 							<button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
 								{theme === 'light' ? <IMoon /> : <ISun />}
 							</button>
-							<a className="btn btn-accent fn-drawer-cta" href="#contact"
-							   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
-								Get in touch
-							</a>
+							<div className="fn-drawer-actions">
+								<a className="btn btn-accent fn-drawer-cta" href="#contact"
+								   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
+									Get in touch
+								</a>
+								{resumeUrl && (
+									<a className="btn btn-outline fn-drawer-cv" href={resumeUrl}
+									   target="_blank" rel="noopener noreferrer"
+									   onClick={() => { trackEvent('cv_downloaded'); setOpen(false); }}>
+										<IDown /> Download CV
+									</a>
+								)}
+							</div>
 						</div>
 					</div>
 				</div>

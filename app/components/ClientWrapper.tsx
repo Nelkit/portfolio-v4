@@ -30,6 +30,7 @@ const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
+	const [drawerOpen, setDrawerOpen] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
 
 	const data = strapiData?.data || {};
@@ -153,7 +154,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				<div className="grain" />
 			</div>
 
-			<MainNav show={navShow} theme={theme} onToggleTheme={toggleTheme} onNav={navTo} />
+			<MainNav show={navShow} theme={theme} onToggleTheme={toggleTheme} onNav={navTo} open={drawerOpen} setOpen={setDrawerOpen} resumeUrl={resumeUrl} />
 
 			<HeroSection
 				heroRef={heroRef}
@@ -168,6 +169,7 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				onToggleTheme={toggleTheme}
 				navItems={navItems}
 				resumeUrl={resumeUrl}
+				onOpenMenu={() => setDrawerOpen(true)}
 			/>
 
 			<div className="wrap">

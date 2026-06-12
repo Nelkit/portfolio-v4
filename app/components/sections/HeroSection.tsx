@@ -40,14 +40,21 @@ const SUGGESTIONS = [
 	{ q: 'Tell me about your ML work',    key: 'ml' },
 ];
 
+const IMenuBars = () => (
+	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+		<path d="M4 6h16M4 12h16M4 18h16" />
+	</svg>
+);
+
 /* ---- Sidebar ---- */
-function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, resumeUrl }: {
+function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu }: {
 	onNav: (id: string) => void;
 	socialNetworkLinks?: { type: string; href: string }[];
 	theme: 'plum' | 'light';
 	onToggleTheme: () => void;
 	navItems: { id: string; label: string; sub: string; meta: string }[];
 	resumeUrl?: string;
+	onOpenMenu: () => void;
 }) {
 	const github = socialNetworkLinks?.find((l) => l.type === 'github')?.href || 'https://github.com/nelkit';
 	const linkedin = socialNetworkLinks?.find((l) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
@@ -73,6 +80,10 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 					<IDown /><span>Download CV</span>
 				</a>
 			</div>
+
+			<button className="sidebar-hamburger" onClick={onOpenMenu} aria-label="Open menu">
+				<IMenuBars />
+			</button>
 
 			<div className="side-label"><span>Navigate</span><span>{navItems.length} threads</span></div>
 			<nav className="convo-list">
@@ -264,6 +275,7 @@ type HeroSectionProps = {
 	onToggleTheme: () => void;
 	navItems: { id: string; label: string; sub: string; meta: string }[];
 	resumeUrl?: string;
+	onOpenMenu: () => void;
 };
 
 const SCROLL_DISTANCE = 320;
@@ -272,7 +284,7 @@ const PAD_END   = 15;   // px — minimum margin, never goes below this
 const RADIUS_START = 26;
 const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 
-export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl }: HeroSectionProps) {
+export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 	const [chatKey, setChatKey] = useState(0);
@@ -332,7 +344,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 				style={{ position: 'sticky', top: 0, height: '100svh' }}
 			>
 				<div ref={shellRef} className="app-shell">
-					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} />
+					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} onOpenMenu={onOpenMenu} />
 					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} />
 				</div>
 
