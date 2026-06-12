@@ -325,6 +325,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
   gap: 9px;
   height: 44px;
   border-radius: var(--radius-md);
@@ -1047,7 +1048,7 @@ input {
   }
 }
 
-/* Drawer panel — slides from top, spans the available width */
+/* Drawer panel — full width on mobile, capped & right-anchored on desktop */
 .fn-drawer {
   position: fixed;
   top: 95px;
@@ -1073,6 +1074,14 @@ input {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+/* Desktop: cap the drawer width and anchor it to the right edge */
+@media (min-width: 769px) {
+  .fn-drawer {
+    left: auto;
+    right: 24px;
+    width: 320px;
   }
 }
 .fn-drawer-head {
@@ -1201,12 +1210,21 @@ input {
   transition:
     transform 0.2s var(--ease),
     color 0.2s var(--ease),
-    border-color 0.2s;
+    border-color 0.2s,
+    opacity 0.2s var(--ease),
+    visibility 0.2s var(--ease);
 }
 .ask-fab:hover {
   transform: translateY(-2px);
   color: var(--accent);
   border-color: var(--accent);
+}
+/* Hidden while the chat input is focused (mobile keyboard open) */
+.ask-fab-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.8);
 }
 .ask-fab svg {
   width: 22px;
@@ -1306,6 +1324,68 @@ input {
   height: 340px;
   border-radius: 12px;
   margin: 28px 0;
+}
+.skel-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0;
+}
+
+/* Full-page loader (home / heavy routes) */
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #241d2a);
+  z-index: 100;
+}
+.page-loader-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+.page-loader-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-2, rgba(238, 228, 242, 0.2));
+  background: var(--surface-2, rgba(64, 54, 70, 0.46));
+  animation: page-loader-pulse 1.4s ease-in-out infinite;
+}
+.page-loader-mark .dot-live {
+  width: 12px;
+  height: 12px;
+}
+.page-loader-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--text-faint, #767d89);
+}
+@keyframes page-loader-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
 }
 
 /* ---- SCROLL HINT ---- */
@@ -1826,6 +1906,8 @@ input {
   margin-top: 28px;
   display: flex;
   justify-content: end;
+  position: relative;
+  z-index: 1;
 }
 .write-all {
   display: inline-flex;
@@ -2426,6 +2508,38 @@ footer {
 .foot-row .links a:hover {
   color: var(--accent);
 }
+/* Footer social/contact buttons (icon + label) */
+.foot-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.foot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: none;
+  transition:
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease);
+}
+.foot-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--surface-3);
+}
+.foot-btn svg {
+  width: 15px;
+  height: 15px;
+}
 
 /* ---- PROJECT LAYOUT (topbar + footer) ---- */
 .proj-topbar {
@@ -2463,6 +2577,11 @@ footer {
   display: flex;
   gap: 8px;
 }
+/* Hamburger in the shared topbar is always visible (overrides the default
+   display:none that only shows it on mobile inside the floating nav). */
+.proj-topbar .fn-hamburger {
+  display: flex;
+}
 
 .proj-simple-footer {
   padding: 40px 0;
@@ -2495,6 +2614,7 @@ footer {
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   margin-bottom: 52px;
+  touch-action: manipulation;
   transition:
     color 0.15s,
     border-color 0.15s,
@@ -2875,19 +2995,25 @@ footer {
 
 /* ≤ 768px — Large phones / phablets: hero goes full-screen, hamburger nav, sidebar drawer */
 @media (max-width: 768px) {
-  /* Hero — full screen, no scroll animation */
+  /* Hero — full screen, no scroll animation.
+     dvh keeps it locked to the visible viewport when the keyboard opens. */
   #top {
     height: 100svh !important;
+    height: 100dvh !important;
   }
   .hero {
     padding: 0 !important;
     position: relative !important;
     height: 100svh;
+    height: 100dvh;
   }
+  /* dvh (dynamic viewport height) shrinks when the mobile keyboard opens,
+     so the composer stays visible above it instead of being pushed off-screen. */
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
     height: 100svh !important;
+    height: 100dvh !important;
     max-width: 100% !important;
     border-radius: 0 !important;
     min-height: 0;

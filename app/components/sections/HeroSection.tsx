@@ -122,7 +122,7 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 }
 
 /* ---- Chat Main ---- */
-function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, onReset }: {
+function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, onReset, onInputFocusChange }: {
 	onNav: (id: string) => void;
 	title?: string;
 	subtitle?: string;
@@ -130,6 +130,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	headline?: RichTextBlock[] | string;
 	avatarImage?: { url: string; alternativeText: string };
 	onReset: () => void;
+	onInputFocusChange?: (focused: boolean) => void;
 }) {
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -146,6 +147,31 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 		const el = threadRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [messages]);
+
+	// When the input gets focus on mobile, the virtual keyboard opens and the
+	// browser does its own (unpredictable) auto-scroll. We WAIT for that to finish,
+	// then force the input into view ourselves. iOS Safari needs a generous delay
+	// because the keyboard animation + auto-scroll settle ~400ms after focus.
+	const handleInputFocus = () => {
+		if (window.innerWidth >= 768) return;
+		onInputFocusChange?.(true);
+
+		const scrollInputIntoView = () => {
+			const thread = threadRef.current;
+			if (thread) thread.scrollTop = thread.scrollHeight;
+			// 'end' pins the input to the bottom of the (keyboard-shrunk) visible
+			// area, so it sits right above the keyboard instead of mid-screen.
+			inputRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+		};
+
+		// Two passes: one after the keyboard starts opening, one after it settles.
+		setTimeout(scrollInputIntoView, 350);
+		setTimeout(scrollInputIntoView, 600);
+	};
+
+	const handleInputBlur = () => {
+		onInputFocusChange?.(false);
+	};
 
 	const ask = (text: string, source: 'input' | 'suggestion' | 'fab' = 'input') => {
 		if (!text.trim() || isLoading) return;
@@ -242,6 +268,8 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						ref={inputRef}
 						value={inputVal}
 						onChange={(e) => setInputVal(e.target.value)}
+						onFocus={handleInputFocus}
+						onBlur={handleInputBlur}
 						placeholder={started ? 'Ask a follow-up…' : 'Ask me anything about Nelkit…'}
 						aria-label="Message"
 					/>
@@ -276,6 +304,7 @@ type HeroSectionProps = {
 	navItems: { id: string; label: string; sub: string; meta: string }[];
 	resumeUrl?: string;
 	onOpenMenu: () => void;
+	onChatInputFocusChange?: (focused: boolean) => void;
 };
 
 const SCROLL_DISTANCE = 320;
@@ -284,7 +313,7 @@ const PAD_END   = 15;   // px — minimum margin, never goes below this
 const RADIUS_START = 26;
 const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 
-export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu }: HeroSectionProps) {
+export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu, onChatInputFocusChange }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 	const [chatKey, setChatKey] = useState(0);
@@ -297,11 +326,12 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 			const shell = shellRef.current;
 			if (!outer || !shell || !hero) return;
 
-			// disable scroll effect on mobile
+			// disable scroll effect on mobile — use dvh so the shell shrinks when
+			// the virtual keyboard opens (keeps the composer above it).
 			if (window.innerWidth < 768) {
 				hero.style.padding = '0px';
 				shell.style.borderRadius = '0px';
-				shell.style.height = '100svh';
+				shell.style.height = '100dvh';
 				shell.style.maxWidth = '100%';
 				return;
 			}
@@ -345,7 +375,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 			>
 				<div ref={shellRef} className="app-shell">
 					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} onOpenMenu={onOpenMenu} />
-					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} />
+					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} onInputFocusChange={onChatInputFocusChange} />
 				</div>
 
 				<div className={'scroll-hint' + (hintVisible ? '' : ' scroll-hint-hidden')} onClick={() => onNav('work')}>

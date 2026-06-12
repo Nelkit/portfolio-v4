@@ -1,8 +1,8 @@
 'use client';
 
 import Image from "next/image";
-import { ISun, IMoon, IDown } from '@/app/components/icons';
-import { trackEvent } from '@/app/lib/analytics';
+import { ISun, IMoon } from '@/app/components/icons';
+import { NavDrawer } from '@/app/components/NavDrawer';
 
 const NAV_ITEMS = [
 	{ id: 'work',      label: 'Work' },
@@ -72,44 +72,29 @@ export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resu
 				</button>
 			</nav>
 
-			{/* Mobile drawer */}
+			{/* Drawer */}
 			{open && (
-				<div className="fn-drawer-overlay" onClick={() => setOpen(false)}>
-					<div className="fn-drawer" onClick={(e) => e.stopPropagation()}>
-						<div className="fn-drawer-head">
-							<span className="fn-drawer-label">Navigate</span>
-							<button className="fn-drawer-close" onClick={() => setOpen(false)}><IClose /></button>
-						</div>
-						<nav className="fn-drawer-nav">
-							{NAV_ITEMS.map((n, i) => (
-								<a key={n.id} href={'#' + n.id}
-								   className="fn-drawer-item"
-								   onClick={(e) => { e.preventDefault(); handleNav(n.id); }}>
-									<span className="fn-drawer-num">{String(i + 1).padStart(2, '0')}</span>
-									{n.label}
-								</a>
-							))}
-						</nav>
-						<div className="fn-drawer-foot">
-							<button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
-								{theme === 'light' ? <IMoon /> : <ISun />}
-							</button>
-							<div className="fn-drawer-actions">
-								<a className="btn btn-accent fn-drawer-cta" href="#contact"
-								   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
-									Get in touch
-								</a>
-								{resumeUrl && (
-									<a className="btn btn-outline fn-drawer-cv" href={resumeUrl}
-									   target="_blank" rel="noopener noreferrer"
-									   onClick={() => { trackEvent('cv_downloaded'); setOpen(false); }}>
-										<IDown /> Download CV
-									</a>
-								)}
-							</div>
-						</div>
-					</div>
-				</div>
+				<NavDrawer
+					items={NAV_ITEMS}
+					onClose={() => setOpen(false)}
+					theme={theme}
+					onToggleTheme={onToggleTheme}
+					resumeUrl={resumeUrl}
+					renderItem={(n, i) => (
+						<a key={n.id} href={'#' + n.id}
+						   className="fn-drawer-item"
+						   onClick={(e) => { e.preventDefault(); handleNav(n.id); }}>
+							<span className="fn-drawer-num">{String(i + 1).padStart(2, '0')}</span>
+							{n.label}
+						</a>
+					)}
+					renderCta={() => (
+						<a className="btn btn-accent fn-drawer-cta" href="#contact"
+						   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
+							Get in touch
+						</a>
+					)}
+				/>
 			)}
 		</>
 	);
