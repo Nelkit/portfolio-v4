@@ -22,8 +22,8 @@ Live: [nelkit.dev](https://nelkit.dev)
 | Framework          | Next.js 16 (App Router, React 19, TypeScript 5)         |
 | CMS                | Strapi v5 (separate repo, hosted on Strapi Cloud)       |
 | AI Chat            | Vercel AI SDK v6 + OpenRouter                           |
-| LLM (primary)      | `google/gemini-2.5-flash-lite` via OpenRouter           |
-| LLM (fallback)     | `nvidia/nemotron-3-super-120b-a12b:free` via OpenRouter |
+| LLM (primary)      | `openai/gpt-oss-120b` via OpenRouter                    |
+| LLM (fallback)     | `openai/gpt-oss-120b:free` via OpenRouter               |
 | Knowledge base     | Notion API                                              |
 | Markdown rendering | `react-markdown`                                        |
 | Styling            | Vanilla CSS with custom properties (no UI library)      |
@@ -97,8 +97,8 @@ NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
 
 # AI Chat — OpenRouter
 OPENROUTER_API_KEY=sk-or-...
-OPENROUTER_MODEL=google/gemini-2.5-flash-lite
-OPENROUTER_FALLBACK_MODEL=nvidia/nemotron-3-super-120b-a12b:free
+OPENROUTER_MODEL=openai/gpt-oss-120b
+OPENROUTER_FALLBACK_MODEL=openai/gpt-oss-120b:free
 
 # AI Chat — Notion knowledge base
 NOTION_API_KEY=secret_...
@@ -164,7 +164,7 @@ The chat endpoint lives at `app/api/chat/route.ts`. On each request it:
 2. Trims to the last 6 messages to stay within free-tier context limits
 3. Fetches the Notion knowledge base (cached in-memory for 10 minutes)
 4. Builds a system prompt with the knowledge base injected
-5. Streams the response via OpenRouter using `google/gemini-2.5-flash-lite`
+5. Streams the response via OpenRouter using `openai/gpt-oss-120b`
 6. Falls back to a free model automatically if the primary returns 402 or 429
 
 ### Notion Knowledge Base

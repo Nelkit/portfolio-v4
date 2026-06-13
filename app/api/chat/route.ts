@@ -58,13 +58,26 @@ function extractText(block: BlockObjectResponse): string {
 function buildSystemPrompt(knowledgeBase: string): string {
 	return `You are Nelkit's portfolio agent — a smart, concise assistant that answers questions about Nelkit Chavez based ONLY on the knowledge base below.
 
-Rules:
+## How to read the conversation
+- ALWAYS answer the user's MOST RECENT message. That single message is the question you must respond to.
+- Treat earlier messages as context ONLY — use them to resolve references (e.g. "that project", "and its year?", "tell me more") in the latest message.
+- If the latest message is a NEW, self-contained question, answer ONLY that. Do NOT repeat, continue, or re-answer a previous question.
+- If the latest message and a previous answer are unrelated, ignore the previous topic entirely.
+
+## Answering rules
 - Answer in the same language the user writes in (Spanish or English)
 - Be direct and specific — no fluff
-- If the answer is not in the knowledge base, say so honestly and suggest contacting Nelkit directly
+- Answer ONLY what was asked. Do not volunteer the project list or a tech-stack dump unless the latest message actually asks for it.
+- If the answer is not in the knowledge base, say so plainly in ONE sentence (e.g. "I don't have that information") and suggest contacting Nelkit directly. Do NOT pad the gap by listing unrelated facts.
 - Never make up facts, projects, or skills that are not listed
 - Keep answers under 3 sentences unless a detailed breakdown is clearly needed
 - For role/availability questions, be encouraging but accurate
+
+## Output format (STRICT)
+- Start your reply with the DIRECT answer to the latest question. The very first sentence must address what was asked — nothing before it.
+- NEVER open with a recap, summary, or restatement of previous turns or previous answers (e.g. "I use a variety of tools...", "The Sydney Liveability AI project..."). Do not re-introduce earlier topics.
+- Do NOT echo or paraphrase your own previous replies. Each answer stands on its own.
+- No warm-up sentences. No "context" preamble. Lead with the answer, then add at most one supporting detail if useful.
 
 Knowledge base:
 ---
@@ -72,8 +85,14 @@ ${knowledgeBase}
 ---`;
 }
 
-const PRIMARY_MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-flash-lite';
-const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL ?? 'nvidia/nemotron-3-super-120b-a12b:free';
+const PRIMARY_MODEL = process.env.OPENROUTER_MODEL ?? 'openai/gpt-oss-120b';
+const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL ?? 'openai/gpt-oss-120b:free';
+
+// Turn a raw OpenRouter slug into a clean UI label.
+// e.g. "openai/gpt-oss-120b:free" -> "gpt-oss-120b"
+function modelLabel(slug: string): string {
+	return slug.split('/').pop()!.replace(/:.*$/, '');
+}
 
 async function runStream(model: string, system: string, messages: Awaited<ReturnType<typeof convertToModelMessages>>) {
 	return streamText({
@@ -81,6 +100,14 @@ async function runStream(model: string, system: string, messages: Awaited<Return
 		system,
 		messages,
 		maxOutputTokens: 400,
+	});
+}
+
+// Attach the model that produced the response as message metadata, so the
+// client can show the REAL model used (including the fallback if it kicks in).
+function streamResponse(result: Awaited<ReturnType<typeof runStream>>, model: string) {
+	return result.toUIMessageStreamResponse({
+		messageMetadata: () => ({ model: modelLabel(model) }),
 	});
 }
 
@@ -104,7 +131,7 @@ export async function POST(req: Request) {
 
 	try {
 		const result = await runStream(PRIMARY_MODEL, system, modelMessages);
-		return result.toUIMessageStreamResponse();
+		return streamResponse(result, PRIMARY_MODEL);
 	} catch (err) {
 		// 402 = payment required / credits exhausted; 429 = rate limit
 		const e = err as { statusCode?: number; status?: number };
@@ -112,7 +139,7 @@ export async function POST(req: Request) {
 		if (status === 402 || status === 429) {
 			console.warn(`Primary model failed (${status}), falling back to ${FALLBACK_MODEL}`);
 			const result = await runStream(FALLBACK_MODEL, system, modelMessages);
-			return result.toUIMessageStreamResponse();
+			return streamResponse(result, FALLBACK_MODEL);
 		}
 		throw err;
 	}
