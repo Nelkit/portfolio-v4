@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 import { TrackProjectView } from '@/app/components/TrackProjectView';
+import { PostBody } from '@/app/components/PostBody';
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -81,7 +83,11 @@ export async function generateMetadata(
 
 	const url = `https://nelkit.dev/projects/${slug}`;
 	const ogImage = mediaUrl(project.image?.url) || 'https://nelkit.dev/img/og-image.jpg';
-	const description = project.summary || project.description || '';
+	// description is now rich-text (blocks); only use it for meta if it's still a
+	// plain string (legacy). Otherwise fall back to summary to avoid "[object Object]".
+	const description = project.summary
+		|| (typeof project.description === 'string' ? project.description : '')
+		|| '';
 
 	return {
 		title: project.title,
@@ -113,6 +119,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 	if (!project) notFound();
 
 	const image = mediaUrl(project.image?.url) || null;
+	// Strapi rich-text comes as an array of blocks; anything else (legacy string)
+	// is handled by the fallback in the JSX below.
+	const descBlocks: BlocksContent | null = Array.isArray(project.description)
+		? (project.description as BlocksContent)
+		: null;
 	const tech: string[] = project.skills?.map((s: any) => s.title) || [];
 	const area: string = project.expertiseArea?.title || project.expertiseArea?.code || '';
 	const screenshots: { url: string; alt: string }[] = project.screenshots
@@ -186,9 +197,16 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 							</div>
 						)}
 
-						{project.description && (
+						{/* description is now a Strapi rich-text (blocks) field. Render it
+						    through PostBody; fall back to a plain <p> for legacy string
+						    values so un-migrated projects still display. */}
+						{descBlocks ? (
+							<div className="proj-desc proj-desc-body">
+								<PostBody content={descBlocks} highlighted={{}} />
+							</div>
+						) : typeof project.description === 'string' && project.description.trim() ? (
 							<p className="proj-desc proj-desc-body">{project.description}</p>
-						)}
+						) : null}
 
 						{tech.length > 0 && (
 							<div className="proj-section proj-section-stack">
