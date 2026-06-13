@@ -3,6 +3,11 @@ import { BASE_URL } from "@/app/lib/constant";
 // Retry a few times on transient errors (503s from Strapi Cloud cold starts)
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 600;
+// Hard cap per attempt. A Strapi Cloud cold start can accept the connection but
+// never respond — without this, fetch waits forever, the async Server Component
+// never finishes rendering, and the page navigation hangs ("stuck thinking").
+// Aborting lets the retry loop actually fire instead of blocking on one request.
+const REQUEST_TIMEOUT_MS = 8000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -16,7 +21,10 @@ export async function getStrapiData(url: string, revalidate = 86400) {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const response = await fetch(`${BASE_URL}${url}`, fetchOptions);
+            const response = await fetch(`${BASE_URL}${url}`, {
+                ...fetchOptions,
+                signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            });
 
             if (response.ok) {
                 return await response.json();
