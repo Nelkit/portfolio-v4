@@ -9,7 +9,7 @@ import { mediaUrl } from '@/app/lib/constant';
 import { trackEvent } from '@/app/lib/analytics';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
-	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon,
+	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon, IBot, IUser,
 } from '@/app/components/icons';
 
 type RichTextBlock = { children?: { text?: string }[] };
@@ -203,7 +203,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 							alt={avatarImage.alternativeText || title || 'Profile'}
 						/>
 					) : (
-						<div className="avatar-placeholder">nc</div>
+						<div className="avatar-placeholder"><IUser /></div>
 					)}
 					<div className="who">
 						<b>{title || 'Nelkit Chavez'}</b>
@@ -231,7 +231,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						<div className="msgs">
 							{messages.map((m) => (
 								<div key={m.id} className={'msg ' + (m.role === 'user' ? 'user' : 'agent')}>
-									{m.role === 'assistant' && <div className="av">nc</div>}
+									{m.role === 'assistant' && <div className="av"><IBot /></div>}
 									<div className="bubble">
 										{getMessageText(m)
 											? <ReactMarkdown>{getMessageText(m)}</ReactMarkdown>
@@ -243,7 +243,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 							))}
 							{isLoading && messages[messages.length - 1]?.role === 'user' && (
 								<div className="msg agent">
-									<div className="av">nc</div>
+									<div className="av"><IBot /></div>
 									<div className="bubble"><div className="typing"><i/><i/><i/></div></div>
 								</div>
 							)}
