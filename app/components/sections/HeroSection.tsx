@@ -143,6 +143,14 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	const isLoading = status === 'streaming' || status === 'submitted';
 	const started = messages.length > 0;
 
+	// The backend attaches the REAL model used (primary or fallback) as message
+	// metadata. Read it from the latest assistant message; fall back to the
+	// default label before the first response lands.
+	const lastModel = [...messages].reverse()
+		.find((m) => m.role === 'assistant' && (m.metadata as { model?: string })?.model)
+		?.metadata as { model?: string } | undefined;
+	const modelName = lastModel?.model ?? 'gpt-oss-120b';
+
 	useEffect(() => {
 		const el = threadRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
@@ -272,13 +280,21 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						placeholder={started ? 'Ask a follow-up…' : 'Ask me anything about Nelkit…'}
 						aria-label="Message"
 					/>
-					<button type="button" className="io-mic" aria-label="Focus input"
-					        onClick={() => inputRef.current?.focus()}>
-						<IMic />
-					</button>
-					<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label="Send">
-						<IArrowUp />
-					</button>
+					<div className="input-bar">
+						<span className="model-badge" title="Model powering this agent">
+							<i className="dot-live" />
+							{modelName}
+						</span>
+						<div className="input-actions">
+							<button type="button" className="io-mic" aria-label="Focus input"
+							        onClick={() => inputRef.current?.focus()}>
+								<IMic />
+							</button>
+							<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label="Send">
+								<IArrowUp />
+							</button>
+						</div>
+					</div>
 				</form>
 				<div className="hint">
 					<span>↩ to send · built for academic & learning purposes · responses may not be accurate</span>
@@ -378,7 +394,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 				</div>
 
 				<div className={'scroll-hint' + (hintVisible ? '' : ' scroll-hint-hidden')} onClick={() => onNav('work')}>
-					<span className="scroll-hint-label">Explore the traditional portfolio</span>
+					<span className="scroll-hint-label">Or scroll down to explore</span>
 					<span className="scroll-hint-arrow">
 						<IDown />
 					</span>
