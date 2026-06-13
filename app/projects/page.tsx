@@ -5,7 +5,7 @@ import { transformProjects } from '@/app/data/content';
 import { IArrowUR } from '@/app/components/icons';
 import qs from 'qs';
 
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 export const metadata: Metadata = {
 	title: 'Projects',

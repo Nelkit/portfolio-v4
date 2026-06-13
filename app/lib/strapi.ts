@@ -11,7 +11,7 @@ const REQUEST_TIMEOUT_MS = 8000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export async function getStrapiData(url: string, revalidate = 86400) {
+export async function getStrapiData(url: string, revalidate = 604800) {
     // In development, always fetch fresh — no caching, so new CMS content
     // shows up immediately without clearing .next/cache.
     const fetchOptions: RequestInit =

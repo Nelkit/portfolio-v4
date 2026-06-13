@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getStrapiData } from '@/app/lib/strapi';
@@ -24,7 +25,7 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 	link:     ILink,
 };
 
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 // Pre-generate every project page at build time so clicks are instant.
 // New projects added later are still rendered on-demand and then cached (ISR).
@@ -37,7 +38,9 @@ export async function generateStaticParams() {
 	return (data?.data ?? []).map((p: { documentId: string }) => ({ slug: p.documentId }));
 }
 
-async function fetchProject(slug: string) {
+// Wrapped in React cache() so generateMetadata and the page component share a
+// SINGLE Strapi call per request instead of fetching the same project twice.
+const fetchProject = cache(async (slug: string) => {
 	const query = qs.stringify({
 		filters: { documentId: { $eq: slug } },
 		populate: {
@@ -51,7 +54,7 @@ async function fetchProject(slug: string) {
 
 	const data = await getStrapiData(`/api/projects?${query}`);
 	return data?.data?.[0] ?? null;
-}
+});
 
 async function fetchOtherProjects(currentSlug: string) {
 	const query = qs.stringify({

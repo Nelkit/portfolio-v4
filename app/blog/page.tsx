@@ -4,7 +4,7 @@ import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
 
-export const revalidate = 3600;
+export const revalidate = 604800;
 
 const PAGE_SIZE = 10;
 
@@ -19,7 +19,7 @@ async function fetchPosts(page: number): Promise<{ posts: BlogEntry[]; total: nu
 		pagination: { page, pageSize: PAGE_SIZE },
 	}, { encodeValuesOnly: true });
 
-	const data = await getStrapiData(`/api/blog-entries?${query}`, 3600);
+	const data = await getStrapiData(`/api/blog-entries?${query}`, 604800);
 	if (!data?.data) return { posts: [], total: 0 };
 	return {
 		posts: transformBlogEntries(data.data),

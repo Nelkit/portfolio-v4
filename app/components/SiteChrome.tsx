@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { getStrapiData } from '@/app/lib/strapi';
 import { mediaUrl } from '@/app/lib/constant';
 import qs from 'qs';
@@ -6,7 +7,7 @@ import { FooterButtons } from '@/app/components/FooterButtons';
 
 type SocialLink = { type: string; href: string };
 
-async function fetchChromeData(): Promise<{ links: SocialLink[]; resumeUrl?: string }> {
+const fetchChromeData = cache(async (): Promise<{ links: SocialLink[]; resumeUrl?: string }> => {
 	const query = qs.stringify(
 		{ populate: { socialNetworkLinks: '*', resume: { fields: ['url'] } }, fields: ['id'] },
 		{ encodeValuesOnly: true },
@@ -16,7 +17,7 @@ async function fetchChromeData(): Promise<{ links: SocialLink[]; resumeUrl?: str
 		links: data?.data?.socialNetworkLinks ?? [],
 		resumeUrl: mediaUrl(data?.data?.resume?.url) || undefined,
 	};
-}
+});
 
 function resolveLinks(links: SocialLink[]) {
 	return {

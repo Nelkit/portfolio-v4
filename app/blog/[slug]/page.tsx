@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -10,7 +10,7 @@ import { highlightCode } from '@/app/lib/highlight';
 import type { BlocksContent } from '@strapi/blocks-react-renderer';
 import qs from 'qs';
 
-export const revalidate = 3600;
+export const revalidate = 604800;
 
 // Pre-generate every blog post at build time so clicks are instant.
 // New posts published later are rendered on-demand and then cached (ISR).
@@ -58,7 +58,9 @@ export async function generateMetadata(
 	};
 }
 
-async function fetchPost(slug: string) {
+// Wrapped in React cache() so generateMetadata and PostContent share a SINGLE
+// Strapi call per request instead of fetching the same post twice.
+const fetchPost = cache(async (slug: string) => {
 	const query = qs.stringify({
 		filters: { slug: { $eq: slug } },
 		fields: ['title', 'summary', 'body', 'publishedDate', 'readingTime', 'slug'],
@@ -68,7 +70,7 @@ async function fetchPost(slug: string) {
 		},
 	}, { encodeValuesOnly: true });
 
-	const data = await getStrapiData(`/api/blog-entries?${query}`, 3600);
+	const data = await getStrapiData(`/api/blog-entries?${query}`, 604800);
 	const entry = data?.data?.[0] ?? null;
 	if (!entry) return null;
 
@@ -83,7 +85,7 @@ async function fetchPost(slug: string) {
 		coverImage: mediaUrl(entry.featuredImage?.url) || null,
 		coverAlt: entry.featuredImage?.alternativeText || entry.title,
 	};
-}
+});
 
 function formatDate(date: string) {
 	if (!date) return '';
