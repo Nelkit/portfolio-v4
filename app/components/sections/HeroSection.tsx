@@ -104,11 +104,11 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 			<div className="side-foot">
 				<div className="socials">
 					<a className="soc" href={github} target="_blank" rel="noreferrer" aria-label="GitHub"
-					   onClick={() => trackEvent('contact_clicked', { channel: 'github' })}>
+					   onClick={() => trackEvent('contact_clicked', { channel: 'github', location: 'header' })}>
 						<IGithub />
 					</a>
 					<a className="soc" href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"
-					   onClick={() => trackEvent('contact_clicked', { channel: 'linkedin' })}>
+					   onClick={() => trackEvent('contact_clicked', { channel: 'linkedin', location: 'header' })}>
 						<ILinkedin />
 					</a>
 					<button className="soc theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
@@ -209,6 +209,9 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						<b>{title || 'Nelkit Chavez'}</b>
 						<span>{subtitle || 'AI/ML Engineer'}</span>
 					</div>
+					{started && (
+						<button className="new-chat" onClick={onReset}><ISpark /> New chat</button>
+					)}
 				</div>
 			</div>
 
@@ -225,10 +228,6 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 
 				{started && (
 					<div className="thread" ref={threadRef}>
-						<div className="thread-head">
-							<span className="lbl"><i className="dot-live" /> Conversation</span>
-							<button className="new-chat" onClick={onReset}><ISpark /> New chat</button>
-						</div>
 						<div className="msgs">
 							{messages.map((m) => (
 								<div key={m.id} className={'msg ' + (m.role === 'user' ? 'user' : 'agent')}>

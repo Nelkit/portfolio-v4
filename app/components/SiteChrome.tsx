@@ -2,7 +2,7 @@ import { getStrapiData } from '@/app/lib/strapi';
 import { mediaUrl } from '@/app/lib/constant';
 import qs from 'qs';
 import { SiteTopbar } from '@/app/components/SiteTopbar';
-import { IGithub, ILinkedin, IMail } from '@/app/components/icons';
+import { FooterButtons } from '@/app/components/FooterButtons';
 
 type SocialLink = { type: string; href: string };
 
@@ -42,17 +42,7 @@ export async function SiteChrome({ children }: { children: React.ReactNode }) {
 				<footer className="proj-simple-footer">
 					<div className="foot-row">
 						<span className="c">© 2026 Nelkit Chavez · Built in Sydney</span>
-						<div className="foot-btns">
-							<a className="foot-btn" href={github} target="_blank" rel="noreferrer" aria-label="GitHub">
-								<IGithub /> <span>GitHub</span>
-							</a>
-							<a className="foot-btn" href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
-								<ILinkedin /> <span>LinkedIn</span>
-							</a>
-							<a className="foot-btn" href={email} aria-label="Email">
-								<IMail /> <span>Email</span>
-							</a>
-						</div>
+						<FooterButtons github={github} linkedin={linkedin} emailHref={email} />
 					</div>
 				</footer>
 			</div>
