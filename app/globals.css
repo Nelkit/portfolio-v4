@@ -66,7 +66,7 @@
 
 /* ---- LIGHT ---- */
 [data-theme="light"] {
-  --bg: #f4f5f7;
+  --bg: #FAFAFA;
   --bg-2: #eceef1;
   --surface: #fafbfc;
   --surface-2: #f1f3f5;
@@ -159,6 +159,13 @@ input {
   height: 560px;
   background: radial-gradient(closest-side, var(--glow) 0%, transparent 70%);
   opacity: 0.08;
+}
+/* Light theme: a slightly more pronounced orange glow (light bg washes it out). */
+[data-theme="light"] .bg-fx .glow {
+  opacity: 0.18;
+}
+[data-theme="light"] .bg-fx .glow-2 {
+  opacity: 0.14;
 }
 .bg-fx .grain {
   position: absolute;
@@ -648,30 +655,6 @@ input {
   flex-direction: column;
   gap: 16px;
   padding-top: 18px;
-}
-.thread-head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 2px 12px;
-}
-[data-theme="plum"] .thread-head {
-  background: #2c243312;
-  backdrop-filter: blur(12px);
-  border-radius: 0 0 12px 12px;
-}
-.thread-head .lbl {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 .new-chat {
   font-family: var(--font-mono);
@@ -2528,7 +2511,7 @@ footer {
   padding: 8px 14px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-2);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -3195,8 +3178,10 @@ footer {
     flex-direction: row;
     align-items: center;
     gap: 12px;
+    width: 100%;
   }
   .profile .who {
+    flex: 1;
     text-align: left;
   }
   .profile .avatar,

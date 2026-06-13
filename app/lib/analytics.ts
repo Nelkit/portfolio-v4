@@ -15,7 +15,8 @@ type AnalyticsEvents = {
 	chat_suggestion_clicked: { question: string };
 	cv_downloaded: Record<string, never>;
 	project_opened: { slug: string; title?: string };
-	contact_clicked: { channel: 'email' | 'github' | 'linkedin' };
+	contact_clicked: { channel: 'email' | 'github' | 'linkedin'; location: 'header' | 'footer' };
+	contact_cta_clicked: { location: 'footer' | 'drawer' };
 };
 
 export function trackEvent<E extends keyof AnalyticsEvents>(

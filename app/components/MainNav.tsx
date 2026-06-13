@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ISun, IMoon } from '@/app/components/icons';
 import { NavDrawer } from '@/app/components/NavDrawer';
+import { trackEvent } from '@/app/lib/analytics';
 
 const NAV_ITEMS = [
 	{ id: 'work',      label: 'Work' },
@@ -90,7 +91,7 @@ export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resu
 					)}
 					renderCta={() => (
 						<a className="btn btn-accent fn-drawer-cta" href="#contact"
-						   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
+						   onClick={(e) => { e.preventDefault(); trackEvent('contact_cta_clicked', { location: 'drawer' }); handleNav('contact'); }}>
 							Get in touch
 						</a>
 					)}

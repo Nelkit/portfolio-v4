@@ -1,4 +1,4 @@
-import { IMail, IGithub, ILinkedin } from '@/app/components/icons';
+import { FooterButtons, ContactCta } from '@/app/components/FooterButtons';
 
 type CtaLink = { label: string; href: string; isExternal?: boolean; type?: string };
 
@@ -56,11 +56,7 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 						{before}{em && <em>{em}</em>}{after}
 					</h2>
 					<p className="lede">{description}</p>
-					<a className="btn btn-accent"
-					   style={{ display: 'inline-flex', width: 'auto', padding: '0 20px' }}
-					   href={emailHref}>
-						<IMail /> Get in touch
-					</a>
+					<ContactCta emailHref={emailHref} />
 				</div>
 
 				<div className="link-list">
@@ -83,17 +79,11 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 			<footer>
 				<div className="foot-row">
 					<span className="c">© {new Date().getFullYear()} Nelkit Chavez · Built in Sydney</span>
-					<div className="foot-btns">
-						<a className="foot-btn" href={github.startsWith('http') ? github : `https://${github}`} target="_blank" rel="noreferrer" aria-label="GitHub">
-							<IGithub /> <span>GitHub</span>
-						</a>
-						<a className="foot-btn" href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} target="_blank" rel="noreferrer" aria-label="LinkedIn">
-							<ILinkedin /> <span>LinkedIn</span>
-						</a>
-						<a className="foot-btn" href={emailHref} aria-label="Email">
-							<IMail /> <span>Email</span>
-						</a>
-					</div>
+					<FooterButtons
+						github={github.startsWith('http') ? github : `https://${github}`}
+						linkedin={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`}
+						emailHref={emailHref}
+					/>
 				</div>
 			</footer>
 		</section>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { NavDrawer, type NavItem } from '@/app/components/NavDrawer';
 import { useTheme } from '@/app/lib/useTheme';
+import { trackEvent } from '@/app/lib/analytics';
 
 const NAV_ITEMS: NavItem[] = [
 	{ id: 'work', label: 'Work' },
@@ -55,7 +56,8 @@ export function SiteTopbar({ resumeUrl }: { resumeUrl?: string }) {
 						</Link>
 					)}
 					renderCta={() => (
-						<Link href="/#contact" className="btn btn-accent fn-drawer-cta" onClick={() => setOpen(false)}>
+						<Link href="/#contact" className="btn btn-accent fn-drawer-cta"
+							onClick={() => { trackEvent('contact_cta_clicked', { location: 'drawer' }); setOpen(false); }}>
 							Get in touch
 						</Link>
 					)}
