@@ -3,7 +3,7 @@ import { getStrapiData } from '@/app/lib/strapi';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import qs from 'qs';
 
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 const HOME_PAGE_QUERY = {
     populate: {
