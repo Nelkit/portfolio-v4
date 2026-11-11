@@ -151,3 +151,14 @@ export const skillCategorySkills = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.categoryId, table.skillId] })],
 );
+
+/** Many-to-many: skills (technologies) used by a project, ordered. */
+export const projectSkills = sqliteTable(
+	'project_skills',
+	{
+		projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+		skillId: integer('skill_id').notNull().references(() => skills.id, { onDelete: 'cascade' }),
+		position: integer('position').notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.projectId, table.skillId] })],
+);

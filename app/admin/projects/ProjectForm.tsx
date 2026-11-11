@@ -5,6 +5,7 @@ import { useActionState } from 'react';
 import { saveProject, type SaveProjectState } from './actions';
 import { LinksEditor } from '@/app/admin/components/LinksEditor';
 import { MarkdownEditor } from '@/app/admin/components/MarkdownEditor';
+import { TagsInput } from '@/app/admin/components/TagsInput';
 import { projectField, type ProjectInput } from '@/app/lib/content/projects/project';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 
@@ -18,7 +19,18 @@ function FieldError({ message }: { message?: string }) {
 
 export type AreaOption = { id: number; name: string };
 
-export function ProjectForm({ id, initial, areas }: { id?: number; initial: ProjectInput; areas: AreaOption[] }) {
+export function ProjectForm({
+	id,
+	initial,
+	areas,
+	skillCatalog,
+}: {
+	id?: number;
+	initial: ProjectInput;
+	areas: AreaOption[];
+	/** Existing skill names, offered as suggestions. */
+	skillCatalog: string[];
+}) {
 	const [state, formAction, pending] = useActionState<SaveProjectState, FormData>(saveProject, {});
 	const errors = state.errors ?? {};
 
@@ -57,6 +69,13 @@ export function ProjectForm({ id, initial, areas }: { id?: number; initial: Proj
 					<input name="company" defaultValue={initial.company} aria-invalid={Boolean(errors.company)} className={input} />
 					<FieldError message={errors.company} />
 				</label>
+			</section>
+
+			<section className="flex flex-col gap-2">
+				<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+					Tech stack <span className="normal-case text-zinc-500">— technologies used; existing names are reused (ignoring case)</span>
+				</h2>
+				<TagsInput name="skills" initial={initial.skills} suggestions={skillCatalog} placeholder="Swift, CoreML… (Enter or comma)" error={errors.skills} />
 			</section>
 
 			<section className="grid gap-6 lg:grid-cols-2">

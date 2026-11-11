@@ -8,6 +8,7 @@ import { ProjectForm } from '../ProjectForm';
 import { ProjectMedia } from '../ProjectMedia';
 import { publicUrlFor } from '@/app/lib/storage/storage';
 import { loadAreaViews } from '@/app/lib/content/areas/area-service';
+import { skillCategoryRepository } from '@/app/lib/content/skills/skill-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,11 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 	if (!Number.isInteger(id) || id <= 0) notFound();
 
 	// Uncached read: the editor always shows what is in the database.
-	const [project, areas] = await Promise.all([projectRepository().getProject(id), loadAreaViews('en')]);
+	const [project, areas, catalog] = await Promise.all([
+		projectRepository().getProject(id),
+		loadAreaViews('en'),
+		skillCategoryRepository().listSkills(),
+	]);
 	if (!project) notFound();
 
 	const blank: ProjectTranslation = { title: '', summary: '', description: '' };
@@ -25,6 +30,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 		slug: project.slug,
 		company: project.company,
 		areaId: project.areaId,
+		skills: project.skills,
 		links: project.links,
 		translations: Object.fromEntries(
 			LOCALES.map((locale) => [locale, project.translations[locale] ?? blank]),
@@ -47,7 +53,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 				imageUrl={project.imageKey ? publicUrlFor(project.imageKey) : null}
 				screenshots={project.screenshots.map((s) => ({ id: s.id, url: publicUrlFor(s.key) }))}
 			/>
-			<ProjectForm id={project.id} initial={initial} areas={areas} />
+			<ProjectForm id={project.id} initial={initial} areas={areas} skillCatalog={catalog.map((s) => s.name)} />
 		</main>
 	);
 }

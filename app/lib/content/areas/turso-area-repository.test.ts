@@ -25,6 +25,7 @@ describe('TursoAreaRepository', () => {
 		slug,
 		company: '',
 		areaId,
+		skills: [],
 		translations: {
 			en: { title: slug, summary: 's', description: '' },
 			es: { title: slug, summary: 's', description: '' },

@@ -43,6 +43,13 @@
       "when": 1794365004275,
       "tag": "0005_watery_prism",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794365325035,
+      "tag": "0006_stale_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

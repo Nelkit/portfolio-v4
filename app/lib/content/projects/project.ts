@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { parseLinks, type Link } from '@/app/lib/content/links';
 import type { AreaView } from '@/app/lib/content/areas/area';
+import { parseSkillNames } from '@/app/lib/content/skills/skill-category';
 
 /** Per-language copy. `description` is Markdown. */
 export type ProjectTranslation = { title: string; summary: string; description: string };
@@ -12,6 +13,8 @@ export type ProjectInput = {
 	company: string;
 	/** Expertise area id, or null for none. */
 	areaId: number | null;
+	/** Ordered skill names, resolved against the shared catalog (case-insensitive). */
+	skills: string[];
 	translations: Record<Locale, ProjectTranslation>;
 	links: Link[];
 };
@@ -36,6 +39,7 @@ export type ProjectView = {
 	summary: string;
 	description: string;
 	area: AreaView | null;
+	skills: string[];
 	links: (Link & { isExternal: boolean })[];
 	imageUrl: string | null;
 	/** Screenshot URLs, in display order. */
@@ -109,10 +113,15 @@ export function parseProjectForm(fields: Record<string, unknown>): ProjectFormRe
 	const area = rawArea === '' ? { success: true as const, data: null } : z.coerce.number().int().positive().safeParse(rawArea);
 	if (!area.success) errors.areaId = 'Invalid area';
 
-	if (Object.keys(errors).length > 0 || !company.success || !links.ok || !area.success) return { ok: false, errors };
+	const skills = parseSkillNames(fields.skills);
+	if (!skills.ok) errors.skills = skills.error;
+
+	if (Object.keys(errors).length > 0 || !company.success || !links.ok || !area.success || !skills.ok) {
+		return { ok: false, errors };
+	}
 	return {
 		ok: true,
-		value: { slug, company: company.data, areaId: area.data, translations, links: links.links },
+		value: { slug, company: company.data, areaId: area.data, skills: skills.skills, translations, links: links.links },
 	};
 }
 
@@ -134,6 +143,7 @@ export function toProjectView(
 		summary: t.summary,
 		description: t.description,
 		area: areas.find((a) => a.id === record.areaId) ?? null,
+		skills: record.skills,
 		links: record.links.map((l) => ({ ...l, isExternal: l.type !== 'email' })),
 		imageUrl: record.imageKey ? publicUrl(record.imageKey) : null,
 		screenshots: record.screenshots.map((s) => publicUrl(s.key)),

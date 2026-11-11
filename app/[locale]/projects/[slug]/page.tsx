@@ -154,6 +154,15 @@ export default async function ProjectPage({ params }: Params) {
 							</div>
 						)}
 
+						{project.skills.length > 0 && (
+							<div className="proj-section proj-section-stack">
+								<h2 className="proj-section-title">{copy.techStack}</h2>
+								<div className="proj-tags">
+									{project.skills.map((s) => <span key={s} className="proj-tag">{s}</span>)}
+								</div>
+							</div>
+						)}
+
 						{project.screenshots.length > 0 && (
 							<div className="proj-section">
 								<h2 className="proj-section-title">{copy.screenshots}</h2>

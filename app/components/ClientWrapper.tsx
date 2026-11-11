@@ -38,10 +38,7 @@ type ClientWrapperProps = {
 	skillCategories: CategoryView[];
 };
 
-/**
- * Adapts admin projects to the card shape the section renders. Tech is filled
- * by a later story (#8 skills).
- */
+/** Adapts admin projects to the card shape the section renders. */
 function toProjectCards(projects: ProjectView[]): Project[] {
 	return projects.map((p) => ({
 		slug: p.slug,
@@ -49,7 +46,7 @@ function toProjectCards(projects: ProjectView[]): Project[] {
 		summary: p.summary,
 		description: p.description,
 		company: p.company,
-		tech: [],
+		tech: p.skills,
 		color: '',
 		icon: getIcon(''),
 		expertise_area: p.area?.name ?? '',

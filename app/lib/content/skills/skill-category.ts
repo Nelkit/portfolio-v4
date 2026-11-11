@@ -28,6 +28,16 @@ function uniqueSkills(names: string[]): string[] {
 	});
 }
 
+/** Parses the JSON list of skill names sent by the admin tags input. */
+export function parseSkillNames(raw: unknown): { ok: true; skills: string[] } | { ok: false; error: string } {
+	try {
+		const parsed = skillsSchema.safeParse(JSON.parse(String(raw ?? '[]')));
+		return parsed.success ? { ok: true, skills: uniqueSkills(parsed.data) } : { ok: false, error: parsed.error.issues[0].message };
+	} catch {
+		return { ok: false, error: 'Skills are not valid JSON' };
+	}
+}
+
 export type CategoryFormResult = { ok: true; value: CategoryInput } | { ok: false; errors: Record<string, string> };
 
 export function parseCategoryForm(fields: Record<string, unknown>): CategoryFormResult {
@@ -40,14 +50,9 @@ export function parseCategoryForm(fields: Record<string, unknown>): CategoryForm
 		else errors[categoryField(locale)] = result.error.issues[0].message;
 	}
 
-	let skills: string[] = [];
-	try {
-		const parsed = skillsSchema.safeParse(JSON.parse(String(fields.skills ?? '[]')));
-		if (parsed.success) skills = uniqueSkills(parsed.data);
-		else errors.skills = parsed.error.issues[0].message;
-	} catch {
-		errors.skills = 'Skills are not valid JSON';
-	}
+	const parsedSkills = parseSkillNames(fields.skills);
+	const skills = parsedSkills.ok ? parsedSkills.skills : [];
+	if (!parsedSkills.ok) errors.skills = parsedSkills.error;
 
 	return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, value: { translations, skills } };
 }

@@ -41,6 +41,11 @@ export function ProjectsListGrid({ projects, areas }: { projects: ProjectView[];
 								</div>
 								<h2 className={'proj-list-title' + (featured ? ' proj-list-title-feat' : '')}>{p.title}</h2>
 								{p.summary && <p className="proj-list-summary">{p.summary}</p>}
+								{p.skills.length > 0 && (
+									<div className="proj-list-tags">
+										{p.skills.map((s) => <span key={s} className="proj-tag">{s}</span>)}
+									</div>
+								)}
 							</div>
 							<span className="proj-list-go"><IArrowUR /></span>
 						</Link>

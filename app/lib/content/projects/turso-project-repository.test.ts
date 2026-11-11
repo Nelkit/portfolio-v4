@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
+import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 import { createTursoProjectRepository } from './turso-project-repository';
 import type { ProjectRepository } from './project-repository';
 import type { ProjectInput } from './project';
 import { createTursoAreaRepository } from '../areas/turso-area-repository';
+import { createTursoSkillCategoryRepository } from '../skills/turso-skill-category-repository';
 
 const project = (slug: string, links: ProjectInput['links'] = []): ProjectInput => ({
 	slug,
 	company: 'Acme',
 	areaId: null,
+	skills: [],
 	translations: {
 		en: { title: `${slug} en`, summary: 'sum en', description: 'desc en' },
 		es: { title: `${slug} es`, summary: 'sum es', description: 'desc es' },
@@ -139,6 +141,48 @@ describe('TursoProjectRepository', () => {
 		expect((await projects.getProject(id))?.areaId).toBe(ml);
 		await projects.updateProject(id, { ...project('alpha'), areaId: null });
 		expect((await projects.getProject(id))?.areaId).toBeNull();
+	});
+
+	describe('skills', () => {
+		let db: LibSQLDatabase;
+		let projects: ProjectRepository;
+		let categories: ReturnType<typeof createTursoSkillCategoryRepository>;
+		const catalog = async () => (await categories.listSkills()).map((s) => s.name);
+		const stack = (skills: string[]) => ({ translations: { en: { name: 'ML' }, es: { name: 'ML' } }, skills });
+
+		beforeEach(async () => {
+			db = drizzle(createClient({ url: ':memory:' }));
+			await migrate(db, { migrationsFolder: './drizzle' });
+			projects = createTursoProjectRepository(db);
+			categories = createTursoSkillCategoryRepository(db);
+		});
+
+		it('stores the ordered skills and reuses catalog entries ignoring case', async () => {
+			await categories.createCategory(stack(['Python']));
+			const id = await projects.createProject({ ...project('alpha'), skills: ['python', 'Firebase'] });
+			expect((await projects.getProject(id))?.skills).toEqual(['Python', 'Firebase']);
+			expect(await catalog()).toEqual(['Firebase', 'Python']);
+		});
+
+		it('replaces skills on update and drops ones nobody uses anymore', async () => {
+			const id = await projects.createProject({ ...project('alpha'), skills: ['Swift', 'Firebase'] });
+			await projects.updateProject(id, { ...project('alpha'), skills: ['Kotlin', 'Swift'] });
+			expect((await projects.getProject(id))?.skills).toEqual(['Kotlin', 'Swift']);
+			expect(await catalog()).toEqual(['Kotlin', 'Swift']);
+		});
+
+		it('keeps a skill used by a category when the project stops using it, and vice versa', async () => {
+			const category = await categories.createCategory(stack(['Python']));
+			const id = await projects.createProject({ ...project('alpha'), skills: ['Python', 'Go'] });
+
+			await projects.deleteProject(id); // Go was only used by the project
+			expect(await catalog()).toEqual(['Python']);
+
+			const id2 = await projects.createProject({ ...project('beta'), skills: ['Python'] });
+			await categories.updateCategory(category, stack([])); // category drops Python…
+			expect(await catalog()).toEqual(['Python']); // …but the project still uses it
+			expect((await projects.getProject(id2))?.skills).toEqual(['Python']);
+		});
 	});
 
 	it('rejects a duplicated slug', async () => {

@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import { projectLinks, projects, projectScreenshots, projectTranslations } from '@/app/lib/db/schema';
+import { projectLinks, projects, projectScreenshots, projectSkills, projectTranslations, skills } from '@/app/lib/db/schema';
+import { deleteOrphanSkills, resolveSkillIds, type Tx } from '@/app/lib/content/skills/skill-catalog';
 import type { LinkType } from '@/app/lib/content/links';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { isLocale } from '@/app/lib/i18n/routing';
@@ -9,15 +10,39 @@ import type { ProjectInput, ProjectRecord, ProjectTranslation } from './project'
 
 type ProjectRow = typeof projects.$inferSelect;
 
+/** (Re)writes translations, links and skills of a project inside a transaction (images untouched). */
+async function writeChildren(tx: Tx, id: number, input: ProjectInput) {
+	await tx.delete(projectTranslations).where(eq(projectTranslations.projectId, id));
+	await tx.delete(projectLinks).where(eq(projectLinks.projectId, id));
+	await tx.delete(projectSkills).where(eq(projectSkills.projectId, id));
+	for (const [locale, t] of Object.entries(input.translations) as [Locale, ProjectTranslation][]) {
+		await tx.insert(projectTranslations).values({ projectId: id, locale, ...t });
+	}
+	for (const [position, link] of input.links.entries()) {
+		await tx.insert(projectLinks).values({ projectId: id, ...link, position });
+	}
+	const skillIds = await resolveSkillIds(tx, input.skills);
+	for (const [position, skillId] of skillIds.entries()) {
+		await tx.insert(projectSkills).values({ projectId: id, skillId, position });
+	}
+	await deleteOrphanSkills(tx);
+}
+
 /** Adapter: ProjectRepository backed by Turso/libSQL through Drizzle. */
 export function createTursoProjectRepository(db: LibSQLDatabase): ProjectRepository {
-	/** Loads translations, links and screenshots for the given rows (keeps row order). */
+	/** Loads translations, links, skills and screenshots for the given rows (keeps row order). */
 	async function hydrate(rows: ProjectRow[]): Promise<ProjectRecord[]> {
 		if (rows.length === 0) return [];
 		const ids = rows.map((r) => r.id);
-		const [translationRows, linkRows, screenshotRows] = await Promise.all([
+		const [translationRows, linkRows, skillRows, screenshotRows] = await Promise.all([
 			db.select().from(projectTranslations).where(inArray(projectTranslations.projectId, ids)),
 			db.select().from(projectLinks).where(inArray(projectLinks.projectId, ids)).orderBy(asc(projectLinks.position)),
+			db
+				.select({ projectId: projectSkills.projectId, name: skills.name })
+				.from(projectSkills)
+				.innerJoin(skills, eq(skills.id, projectSkills.skillId))
+				.where(inArray(projectSkills.projectId, ids))
+				.orderBy(asc(projectSkills.position)),
 			db
 				.select()
 				.from(projectScreenshots)
@@ -36,6 +61,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 				slug: row.slug,
 				company: row.company,
 				areaId: row.areaId,
+				skills: skillRows.filter((s) => s.projectId === row.id).map((s) => s.name),
 				imageKey: row.imageKey,
 				translations,
 				links: linkRows
@@ -52,20 +78,6 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 		const rows = await db.select().from(projects).where(where).limit(1);
 		return (await hydrate(rows))[0] ?? null;
 	};
-
-	/** Statements that (re)write a project's translations and links (images are untouched). */
-	const childInserts = (id: number, input: ProjectInput) => [
-		...(Object.entries(input.translations) as [Locale, ProjectTranslation][]).map(([locale, t]) =>
-			db.insert(projectTranslations).values({ projectId: id, locale, ...t }),
-		),
-		...input.links.map((link, position) => db.insert(projectLinks).values({ projectId: id, ...link, position })),
-	];
-
-	const deleteTextChildren = (id: number) =>
-		[
-			db.delete(projectTranslations).where(eq(projectTranslations.projectId, id)),
-			db.delete(projectLinks).where(eq(projectLinks.projectId, id)),
-		] as const;
 
 	return {
 		async listProjects() {
@@ -85,36 +97,34 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 					.insert(projects)
 					.values({ slug: input.slug, company: input.company, areaId: input.areaId, position: first - 1 })
 					.returning({ id: projects.id });
-				for (const [locale, t] of Object.entries(input.translations) as [Locale, ProjectTranslation][]) {
-					await tx.insert(projectTranslations).values({ projectId: id, locale, ...t });
-				}
-				for (const [position, link] of input.links.entries()) {
-					await tx.insert(projectLinks).values({ projectId: id, ...link, position });
-				}
+				await writeChildren(tx, id, input);
 				return id;
 			});
 		},
 
 		async updateProject(id, input) {
-			await db.batch([
-				db
+			// Transaction (not batch): skill names must be resolved against the catalog first.
+			await db.transaction(async (tx) => {
+				await tx
 					.update(projects)
 					.set({ slug: input.slug, company: input.company, areaId: input.areaId, updatedAt: sql`(unixepoch())` })
-					.where(eq(projects.id, id)),
-				...deleteTextChildren(id),
-				...childInserts(id, input),
-			]);
+					.where(eq(projects.id, id));
+				await writeChildren(tx, id, input);
+			});
 		},
 
 		async deleteProject(id) {
 			const record = await findOne(eq(projects.id, id));
 			if (!record) return [];
 			// Children first: does not rely on SQLite's foreign_keys pragma being on.
-			await db.batch([
-				...deleteTextChildren(id),
-				db.delete(projectScreenshots).where(eq(projectScreenshots.projectId, id)),
-				db.delete(projects).where(eq(projects.id, id)),
-			]);
+			await db.transaction(async (tx) => {
+				await tx.delete(projectTranslations).where(eq(projectTranslations.projectId, id));
+				await tx.delete(projectLinks).where(eq(projectLinks.projectId, id));
+				await tx.delete(projectSkills).where(eq(projectSkills.projectId, id));
+				await tx.delete(projectScreenshots).where(eq(projectScreenshots.projectId, id));
+				await tx.delete(projects).where(eq(projects.id, id));
+				await deleteOrphanSkills(tx);
+			});
 			return [record.imageKey, ...record.screenshots.map((s) => s.key)].filter((k): k is string => Boolean(k));
 		},
 

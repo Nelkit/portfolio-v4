@@ -1,39 +1,11 @@
-import { asc, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { skillCategories, skillCategorySkills, skillCategoryTranslations, skills } from '@/app/lib/db/schema';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { isLocale } from '@/app/lib/i18n/routing';
 import type { SkillCategoryRepository } from './skill-category-repository';
 import type { CategoryInput, CategoryRecord, CategoryTranslation } from './skill-category';
-
-type Tx = Parameters<Parameters<LibSQLDatabase['transaction']>[0]>[0];
-
-/** Finds each name in the catalog (case-insensitive) or creates it; returns ids in input order. */
-async function resolveSkillIds(tx: Tx, names: string[]): Promise<number[]> {
-	const ids: number[] = [];
-	for (const name of names) {
-		const [existing] = await tx
-			.select({ id: skills.id })
-			.from(skills)
-			.where(eq(sql`lower(${skills.name})`, name.toLowerCase()))
-			.limit(1);
-		if (existing) ids.push(existing.id);
-		else {
-			const [created] = await tx.insert(skills).values({ name }).returning({ id: skills.id });
-			ids.push(created.id);
-		}
-	}
-	return ids;
-}
-
-/**
- * Deletes catalog skills no longer used by any category.
- * NOTE (story #8): once projects reference skills, also keep skills used by projects.
- */
-async function deleteOrphanSkills(tx: Tx) {
-	const used = tx.select({ id: skillCategorySkills.skillId }).from(skillCategorySkills);
-	await tx.delete(skills).where(notInArray(skills.id, used));
-}
+import { deleteOrphanSkills, resolveSkillIds, type Tx } from './skill-catalog';
 
 async function writeChildren(tx: Tx, categoryId: number, input: CategoryInput) {
 	await tx.delete(skillCategoryTranslations).where(eq(skillCategoryTranslations.categoryId, categoryId));

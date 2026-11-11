@@ -11,6 +11,7 @@ const validFields = {
 	description_en: '## Overview\n\nBuilt with **Swift**.',
 	description_es: '## Resumen\n\nHecha con **Swift**.',
 	links: JSON.stringify([{ type: 'github', label: 'Code', url: 'https://github.com/acme/app' }]),
+	skills: JSON.stringify(['Swift', ' CoreML ', 'swift']),
 };
 
 describe('slugify', () => {
@@ -69,6 +70,15 @@ describe('parseProjectForm', () => {
 		if (!bad.ok) expect(bad.errors.areaId).toBeDefined();
 	});
 
+	it('parses the ordered skills, trimmed and without case-insensitive duplicates', () => {
+		const result = parseProjectForm(validFields);
+		expect(result.ok && result.value.skills).toEqual(['Swift', 'CoreML']);
+		expect(parseProjectForm({ ...validFields, skills: undefined }).ok).toBe(true);
+		const bad = parseProjectForm({ ...validFields, skills: '{oops' });
+		expect(bad.ok).toBe(false);
+		if (!bad.ok) expect(bad.errors.skills).toBeDefined();
+	});
+
 	it('validates project links like profile links', () => {
 		const links = JSON.stringify([{ type: 'link', label: 'Demo', url: 'ftp://nope' }]);
 		const result = parseProjectForm({ ...validFields, links });
@@ -84,6 +94,7 @@ describe('toProjectView', () => {
 		slug: 'banking',
 		company: 'Acme',
 		areaId: 2,
+		skills: ['Swift', 'CoreML'],
 		imageKey: 'projects/7/cover-a.webp',
 		screenshots: [
 			{ id: 1, key: 'projects/7/shot-1.png' },
@@ -124,6 +135,10 @@ describe('toProjectView', () => {
 		expect(toProjectView(record, 'es', url, areas)?.area).toEqual({ id: 2, name: 'Móvil' });
 		expect(toProjectView({ ...record, areaId: null }, 'es', url, areas)?.area).toBeNull();
 		expect(toProjectView(record, 'es', url, [])?.area).toBeNull();
+	});
+
+	it('exposes the skills in order', () => {
+		expect(toProjectView(record, 'en', url)?.skills).toEqual(['Swift', 'CoreML']);
 	});
 
 	it('has no image URL when the project has no image', () => {
