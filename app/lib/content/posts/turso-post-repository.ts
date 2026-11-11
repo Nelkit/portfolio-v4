@@ -1,6 +1,6 @@
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import { posts, postTranslations } from '@/app/lib/db/schema';
+import { postImages, posts, postTranslations } from '@/app/lib/db/schema';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { isLocale } from '@/app/lib/i18n/routing';
 import type { PostRepository } from './post-repository';
@@ -23,7 +23,7 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 						translations[t.locale] = { title: t.title, summary: t.summary, body: t.body };
 					}
 				}
-				return { id: row.id, slug: row.slug, publishedOn: row.publishedOn, translations };
+				return { id: row.id, slug: row.slug, publishedOn: row.publishedOn, coverKey: row.coverKey, translations };
 			}),
 		);
 	}
@@ -70,11 +70,38 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 		},
 
 		async deletePost(id) {
+			const [row] = await db.select({ coverKey: posts.coverKey }).from(posts).where(eq(posts.id, id)).limit(1);
+			if (!row) return [];
+			const images = await db.select({ key: postImages.key }).from(postImages).where(eq(postImages.postId, id));
 			// Children first: does not rely on SQLite's foreign_keys pragma being on.
 			await db.batch([
 				db.delete(postTranslations).where(eq(postTranslations.postId, id)),
+				db.delete(postImages).where(eq(postImages.postId, id)),
 				db.delete(posts).where(eq(posts.id, id)),
 			]);
+			return [row.coverKey, ...images.map((i) => i.key)].filter((k): k is string => Boolean(k));
+		},
+
+		async setPostCover(id, key) {
+			const [row] = await db.select({ coverKey: posts.coverKey }).from(posts).where(eq(posts.id, id)).limit(1);
+			await db.update(posts).set({ coverKey: key, updatedAt: sql`(unixepoch())` }).where(eq(posts.id, id));
+			return row?.coverKey ?? null;
+		},
+
+		async addPostImage(postId, key) {
+			const [{ id }] = await db.insert(postImages).values({ postId, key }).returning({ id: postImages.id });
+			return id;
+		},
+
+		listPostImages: (postId) =>
+			db.select({ id: postImages.id, key: postImages.key }).from(postImages).where(eq(postImages.postId, postId)).orderBy(asc(postImages.id)),
+
+		async removePostImage(postId, imageId) {
+			const [row] = await db
+				.delete(postImages)
+				.where(and(eq(postImages.id, imageId), eq(postImages.postId, postId)))
+				.returning({ key: postImages.key });
+			return row?.key ?? null;
 		},
 	};
 }

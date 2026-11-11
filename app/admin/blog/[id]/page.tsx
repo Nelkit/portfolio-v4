@@ -4,6 +4,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { postRepository } from '@/app/lib/content/posts/post-service';
 import { LOCALES } from '@/app/lib/i18n/locales';
 import { PostEditor } from '../PostEditor';
+import { publicUrlFor, uploadBaseUrl } from '@/app/lib/storage/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,8 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 	if (!Number.isInteger(id) || id <= 0) notFound();
 
 	// Uncached read: the editor always shows what is in the database.
-	const post = await postRepository().getPost(id);
+	const repo = postRepository();
+	const [post, images] = await Promise.all([repo.getPost(id), repo.listPostImages(id)]);
 	if (!post) notFound();
 	const viewLocale = LOCALES.find((l) => post.translations[l]) ?? 'en';
 
@@ -26,7 +28,16 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 					View on site ↗
 				</a>
 			</header>
-			<PostEditor key={`${post.id}:${post.slug}`} id={post.id} initial={post} />
+			<PostEditor
+				key={`${post.id}:${post.slug}`}
+				id={post.id}
+				initial={post}
+				uploadBaseUrl={uploadBaseUrl()}
+				media={{
+					coverUrl: post.coverKey ? publicUrlFor(post.coverKey) : null,
+					images: images.map((i) => ({ ...i, url: publicUrlFor(i.key) })),
+				}}
+			/>
 		</main>
 	);
 }

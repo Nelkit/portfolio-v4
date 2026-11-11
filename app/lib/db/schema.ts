@@ -213,6 +213,8 @@ export const posts = sqliteTable('posts', {
 	slug: text('slug').notNull().unique(),
 	/** Publication date, 'YYYY-MM-DD'. */
 	publishedOn: text('published_on').notNull(),
+	/** Storage key of the cover image, not a URL. */
+	coverKey: text('cover_key'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),
 });
@@ -229,3 +231,10 @@ export const postTranslations = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.postId, table.locale] })],
 );
+
+/** Images uploaded for a post's body (referenced in Markdown as upload:<key>). */
+export const postImages = sqliteTable('post_images', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+	key: text('key').notNull(),
+});

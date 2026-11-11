@@ -107,8 +107,12 @@ export function getStorage(): FileStorage {
 	return createLocalStorage({ rootDir: join(process.cwd(), 'public', 'uploads'), urlPrefix: '/uploads' });
 }
 
+/** Public base URL of stored files: the R2 public domain, or local /uploads in development. */
+export function uploadBaseUrl(): string {
+	return process.env.R2_PUBLIC_URL?.replace(/\/+$/, '') || '/uploads';
+}
+
 /** Public URL of a stored key, without requiring write credentials. */
 export function publicUrlFor(key: string): string {
-	const base = process.env.R2_PUBLIC_URL;
-	return base ? `${base.replace(/\/+$/, '')}/${key}` : `/uploads/${key}`;
+	return `${uploadBaseUrl()}/${key}`;
 }

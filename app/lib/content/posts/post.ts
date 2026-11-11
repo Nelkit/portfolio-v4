@@ -5,7 +5,9 @@ import { SLUG_PATTERN, slugify } from '@/app/lib/content/projects/project';
 export type PostTranslation = { title: string; summary: string; body: string };
 /** A post may exist in one or both languages (only written languages are stored). */
 export type PostInput = { slug: string; publishedOn: string; translations: Partial<Record<Locale, PostTranslation>> };
-export type PostRecord = PostInput & { id: number };
+/** Stored post; the cover is managed separately from the text. */
+export type PostRecord = PostInput & { id: number; coverKey: string | null };
+export type PostImage = { id: number; key: string };
 /** What the public site renders for one language. */
 export type PostView = {
 	slug: string;
@@ -16,6 +18,7 @@ export type PostView = {
 	readingTime: number;
 	/** Languages this post is available in. */
 	locales: Locale[];
+	coverUrl: string | null;
 };
 
 /** Listing data without the (possibly long) body — what crosses to client components. */
@@ -27,6 +30,7 @@ export const toPostSummary = (view: PostView): PostSummary => ({
 	summary: view.summary,
 	readingTime: view.readingTime,
 	locales: view.locales,
+	coverUrl: view.coverUrl,
 });
 
 export const POST_KEYS = ['title', 'summary', 'body'] as const;
@@ -93,7 +97,7 @@ export function sortPosts<T extends { id: number; publishedOn: string }>(list: T
 }
 
 /** No fallback: a post not written in this language has no view in it. */
-export function toPostView(record: PostRecord, locale: Locale): PostView | null {
+export function toPostView(record: PostRecord, locale: Locale, publicUrl: (key: string) => string): PostView | null {
 	const t = record.translations[locale];
 	if (!t) return null;
 	return {
@@ -104,7 +108,36 @@ export function toPostView(record: PostRecord, locale: Locale): PostView | null 
 		body: t.body,
 		readingTime: readingTime(t.body),
 		locales: LOCALES.filter((l) => record.translations[l]),
+		coverUrl: record.coverKey ? publicUrl(record.coverKey) : null,
 	};
+}
+
+// ---------- Uploaded images inside the Markdown body ----------
+
+/**
+ * Bodies reference uploads as `upload:<key>`, never as a final URL, so posts
+ * keep working if the storage (local disk → R2, another domain…) changes.
+ * The reference is resolved to a URL at render time.
+ */
+const UPLOAD_PREFIX = 'upload:';
+const UPLOAD_REF = /upload:([a-z0-9][a-z0-9_/-]*\.[a-z0-9]+)/g;
+
+/** `![file name](upload:key)` — the alt text can be edited afterwards. */
+export function imageMarkdown(key: string, fileName: string): string {
+	const alt = fileName.replace(/\.[^.]+$/, '').replace(/[[\]]/g, '').trim() || 'image';
+	return `![${alt}](${UPLOAD_PREFIX}${key})`;
+}
+
+/** URL to render: upload: refs → storage base; http(s)/mailto/relative kept; anything else (javascript:…) dropped. */
+export function resolveUploadUrl(src: string, uploadBaseUrl: string): string {
+	if (src.startsWith(UPLOAD_PREFIX)) return `${uploadBaseUrl.replace(/\/+$/, '')}/${src.slice(UPLOAD_PREFIX.length)}`;
+	if (/^(https?:|mailto:)/i.test(src) || /^[/#.]/.test(src) || !/^[a-z][a-z0-9+.-]*:/i.test(src)) return src;
+	return '';
+}
+
+/** Upload keys referenced by a Markdown body (to refuse deleting images still in use). */
+export function referencedUploadKeys(markdown: string): string[] {
+	return [...markdown.matchAll(UPLOAD_REF)].map((m) => m[1]);
 }
 
 /** Fenced code blocks of a Markdown body (to pre-highlight them on the server). */

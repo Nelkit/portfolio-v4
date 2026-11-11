@@ -3283,3 +3283,12 @@ footer {
     scroll-behavior: auto;
   }
 }
+
+/* Images uploaded inside a post body (Markdown ![alt](upload:key)) */
+.post-body .post-body-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+}

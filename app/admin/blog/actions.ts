@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { parsePostForm } from '@/app/lib/content/posts/post';
 import { POSTS_TAG, postRepository } from '@/app/lib/content/posts/post-service';
+import { deleteStoredFiles } from '@/app/lib/storage/cleanup';
 
 export type SavePostState = { ok?: boolean; errors?: Record<string, string> };
 
@@ -39,6 +40,7 @@ export async function savePost(_prev: SavePostState, formData: FormData): Promis
 
 export async function deletePost(formData: FormData): Promise<void> {
 	await requireAdmin();
-	await postRepository().deletePost(idSchema.parse(formData.get('id')));
+	const fileKeys = await postRepository().deletePost(idSchema.parse(formData.get('id')));
+	await deleteStoredFiles(fileKeys); // best effort: cover + body images
 	updateTag(POSTS_TAG);
 }

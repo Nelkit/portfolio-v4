@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { extractCodeBlocks, parsePostForm, readingTime, sortPosts, toPostView, type PostRecord } from './post';
+import {
+	extractCodeBlocks,
+	imageMarkdown,
+	parsePostForm,
+	readingTime,
+	referencedUploadKeys,
+	resolveUploadUrl,
+	sortPosts,
+	toPostView,
+	type PostRecord,
+} from './post';
 
 const base = { slug: '', publishedOn: '2026-11-01' };
 const en = { title_en: ' Shipping ML ', summary_en: 'How I ship', body_en: '# Hello\n\nSome text.' };
@@ -60,21 +70,47 @@ describe('extractCodeBlocks', () => {
 	});
 });
 
-const record = (id: number, publishedOn: string, langs: ('en' | 'es')[]): PostRecord => ({
+const url = (key: string) => `https://cdn.test/${key}`;
+
+const record = (id: number, publishedOn: string, langs: ('en' | 'es')[], coverKey: string | null = null): PostRecord => ({
 	id,
 	slug: `post-${id}`,
 	publishedOn,
+	coverKey,
 	translations: Object.fromEntries(langs.map((l) => [l, { title: `t${id}-${l}`, summary: 's', body: 'b' }])),
 });
 
 describe('toPostView', () => {
 	it('has no view in a language the post was not written in (no fallback for posts)', () => {
-		expect(toPostView(record(1, '2026-01-01', ['es']), 'en')).toBeNull();
-		expect(toPostView(record(1, '2026-01-01', ['es']), 'es')).toMatchObject({ slug: 'post-1', title: 't1-es', readingTime: 1 });
+		expect(toPostView(record(1, '2026-01-01', ['es']), 'en', url)).toBeNull();
+		expect(toPostView(record(1, '2026-01-01', ['es']), 'es', url)).toMatchObject({ slug: 'post-1', title: 't1-es', readingTime: 1 });
 	});
 
 	it('lists the languages the post is available in', () => {
-		expect(toPostView(record(1, '2026-01-01', ['en', 'es']), 'en')?.locales).toEqual(['en', 'es']);
+		expect(toPostView(record(1, '2026-01-01', ['en', 'es']), 'en', url)?.locales).toEqual(['en', 'es']);
+	});
+
+	it('resolves the cover to a public URL (or none)', () => {
+		expect(toPostView(record(1, '2026-01-01', ['en'], 'posts/1/cover-a.webp'), 'en', url)?.coverUrl).toBe('https://cdn.test/posts/1/cover-a.webp');
+		expect(toPostView(record(1, '2026-01-01', ['en']), 'en', url)?.coverUrl).toBeNull();
+	});
+});
+
+describe('uploaded images in Markdown', () => {
+	it('builds a storage-independent image reference, using the file name as alt text', () => {
+		expect(imageMarkdown('posts/3/img-ab12cd34.png', 'My Diagram (final).png')).toBe('![My Diagram (final)](upload:posts/3/img-ab12cd34.png)');
+	});
+
+	it('resolves upload: references against the current storage base, leaves other URLs alone', () => {
+		expect(resolveUploadUrl('upload:posts/3/img-a.png', 'https://media.nelkit.dev')).toBe('https://media.nelkit.dev/posts/3/img-a.png');
+		expect(resolveUploadUrl('upload:posts/3/img-a.png', '/uploads/')).toBe('/uploads/posts/3/img-a.png');
+		expect(resolveUploadUrl('https://example.com/x.png', '/uploads')).toBe('https://example.com/x.png');
+		expect(resolveUploadUrl('javascript:alert(1)', '/uploads')).toBe('');
+	});
+
+	it('finds the uploaded keys a body references', () => {
+		const body = 'a ![x](upload:posts/3/img-a.png) b ![y](upload:posts/3/img-b.webp) c ![z](https://e.com/z.png)';
+		expect(referencedUploadKeys(body)).toEqual(['posts/3/img-a.png', 'posts/3/img-b.webp']);
 	});
 });
 

@@ -53,6 +53,12 @@ export default async function BlogPage({
 				<div className="blog-grid">
 					{featured && (
 						<Link href={href(`/blog/${featured.slug}`)} className="blog-card blog-card-feat">
+							{featured.coverUrl && (
+								<div className="blog-card-img">
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img src={featured.coverUrl} alt={featured.title} />
+								</div>
+							)}
 							<div className="blog-card-body">
 								<div className="blog-card-meta">
 									<span className="blog-card-date">{formatDate(featured.publishedOn, t.meta.dateLocale)}</span>
@@ -74,6 +80,12 @@ export default async function BlogPage({
 								className="blog-card"
 								style={{ gridColumn: spans[idx % spans.length] }}
 							>
+								{p.coverUrl && (
+									<div className="blog-card-img">
+										{/* eslint-disable-next-line @next/next/no-img-element */}
+										<img src={p.coverUrl} alt={p.title} />
+									</div>
+								)}
 								<div className="blog-card-body">
 									<div className="blog-card-meta">
 										<span className="blog-card-date">{formatDate(p.publishedOn, t.meta.dateLocale)}</span>

@@ -10,6 +10,7 @@ import { localizePath } from '@/app/lib/i18n/routing';
 import type { Dictionary } from '@/app/lib/i18n/dictionaries';
 import { getPublishedPost, postRepository } from '@/app/lib/content/posts/post-service';
 import { highlightMarkdownCode } from '@/app/lib/content/posts/highlight-post';
+import { uploadBaseUrl } from '@/app/lib/storage/storage';
 
 export const revalidate = 604800;
 
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	if (!post) return {};
 
 	const url = `https://nelkit.dev/${locale}/blog/${slug}`;
-	const ogImage = 'https://nelkit.dev/img/og-image.jpg';
+	// Relative URLs (local uploads) are resolved against metadataBase.
+	const ogImage = post.coverUrl ?? 'https://nelkit.dev/img/og-image.jpg';
 	return {
 		title: post.title,
 		description: post.summary,
@@ -96,8 +98,15 @@ async function PostContent({ slug, locale, t }: { slug: string; locale: Locale; 
 				</div>
 			</header>
 
+			{post.coverUrl && (
+				<div className="post-cover">
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src={post.coverUrl} alt={post.title} className="post-cover-img" />
+				</div>
+			)}
+
 			<div className="post-body">
-				<Markdown highlighted={highlighted}>{post.body}</Markdown>
+				<Markdown highlighted={highlighted} uploadBaseUrl={uploadBaseUrl()}>{post.body}</Markdown>
 			</div>
 		</article>
 	);

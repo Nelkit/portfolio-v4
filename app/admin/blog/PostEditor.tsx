@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { savePost, type SavePostState } from './actions';
+import { PostMedia, type PostMediaProps } from './PostMedia';
 import { Markdown } from '@/app/components/Markdown';
 import { postField, readingTime, type PostInput, type PostTranslation } from '@/app/lib/content/posts/post';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
@@ -22,8 +23,25 @@ function Err({ message }: { message?: string }) {
  * on the left and a live preview on the right. Inactive tabs stay mounted
  * (hidden) so every language is submitted.
  */
-export function PostEditor({ id, initial }: { id?: number; initial: PostInput }) {
-	const [state, formAction, pending] = useActionState<SavePostState, FormData>(savePost, {});
+export function PostEditor({
+	id,
+	initial,
+	media,
+	uploadBaseUrl,
+}: {
+	id?: number;
+	initial: PostInput;
+	/** Cover and body images (only for saved posts). */
+	media?: Omit<PostMediaProps, 'postId'>;
+	/** Where upload: references point, for the live preview. */
+	uploadBaseUrl: string;
+}) {
+	const [inserted, setInserted] = useState(false);
+	const [state, formAction, pending] = useActionState<SavePostState, FormData>(async (prev, data) => {
+		const result = await savePost(prev, data);
+		if (result.ok) setInserted(false);
+		return result;
+	}, {});
 	const errors = state.errors ?? {};
 	const [active, setActive] = useState<Locale>(LOCALES.find((l) => initial.translations[l]) ?? 'en');
 	const [texts, setTexts] = useState<Record<Locale, PostTranslation>>(
@@ -32,6 +50,18 @@ export function PostEditor({ id, initial }: { id?: number; initial: PostInput })
 
 	const set = (locale: Locale, key: keyof PostTranslation, value: string) =>
 		setTexts((current) => ({ ...current, [locale]: { ...current[locale], [key]: value } }));
+	const bodyRefs = useRef<Partial<Record<Locale, HTMLTextAreaElement | null>>>({});
+
+	/** Inserts Markdown at the cursor of the active language's body (or at the end). */
+	const insertIntoBody = (markdown: string) => {
+		const el = bodyRefs.current[active];
+		const body = texts[active].body;
+		const at = el ? el.selectionStart : body.length;
+		const before = body.slice(0, at).replace(/\s*$/, '');
+		const after = body.slice(at).replace(/^\s*/, '');
+		set(active, 'body', [before, markdown, after].filter(Boolean).join('\n\n'));
+		setInserted(true);
+	};
 	const written = (locale: Locale) => Object.values(texts[locale]).some((v) => v.trim());
 	const hasErrors = (locale: Locale) => Object.keys(errors).some((k) => k.endsWith(`_${locale}`));
 
@@ -51,6 +81,13 @@ export function PostEditor({ id, initial }: { id?: number; initial: PostInput })
 					<Err message={errors.publishedOn} />
 				</label>
 			</section>
+
+			{id && media ? (
+				<PostMedia postId={id} coverUrl={media.coverUrl} images={media.images} onInsert={insertIntoBody} />
+			) : (
+				<p className="text-sm text-zinc-500">Cover and images can be added after the post is published (saved) for the first time.</p>
+			)}
+			{inserted && <p className="text-sm text-amber-400">Image inserted into the {LANGUAGE_NAMES[active]} body — remember to Save.</p>}
 
 			<div className="flex items-center gap-2 border-b border-zinc-800">
 				{LOCALES.map((locale) => (
@@ -101,6 +138,7 @@ export function PostEditor({ id, initial }: { id?: number; initial: PostInput })
 								Body — Markdown · ~{readingTime(texts[locale].body)} min read
 							</span>
 							<textarea
+								ref={(el) => { bodyRefs.current[locale] = el; }}
 								name={postField('body', locale)}
 								value={texts[locale].body}
 								onChange={(e) => set(locale, 'body', e.target.value)}
@@ -113,7 +151,7 @@ export function PostEditor({ id, initial }: { id?: number; initial: PostInput })
 							<span className="text-xs text-zinc-500">Preview (code highlighting is applied on the site)</span>
 							<div className={preview}>
 								{texts[locale].title && <h1>{texts[locale].title}</h1>}
-								{texts[locale].body.trim() ? <Markdown>{texts[locale].body}</Markdown> : <p className="text-zinc-500">Nothing to preview.</p>}
+								{texts[locale].body.trim() ? <Markdown uploadBaseUrl={uploadBaseUrl}>{texts[locale].body}</Markdown> : <p className="text-zinc-500">Nothing to preview.</p>}
 							</div>
 						</div>
 					</div>
@@ -124,7 +162,7 @@ export function PostEditor({ id, initial }: { id?: number; initial: PostInput })
 				<button type="submit" disabled={pending} className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50">
 					{pending ? 'Saving…' : id ? 'Save' : 'Publish post'}
 				</button>
-				{state.ok && !pending && <span className="text-sm text-emerald-400">Saved — live on the site.</span>}
+				{state.ok && !pending && !inserted && <span className="text-sm text-emerald-400">Saved — live on the site.</span>}
 				{Object.keys(errors).length > 0 && <span className="text-sm text-red-400">Fix the highlighted fields.</span>}
 			</div>
 		</form>
