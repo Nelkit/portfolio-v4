@@ -9,6 +9,7 @@ import type { PostInput } from './post';
 const post = (slug: string, publishedOn: string, langs: ('en' | 'es')[] = ['en', 'es']): PostInput => ({
 	slug,
 	publishedOn,
+	tagIds: [],
 	translations: Object.fromEntries(langs.map((l) => [l, { title: `${slug}-${l}`, summary: '', body: `# ${l}` }])),
 });
 const stored = (id: number, input: PostInput, coverKey: string | null = null) => ({ id, ...input, coverKey });

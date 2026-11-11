@@ -5,6 +5,7 @@ import { postRepository } from '@/app/lib/content/posts/post-service';
 import { LOCALES } from '@/app/lib/i18n/locales';
 import { PostEditor } from '../PostEditor';
 import { publicUrlFor, uploadBaseUrl } from '@/app/lib/storage/storage';
+import { loadTagViews } from '@/app/lib/content/tags/tag-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 
 	// Uncached read: the editor always shows what is in the database.
 	const repo = postRepository();
-	const [post, images] = await Promise.all([repo.getPost(id), repo.listPostImages(id)]);
+	const [post, images, tags] = await Promise.all([repo.getPost(id), repo.listPostImages(id), loadTagViews('en')]);
 	if (!post) notFound();
 	const viewLocale = LOCALES.find((l) => post.translations[l]) ?? 'en';
 
@@ -33,6 +34,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 				id={post.id}
 				initial={post}
 				uploadBaseUrl={uploadBaseUrl()}
+				tags={tags}
 				media={{
 					coverUrl: post.coverKey ? publicUrlFor(post.coverKey) : null,
 					images: images.map((i) => ({ ...i, url: publicUrlFor(i.key) })),

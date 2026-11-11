@@ -3292,3 +3292,8 @@ footer {
   margin: 1.5rem auto;
   border-radius: 12px;
 }
+
+/* Related posts at the end of a blog post (reuses the project aside cards) */
+.post-related {
+  margin-top: 56px;
+}

@@ -5,6 +5,7 @@ import {
 	parsePostForm,
 	readingTime,
 	referencedUploadKeys,
+	relatedPosts,
 	resolveUploadUrl,
 	sortPosts,
 	toPostView,
@@ -46,6 +47,13 @@ describe('parsePostForm', () => {
 		expect(parsePostForm({ ...base, ...es, summary_es: '' }).ok).toBe(true);
 	});
 
+	it('parses the selected tags (deduplicated, positive ids only)', () => {
+		const result = parsePostForm({ ...base, ...en, tagIds: ['3', '1', '3'] });
+		expect(result.ok && result.value.tagIds).toEqual([3, 1]);
+		expect(parsePostForm({ ...base, ...en }).ok && true).toBe(true);
+		expect(parsePostForm({ ...base, ...en, tagIds: ['abc'] }).ok).toBe(false);
+	});
+
 	it('validates the slug and the publication date', () => {
 		expect(parsePostForm({ ...base, ...en, slug: 'Bad Slug' }).ok).toBe(false);
 		expect(parsePostForm({ ...base, ...en, publishedOn: '2026-13-01' }).ok).toBe(false);
@@ -77,6 +85,7 @@ const record = (id: number, publishedOn: string, langs: ('en' | 'es')[], coverKe
 	slug: `post-${id}`,
 	publishedOn,
 	coverKey,
+	tagIds: [],
 	translations: Object.fromEntries(langs.map((l) => [l, { title: `t${id}-${l}`, summary: 's', body: 'b' }])),
 });
 
@@ -88,6 +97,12 @@ describe('toPostView', () => {
 
 	it('lists the languages the post is available in', () => {
 		expect(toPostView(record(1, '2026-01-01', ['en', 'es']), 'en', url)?.locales).toEqual(['en', 'es']);
+	});
+
+	it('exposes its tags in the requested language (unknown ids are ignored)', () => {
+		const tags = [{ id: 1, slug: 'ml', name: 'AA' }];
+		const view = toPostView({ ...record(1, '2026-01-01', ['es']), tagIds: [1, 99] }, 'es', url, tags);
+		expect(view?.tags).toEqual([{ id: 1, slug: 'ml', name: 'AA' }]);
 	});
 
 	it('resolves the cover to a public URL (or none)', () => {
@@ -111,6 +126,27 @@ describe('uploaded images in Markdown', () => {
 	it('finds the uploaded keys a body references', () => {
 		const body = 'a ![x](upload:posts/3/img-a.png) b ![y](upload:posts/3/img-b.webp) c ![z](https://e.com/z.png)';
 		expect(referencedUploadKeys(body)).toEqual(['posts/3/img-a.png', 'posts/3/img-b.webp']);
+	});
+});
+
+describe('relatedPosts', () => {
+	const t = (id: number) => ({ id, slug: `t${id}`, name: `T${id}` });
+	const view = (slug: string, publishedOn: string, tagIds: number[]) => ({
+		slug, publishedOn, title: slug, summary: '', readingTime: 1, locales: ['en' as const], coverUrl: null, tags: tagIds.map(t),
+	});
+
+	it('ranks posts sharing more tags first, then newest; excludes the post itself and posts without shared tags', () => {
+		const current = view('current', '2026-05-01', [1, 2]);
+		const all = [
+			current,
+			view('one-shared-new', '2026-04-01', [1]),
+			view('two-shared', '2025-01-01', [1, 2]),
+			view('one-shared-old', '2024-01-01', [2]),
+			view('unrelated', '2026-04-15', [3]),
+		];
+		expect(relatedPosts(current, all, 3).map((p) => p.slug)).toEqual(['two-shared', 'one-shared-new', 'one-shared-old']);
+		expect(relatedPosts(current, all, 1).map((p) => p.slug)).toEqual(['two-shared']);
+		expect(relatedPosts(view('lonely', '2026-01-01', []), all, 3)).toEqual([]);
 	});
 });
 

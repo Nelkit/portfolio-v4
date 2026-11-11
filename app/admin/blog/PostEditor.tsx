@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState, useRef, useState } from 'react';
 import { savePost, type SavePostState } from './actions';
 import { PostMedia, type PostMediaProps } from './PostMedia';
@@ -28,11 +29,14 @@ export function PostEditor({
 	initial,
 	media,
 	uploadBaseUrl,
+	tags,
 }: {
 	id?: number;
 	initial: PostInput;
 	/** Cover and body images (only for saved posts). */
 	media?: Omit<PostMediaProps, 'postId'>;
+	/** Available tags (English names). */
+	tags: { id: number; name: string }[];
 	/** Where upload: references point, for the live preview. */
 	uploadBaseUrl: string;
 }) {
@@ -81,6 +85,21 @@ export function PostEditor({
 					<Err message={errors.publishedOn} />
 				</label>
 			</section>
+
+			<fieldset className="flex flex-col gap-2">
+				<legend className="text-xs text-zinc-500">
+					Tags {tags.length === 0 && <>— none yet, create them in <Link href="/admin/tags" className="underline">Blog tags</Link></>}
+				</legend>
+				<div className="flex flex-wrap gap-3">
+					{tags.map((tag) => (
+						<label key={tag.id} className="flex items-center gap-2 rounded border border-zinc-800 px-2 py-1 text-sm">
+							<input type="checkbox" name="tagIds" value={tag.id} defaultChecked={initial.tagIds.includes(tag.id)} />
+							{tag.name}
+						</label>
+					))}
+				</div>
+				<Err message={errors.tagIds} />
+			</fieldset>
 
 			{id && media ? (
 				<PostMedia postId={id} coverUrl={media.coverUrl} images={media.images} onInsert={insertIntoBody} />

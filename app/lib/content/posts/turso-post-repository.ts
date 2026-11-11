@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import { postImages, posts, postTranslations } from '@/app/lib/db/schema';
+import { postImages, posts, postTags, postTranslations } from '@/app/lib/db/schema';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { isLocale } from '@/app/lib/i18n/routing';
 import type { PostRepository } from './post-repository';
@@ -11,10 +11,11 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 	async function load(where?: ReturnType<typeof eq>): Promise<PostRecord[]> {
 		const rows = await db.select().from(posts).where(where);
 		if (rows.length === 0) return [];
-		const translationRows = await db
-			.select()
-			.from(postTranslations)
-			.where(inArray(postTranslations.postId, rows.map((r) => r.id)));
+		const ids = rows.map((r) => r.id);
+		const [translationRows, tagRows] = await Promise.all([
+			db.select().from(postTranslations).where(inArray(postTranslations.postId, ids)),
+			db.select().from(postTags).where(inArray(postTags.postId, ids)),
+		]);
 		return sortPosts(
 			rows.map((row) => {
 				const translations: Partial<Record<Locale, PostTranslation>> = {};
@@ -23,15 +24,24 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 						translations[t.locale] = { title: t.title, summary: t.summary, body: t.body };
 					}
 				}
-				return { id: row.id, slug: row.slug, publishedOn: row.publishedOn, coverKey: row.coverKey, translations };
+				return {
+					id: row.id,
+					slug: row.slug,
+					publishedOn: row.publishedOn,
+					coverKey: row.coverKey,
+					tagIds: tagRows.filter((t) => t.postId === row.id).map((t) => t.tagId),
+					translations,
+				};
 			}),
 		);
 	}
 
-	const translationInserts = (postId: number, input: PostInput) =>
-		(Object.entries(input.translations) as [Locale, PostTranslation][]).map(([locale, t]) =>
+	const childInserts = (postId: number, input: PostInput) => [
+		...(Object.entries(input.translations) as [Locale, PostTranslation][]).map(([locale, t]) =>
 			db.insert(postTranslations).values({ postId, locale, ...t }),
-		);
+		),
+		...input.tagIds.map((tagId) => db.insert(postTags).values({ postId, tagId })),
+	];
 
 	return {
 		listPosts: () => load(),
@@ -53,18 +63,20 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 				for (const [locale, t] of Object.entries(input.translations) as [Locale, PostTranslation][]) {
 					await tx.insert(postTranslations).values({ postId: id, locale, ...t });
 				}
+				for (const tagId of input.tagIds) await tx.insert(postTags).values({ postId: id, tagId });
 				return id;
 			});
 		},
 
 		async updatePost(id, input) {
-			const [first, ...rest] = translationInserts(id, input);
+			const [first, ...rest] = childInserts(id, input);
 			await db.batch([
 				db
 					.update(posts)
 					.set({ slug: input.slug, publishedOn: input.publishedOn, updatedAt: sql`(unixepoch())` })
 					.where(eq(posts.id, id)),
 				db.delete(postTranslations).where(eq(postTranslations.postId, id)),
+				db.delete(postTags).where(eq(postTags.postId, id)),
 				...(first ? [first, ...rest] : []),
 			]);
 		},
@@ -76,6 +88,7 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 			// Children first: does not rely on SQLite's foreign_keys pragma being on.
 			await db.batch([
 				db.delete(postTranslations).where(eq(postTranslations.postId, id)),
+				db.delete(postTags).where(eq(postTags.postId, id)),
 				db.delete(postImages).where(eq(postImages.postId, id)),
 				db.delete(posts).where(eq(posts.id, id)),
 			]);

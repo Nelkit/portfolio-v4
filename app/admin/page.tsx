@@ -27,6 +27,14 @@ export default async function AdminHome() {
 				</li>
 				<li>
 					<Link
+						href="/admin/tags"
+						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+					>
+						Blog tags <span className="text-zinc-500">— filter the blog and relate posts</span>
+					</Link>
+				</li>
+				<li>
+					<Link
 						href="/admin/profile"
 						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
 					>

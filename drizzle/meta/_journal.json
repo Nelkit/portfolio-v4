@@ -78,6 +78,13 @@
       "when": 1794368142242,
       "tag": "0010_faithful_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1794375201414,
+      "tag": "0011_red_korg",
+      "breakpoints": true
     }
   ]
 }

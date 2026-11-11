@@ -135,6 +135,9 @@ export const es: Dictionary = {
 		previous: 'Anterior',
 		next: 'Siguiente',
 		allWriting: 'Todos los escritos',
+		allTags: 'Todos',
+		filterAria: 'Filtrar publicaciones por tag',
+		related: 'Artículos relacionados',
 		comingSoon: 'Contenido próximamente.',
 	},
 	projects: {

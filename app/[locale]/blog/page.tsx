@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import { resolveLocale } from '@/app/lib/i18n/server';
 import { getPublishedPosts } from '@/app/lib/content/posts/post-service';
+import { getPublishedTags } from '@/app/lib/content/tags/tag-service';
+import { tagChips } from '@/app/lib/content/tags/tag';
 
 export const revalidate = 604800;
 
@@ -18,12 +20,17 @@ export default async function BlogPage({
 	searchParams,
 }: {
 	params: Promise<{ locale: string }>;
-	searchParams: Promise<{ page?: string }>;
+	searchParams: Promise<{ page?: string; tag?: string }>;
 }) {
 	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.blog;
-	const { page: pageParam } = await searchParams;
-	const all = await getPublishedPosts(locale);
+	const { page: pageParam, tag: tagParam } = await searchParams;
+	const [allPosts, tags] = await Promise.all([getPublishedPosts(locale), getPublishedTags(locale)]);
+	const chips = tagChips(tags, allPosts);
+	// Unknown ?tag= values are ignored (show everything).
+	const activeTag = chips.find((c) => c.slug === tagParam) ?? null;
+	const all = activeTag ? allPosts.filter((p) => p.tags.some((tg) => tg.id === activeTag.id)) : allPosts;
+	const withTag = (path: string, extra = '') => href(`${path}?${[activeTag ? `tag=${activeTag.slug}` : '', extra].filter(Boolean).join('&')}`.replace(/\?$/, ''));
 	const total = all.length;
 	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 	const page = Math.min(totalPages, Math.max(1, parseInt(pageParam || '1') || 1));
@@ -49,6 +56,24 @@ export default async function BlogPage({
 					)}
 					{total > 0 && <p className="blog-subheading">{copy.count(total)}</p>}
 				</div>
+
+				{chips.length > 0 && (
+					<nav className="stack-tabs" aria-label={copy.filterAria}>
+						<Link href={href('/blog')} className={'stack-tab' + (activeTag ? '' : ' on')} aria-current={activeTag ? undefined : 'page'}>
+							{copy.allTags}<span className="c">{String(allPosts.length).padStart(2, '0')}</span>
+						</Link>
+						{chips.map((chip) => (
+							<Link
+								key={chip.id}
+								href={href(`/blog?tag=${chip.slug}`)}
+								className={'stack-tab' + (activeTag?.id === chip.id ? ' on' : '')}
+								aria-current={activeTag?.id === chip.id ? 'page' : undefined}
+							>
+								{chip.name}<span className="c">{String(chip.count).padStart(2, '0')}</span>
+							</Link>
+						))}
+					</nav>
+				)}
 
 				<div className="blog-grid">
 					{featured && (
@@ -103,13 +128,13 @@ export default async function BlogPage({
 				{totalPages > 1 && (
 					<div className="blog-pagination">
 						{page > 1 && (
-							<Link href={href(`/blog?page=${page - 1}`)} className="btn btn-outline">
+							<Link href={withTag('/blog', `page=${page - 1}`)} className="btn btn-outline">
 								<IArrowLeft /> {copy.previous}
 							</Link>
 						)}
 						<span className="blog-page-info">{page} / {totalPages}</span>
 						{page < totalPages && (
-							<Link href={href(`/blog?page=${page + 1}`)} className="btn btn-outline">
+							<Link href={withTag('/blog', `page=${page + 1}`)} className="btn btn-outline">
 								{copy.next} <IArrowUR />
 							</Link>
 						)}

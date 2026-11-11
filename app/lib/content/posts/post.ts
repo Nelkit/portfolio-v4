@@ -1,10 +1,16 @@
 import { z } from 'zod';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { SLUG_PATTERN, slugify } from '@/app/lib/content/projects/project';
+import type { TagView } from '@/app/lib/content/tags/tag';
 
 export type PostTranslation = { title: string; summary: string; body: string };
 /** A post may exist in one or both languages (only written languages are stored). */
-export type PostInput = { slug: string; publishedOn: string; translations: Partial<Record<Locale, PostTranslation>> };
+export type PostInput = {
+	slug: string;
+	publishedOn: string;
+	tagIds: number[];
+	translations: Partial<Record<Locale, PostTranslation>>;
+};
 /** Stored post; the cover is managed separately from the text. */
 export type PostRecord = PostInput & { id: number; coverKey: string | null };
 export type PostImage = { id: number; key: string };
@@ -19,6 +25,7 @@ export type PostView = {
 	/** Languages this post is available in. */
 	locales: Locale[];
 	coverUrl: string | null;
+	tags: TagView[];
 };
 
 /** Listing data without the (possibly long) body — what crosses to client components. */
@@ -31,6 +38,7 @@ export const toPostSummary = (view: PostView): PostSummary => ({
 	readingTime: view.readingTime,
 	locales: view.locales,
 	coverUrl: view.coverUrl,
+	tags: view.tags,
 });
 
 export const POST_KEYS = ['title', 'summary', 'body'] as const;
@@ -87,8 +95,13 @@ export function parsePostForm(fields: Record<string, unknown>): PostFormResult {
 	const publishedOn = String(fields.publishedOn ?? '').trim();
 	if (!isValidDate(publishedOn)) errors.publishedOn = 'Pick a valid date';
 
-	if (Object.keys(errors).length > 0) return { ok: false, errors };
-	return { ok: true, value: { slug, publishedOn, translations } };
+	// Checkbox values: one entry per selected tag (form posts repeat the field name).
+	const rawTags = fields.tagIds === undefined ? [] : [fields.tagIds].flat();
+	const tagIds = z.array(z.coerce.number().int().positive()).max(30).safeParse(rawTags);
+	if (!tagIds.success) errors.tagIds = 'Invalid tags';
+
+	if (Object.keys(errors).length > 0 || !tagIds.success) return { ok: false, errors };
+	return { ok: true, value: { slug, publishedOn, tagIds: [...new Set(tagIds.data)], translations } };
 }
 
 /** Newest publication date first; ties: newest post first. */
@@ -97,7 +110,13 @@ export function sortPosts<T extends { id: number; publishedOn: string }>(list: T
 }
 
 /** No fallback: a post not written in this language has no view in it. */
-export function toPostView(record: PostRecord, locale: Locale, publicUrl: (key: string) => string): PostView | null {
+export function toPostView(
+	record: PostRecord,
+	locale: Locale,
+	publicUrl: (key: string) => string,
+	/** Tags already resolved for this locale; unknown ids are ignored. */
+	tags: TagView[] = [],
+): PostView | null {
 	const t = record.translations[locale];
 	if (!t) return null;
 	return {
@@ -109,7 +128,23 @@ export function toPostView(record: PostRecord, locale: Locale, publicUrl: (key: 
 		readingTime: readingTime(t.body),
 		locales: LOCALES.filter((l) => record.translations[l]),
 		coverUrl: record.coverKey ? publicUrl(record.coverKey) : null,
+		tags: record.tagIds.flatMap((id) => tags.filter((t) => t.id === id)),
 	};
+}
+
+/**
+ * Up to `limit` other posts sharing at least one tag: more shared tags first,
+ * then newest first.
+ */
+export function relatedPosts<T extends { slug: string; publishedOn: string; tags: TagView[] }>(current: T, all: T[], limit: number): T[] {
+	const mine = new Set(current.tags.map((t) => t.id));
+	return all
+		.filter((p) => p.slug !== current.slug)
+		.map((p) => ({ post: p, shared: p.tags.filter((t) => mine.has(t.id)).length }))
+		.filter((x) => x.shared > 0)
+		.sort((a, b) => b.shared - a.shared || b.post.publishedOn.localeCompare(a.post.publishedOn))
+		.slice(0, limit)
+		.map((x) => x.post);
 }
 
 // ---------- Uploaded images inside the Markdown body ----------

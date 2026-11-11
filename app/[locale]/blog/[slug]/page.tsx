@@ -8,7 +8,8 @@ import { resolveLocale } from '@/app/lib/i18n/server';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { localizePath } from '@/app/lib/i18n/routing';
 import type { Dictionary } from '@/app/lib/i18n/dictionaries';
-import { getPublishedPost, postRepository } from '@/app/lib/content/posts/post-service';
+import { getPublishedPost, getPublishedPosts, postRepository } from '@/app/lib/content/posts/post-service';
+import { relatedPosts } from '@/app/lib/content/posts/post';
 import { highlightMarkdownCode } from '@/app/lib/content/posts/highlight-post';
 import { uploadBaseUrl } from '@/app/lib/storage/storage';
 
@@ -79,13 +80,17 @@ export default async function BlogPostPage({ params }: Params) {
 	);
 }
 
+const RELATED_POSTS = 3;
+
 async function PostContent({ slug, locale, t }: { slug: string; locale: Locale; t: Dictionary }) {
-	const { post, exists } = await getPublishedPost(locale, slug);
+	const [{ post, exists }, all] = await Promise.all([getPublishedPost(locale, slug), getPublishedPosts(locale)]);
 	// Written only in the other language (e.g. after the ES/EN switch) → this language's list.
 	if (!post && exists) redirect(localizePath(locale, '/blog'));
 	if (!post) notFound();
 
 	const highlighted = await highlightMarkdownCode(post.body);
+	const related = relatedPosts(post, all, RELATED_POSTS);
+	const href = (path: string) => localizePath(locale, path);
 
 	return (
 		<article className="post-article">
@@ -108,6 +113,28 @@ async function PostContent({ slug, locale, t }: { slug: string; locale: Locale; 
 			<div className="post-body">
 				<Markdown highlighted={highlighted} uploadBaseUrl={uploadBaseUrl()}>{post.body}</Markdown>
 			</div>
+
+			{related.length > 0 && (
+				<aside className="proj-aside post-related">
+					<p className="proj-aside-label">{t.blog.related}</p>
+					<div className="proj-aside-list">
+						{related.map((p) => (
+							<Link key={p.slug} href={href(`/blog/${p.slug}`)} className="proj-aside-card">
+								{p.coverUrl ? (
+									// eslint-disable-next-line @next/next/no-img-element
+									<img src={p.coverUrl} alt={p.title} className="proj-aside-thumb" />
+								) : (
+									<span className="proj-aside-thumb proj-aside-thumb-empty" />
+								)}
+								<div className="proj-aside-body">
+									<span className="proj-aside-area">{p.tags.map((tg) => tg.name).join(' · ')}</span>
+									<span className="proj-aside-title">{p.title}</span>
+								</div>
+							</Link>
+						))}
+					</div>
+				</aside>
+			)}
 		</article>
 	);
 }

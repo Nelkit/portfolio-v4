@@ -140,6 +140,9 @@ export const en = {
 		previous: 'Previous',
 		next: 'Next',
 		allWriting: 'All writing',
+		allTags: 'All',
+		filterAria: 'Filter posts by tag',
+		related: 'Related posts',
 		comingSoon: 'Content coming soon.',
 	},
 	projects: {
