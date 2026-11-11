@@ -184,7 +184,9 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
 ### Migración de contenido desde Strapi
 
-- [ ] Importar el contenido de Strapi (local en `http://localhost:1337`) a Turso y R2 (pedido después de decidir greenfield).
+- [x] Contenido de Strapi importado a Turso (`portfolio-db-nelkit`) y R2 con `scripts/import-strapi/` (extract → traducción al español → import).
+- [ ] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre).
+- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron.
 
 ### Para historias futuras
 
