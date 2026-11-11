@@ -1,25 +1,28 @@
 import { type EducationItem } from '@/app/data/content';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type EducationSectionProps = {
 	education: EducationItem[];
 };
 
 export function EducationSection({ education }: EducationSectionProps) {
+	const { t } = useI18n();
+	const copy = t.sections.education;
 	if (!education.length) return null;
 
 	return (
 		<section id="education" className="section">
 			<div className="sec-head">
-				<h2><span className="num">05</span> Education<span className="ac">.</span></h2>
-				<span className="note">Plus scholarships</span>
+				<h2><span className="num">05</span> {copy.title}<span className="ac">.</span></h2>
+				<span className="note">{copy.note}</span>
 			</div>
 
 			<div className="edu-list">
 				<div className="edu-row h">
-					<span>Period</span>
-					<span>Degree</span>
-					<span>Institution</span>
-					<span>Status</span>
+					<span>{copy.period}</span>
+					<span>{copy.degree}</span>
+					<span>{copy.institution}</span>
+					<span>{copy.status}</span>
 				</div>
 				{education.map((edu) => (
 					<div className="edu-row" key={edu.degree}>
@@ -30,7 +33,7 @@ export function EducationSection({ education }: EducationSectionProps) {
 						</span>
 						<span className="edu-org">{edu.institution}</span>
 						<span className={'badge' + (edu.status === 'In Progress' ? ' cur' : '')}>
-							{edu.status === 'In Progress' ? 'In Progress' : 'Completed'}
+							{edu.status === 'In Progress' ? copy.inProgress : copy.completed}
 						</span>
 					</div>
 				))}

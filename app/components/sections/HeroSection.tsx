@@ -11,18 +11,25 @@ import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon, IBot, IUser,
 } from '@/app/components/icons';
+import { LanguageSwitch } from '@/app/components/LanguageSwitch';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type RichTextBlock = { children?: { text?: string }[] };
 
-function parseHeadline(raw: RichTextBlock[] | string | undefined): React.ReactNode {
-	const fallback = <>Building <em className="ac">AI products</em> that actually ship</>;
-	if (!raw) return fallback;
-	const text = Array.isArray(raw)
-		? raw.map((b) => b.children?.map((c) => c.text || '').join('')).join('')
-		: String(raw);
+/** Renders "text <em>accent</em> text" with the accent styled. */
+function renderAccent(text: string): React.ReactNode {
 	const match = text.match(/^(.*?)<em[^>]*>(.*?)<\/em>(.*)$/s);
-	if (!match) return text || fallback;
+	if (!match) return text;
 	return <>{match[1]}<em className="ac">{match[2]}</em>{match[3]}</>;
+}
+
+function parseHeadline(raw: RichTextBlock[] | string | undefined, fallback: string): React.ReactNode {
+	const text = !raw
+		? ''
+		: Array.isArray(raw)
+			? raw.map((b) => b.children?.map((c) => c.text || '').join('')).join('')
+			: String(raw);
+	return renderAccent(text || fallback);
 }
 
 const NAV_ICONS: Record<string, () => React.ReactElement> = {
@@ -34,11 +41,7 @@ const NAV_ICONS: Record<string, () => React.ReactElement> = {
 	contact:   IAt,
 };
 
-const SUGGESTIONS = [
-	{ q: 'What stack do you use?',        key: 'stack' },
-	{ q: 'Are you open to remote roles?', key: 'remote' },
-	{ q: 'Tell me about your ML work',    key: 'ml' },
-];
+const SUGGESTION_KEYS = ['stack', 'remote', 'ml'] as const;
 
 const IMenuBars = () => (
 	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -56,6 +59,7 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 	resumeUrl?: string;
 	onOpenMenu: () => void;
 }) {
+	const { t } = useI18n();
 	const github = socialNetworkLinks?.find((l) => l.type === 'github')?.href || 'https://github.com/nelkit';
 	const linkedin = socialNetworkLinks?.find((l) => l.type === 'linkedin')?.href || 'https://linkedin.com/in/nelkit';
 
@@ -65,27 +69,27 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 				<Image src="/img/logo.webp" alt="Nelkit Chavez Logo" width={80} height={80} className="mark" />
 				<div className="wm">
 					<b>Nelkit Chavez</b>
-					<span><i className="dot-live" />Portfolio agent · online</span>
+					<span><i className="dot-live" />{t.home.agentOnline}</span>
 				</div>
 			</div>
 
 			<div className="cta-stack">
 				<a className="btn btn-accent" href="#contact"
 				   onClick={(e) => { e.preventDefault(); onNav('contact'); }}>
-					<IMail /><span>Get in touch</span>
+					<IMail /><span>{t.common.getInTouch}</span>
 				</a>
 				<a className="btn btn-outline" href={resumeUrl || '#'}
 				   target={resumeUrl ? '_blank' : undefined} rel={resumeUrl ? 'noopener noreferrer' : undefined}
 				   onClick={resumeUrl ? () => trackEvent('cv_downloaded') : (e) => e.preventDefault()}>
-					<IDown /><span>Download CV</span>
+					<IDown /><span>{t.common.downloadCv}</span>
 				</a>
 			</div>
 
-			<button className="sidebar-hamburger" onClick={onOpenMenu} aria-label="Open menu">
+			<button className="sidebar-hamburger" onClick={onOpenMenu} aria-label={t.common.openMenu}>
 				<IMenuBars />
 			</button>
 
-			<div className="side-label"><span>Navigate</span><span>{navItems.length} threads</span></div>
+			<div className="side-label"><span>{t.common.navigate}</span><span>{t.home.threads(navItems.length)}</span></div>
 			<nav className="convo-list">
 				{navItems.map((n) => {
 					const Icon = NAV_ICONS[n.id];
@@ -111,11 +115,12 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 					   onClick={() => trackEvent('contact_clicked', { channel: 'linkedin', location: 'header' })}>
 						<ILinkedin />
 					</a>
-					<button className="soc theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+					<button className="soc theme-toggle" onClick={onToggleTheme} aria-label={t.common.toggleTheme}>
 						{theme === 'light' ? <IMoon /> : <ISun />}
 					</button>
+					<LanguageSwitch />
 				</div>
-				<div className="loc">Sydney · AUS<br />UTC+10 · 2026</div>
+				<div className="loc">{t.home.location}<br />UTC+10 · 2026</div>
 			</div>
 		</aside>
 	);
@@ -132,6 +137,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	onReset: () => void;
 	onInputFocusChange?: (focused: boolean) => void;
 }) {
+	const { t } = useI18n();
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputVal, setInputVal] = useState('');
@@ -201,24 +207,24 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 		<main className="chat">
 			<div className="chat-top">
 				<div className="status-pill">
-					<i className="dot-live" /> AI agent · ask about Nelkit
+					<i className="dot-live" /> {t.chat.status}
 				</div>
 				<div className="profile">
 					{avatarImage?.url ? (
 						<img
 							className="avatar"
 							src={mediaUrl(avatarImage.url)}
-							alt={avatarImage.alternativeText || title || 'Profile'}
+							alt={avatarImage.alternativeText || title || t.chat.profileAlt}
 						/>
 					) : (
 						<div className="avatar-placeholder"><IUser /></div>
 					)}
 					<div className="who">
 						<b>{title || 'Nelkit Chavez'}</b>
-						<span>{subtitle || 'AI/ML Engineer'}</span>
+						<span>{subtitle || t.chat.defaultSubtitle}</span>
 					</div>
 					{started && (
-						<button className="new-chat" onClick={onReset}><ISpark /> New chat</button>
+						<button className="new-chat" onClick={onReset}><ISpark /> {t.chat.newChat}</button>
 					)}
 				</div>
 			</div>
@@ -226,7 +232,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 			<div className={'stage' + (started ? ' thread-on' : '')}>
 				<div className="headline-wrap">
 					<h1 className="headline">
-						{parseHeadline(headline)}
+						{parseHeadline(headline, t.chat.fallbackHeadline)}
 						<span className="ac">.</span>
 					</h1>
 					<p className="sub">
@@ -263,11 +269,14 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 			<div className="composer">
 				{!started && (
 					<div className="chips">
-						{SUGGESTIONS.map((s) => (
-							<button key={s.key} className="chip" onClick={() => { trackEvent('chat_suggestion_clicked', { question: s.q }); ask(s.q, 'suggestion'); }}>
-								{s.q}
-							</button>
-						))}
+						{SUGGESTION_KEYS.map((key) => {
+							const q = t.chat.suggestions[key];
+							return (
+								<button key={key} className="chip" onClick={() => { trackEvent('chat_suggestion_clicked', { question: q }); ask(q, 'suggestion'); }}>
+									{q}
+								</button>
+							);
+						})}
 					</div>
 				)}
 				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(inputVal); }}>
@@ -277,27 +286,27 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						onChange={(e) => setInputVal(e.target.value)}
 						onFocus={handleInputFocus}
 						onBlur={handleInputBlur}
-						placeholder={started ? 'Ask a follow-up…' : 'Ask me anything about Nelkit…'}
-						aria-label="Message"
+						placeholder={started ? t.chat.placeholderFollowUp : t.chat.placeholder}
+						aria-label={t.chat.messageAria}
 					/>
 					<div className="input-bar">
-						<span className="model-badge" title="Model powering this agent">
+						<span className="model-badge" title={t.chat.modelTitle}>
 							<i className="dot-live" />
 							{modelName}
 						</span>
 						<div className="input-actions">
-							<button type="button" className="io-mic" aria-label="Focus input"
+							<button type="button" className="io-mic" aria-label={t.chat.focusInput}
 							        onClick={() => inputRef.current?.focus()}>
 								<IMic />
 							</button>
-							<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label="Send">
+							<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label={t.chat.send}>
 								<IArrowUp />
 							</button>
 						</div>
 					</div>
 				</form>
 				<div className="hint">
-					<span>↩ to send · built for academic & learning purposes · responses may not be accurate</span>
+					<span>{t.chat.hint}</span>
 				</div>
 			</div>
 		</main>
@@ -333,6 +342,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 	const shellRef = useRef<HTMLDivElement>(null);
 	const [chatKey, setChatKey] = useState(0);
 	const [hintVisible, setHintVisible] = useState(true);
+	const { t } = useI18n();
 
 	useEffect(() => {
 		const hero = heroRef.current as HTMLElement | null;
@@ -394,7 +404,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 				</div>
 
 				<div className={'scroll-hint' + (hintVisible ? '' : ' scroll-hint-hidden')} onClick={() => onNav('work')}>
-					<span className="scroll-hint-label">Or scroll down to explore</span>
+					<span className="scroll-hint-label">{t.home.scrollHint}</span>
 					<span className="scroll-hint-arrow">
 						<IDown />
 					</span>

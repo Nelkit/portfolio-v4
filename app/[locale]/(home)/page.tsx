@@ -2,6 +2,9 @@ import { ClientWrapper } from '@/app/components/ClientWrapper';
 import { getStrapiData } from '@/app/lib/strapi';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import qs from 'qs';
+import { notFound } from 'next/navigation';
+import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
+import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
 
@@ -89,11 +92,22 @@ async function fetchRecentPosts(): Promise<BlogEntry[]> {
     return transformBlogEntries(data.data);
 }
 
-export default async function Home() {
-    const [strapiData, recentPosts] = await Promise.all([
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    if (!isLocale(locale)) notFound();
+
+    const [strapiData, recentPosts, hero] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
+        // No row for this locale yet → the hero shows the dictionary fallback headline.
+        getPublishedHero(locale),
     ]);
 
-    return <ClientWrapper strapiData={strapiData} recentPosts={recentPosts} />;
+    return (
+        <ClientWrapper
+            strapiData={strapiData}
+            recentPosts={recentPosts}
+            headline={hero?.headline}
+        />
+    );
 }

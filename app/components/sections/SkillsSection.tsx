@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { type SkillCategory } from '@/app/data/content';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type SkillsSectionProps = {
 	skillCategories: SkillCategory[];
 };
 
 export function SkillsSection({ skillCategories }: SkillsSectionProps) {
+	const { t } = useI18n();
 	if (skillCategories.length === 0) return null;
 
 	const stacks: Record<string, string[]> = Object.fromEntries(
@@ -22,8 +24,8 @@ export function SkillsSection({ skillCategories }: SkillsSectionProps) {
 	return (
 		<section id="stack" className="section">
 			<div className="sec-head">
-				<h2><span className="num">03</span> Tech stack<span className="ac">.</span></h2>
-				<span className="note">{totalTools} tools · grouped by domain</span>
+				<h2><span className="num">03</span> {t.sections.stack.title}<span className="ac">.</span></h2>
+				<span className="note">{t.sections.stack.note(totalTools)}</span>
 			</div>
 
 			<div className="stack-tabs">

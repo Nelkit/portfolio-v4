@@ -22,20 +22,27 @@ import {
 } from '@/app/data/content';
 
 import { IHelp } from '@/app/components/icons';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
-type ClientWrapperProps = { strapiData: any; recentPosts: BlogEntry[] };
+type ClientWrapperProps = {
+	strapiData: any;
+	recentPosts: BlogEntry[];
+	/** Hero headline from the admin (Turso). Sections not yet migrated still read strapiData. */
+	headline?: string;
+};
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [chatInputFocused, setChatInputFocused] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
+	const { t } = useI18n();
 
 	const data = strapiData?.data || {};
-	const { title, subtitle, description, headline, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
+	const { title, subtitle, description, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
 	const resumeUrl = mediaUrl(resume?.url) || undefined;
 
 	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
@@ -46,12 +53,13 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 		? transformSkillCategories(data.techStackSection.skillCategories)
 		: [];
 
-	const projectSectionTitle: string = data.projectSection?.title || 'Selected work';
+	// Section titles are fixed UI copy (dictionary), not Strapi content.
+	const projectSectionTitle = t.sections.projects.title;
 	const projects = data.projectSection?.projects
 		? transformProjects(data.projectSection.projects)
 		: [];
 
-	const careerSectionTitle: string = data.careerSection?.title || 'Career';
+	const careerSectionTitle = t.sections.career.title;
 	const careerTimeline = data.careerSection?.careerEntries
 		? transformCareerEntries(data.careerSection.careerEntries)
 		: [];
@@ -136,13 +144,14 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 		return new Date().getFullYear() - Math.min(...years);
 	})();
 
+	const sub = t.home.navSub;
 	const navItems = [
-		{ id: 'work',      label: 'Work',      sub: `${projects.length} project${projects.length !== 1 ? 's' : ''} · shipped`,      meta: '01' },
-		{ id: 'stack',     label: 'Stack',     sub: `${totalTools || '—'} tools · ${totalDomains || '—'} domains`,                  meta: '02' },
-		{ id: 'career',    label: 'Career',    sub: `${careerYears ? `${careerYears} years` : '—'} · ${careerTimeline.length} roles`, meta: '03' },
-		{ id: 'education', label: 'Education', sub: `${education.length} entr${education.length !== 1 ? 'ies' : 'y'}`,              meta: '04' },
-		{ id: 'writing',   label: 'Writing',   sub: 'Recent notes',                                                                  meta: '05' },
-		{ id: 'contact',   label: 'Contact',   sub: 'Open to roles · 2026',                                                         meta: '06' },
+		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: '01' },
+		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: '02' },
+		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', careerTimeline.length),         meta: '03' },
+		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: '04' },
+		{ id: 'writing',   label: t.common.nav.writing,   sub: sub.writing,                                                                          meta: '05' },
+		{ id: 'contact',   label: t.common.nav.contact,   sub: sub.contact,                                                                          meta: '06' },
 	];
 
 	return (
@@ -205,10 +214,10 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 			    focused on mobile (keyboard open) so it doesn't overlap the keyboard. */}
 			<button
 				className={'ask-fab' + (chatInputFocused ? ' ask-fab-hidden' : '')}
-				aria-label="Ask the agent about Nelkit"
-				onClick={() => askAgent('Tell me about your ML work', 'ml')}
+				aria-label={t.home.fab.aria}
+				onClick={() => askAgent(t.home.fab.question, 'ml')}
 			>
-				<span className="pop">Ask the agent →</span>
+				<span className="pop">{t.home.fab.label}</span>
 				<IHelp />
 			</button>
 		</>

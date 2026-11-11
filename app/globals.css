@@ -1210,6 +1210,18 @@ input {
   height: 17px;
 }
 
+/* Language switch — shares the shape of .soc / .theme-toggle, shows "ES"/"EN" */
+.lang-toggle {
+  font-family: var(--font-jetbrains-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.fn-drawer-foot .lang-toggle {
+  flex: none;
+}
+
 /* ---- FLOATING ASK FAB ---- */
 .ask-fab {
   position: fixed;

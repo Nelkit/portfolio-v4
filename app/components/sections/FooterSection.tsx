@@ -1,4 +1,5 @@
 import { FooterButtons, ContactCta } from '@/app/components/FooterButtons';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type CtaLink = { label: string; href: string; isExternal?: boolean; type?: string };
 
@@ -19,11 +20,13 @@ type FooterSectionProps = {
 	onNav: (id: string) => void;
 };
 
-function parseHeader(header: RichTextBlock[] | string | undefined): { before: string; em: string; after: string } {
-	if (!header) return { before: "Let's build something ", em: 'that ships.', after: '' };
-	const text = Array.isArray(header)
-		? header.map((b) => b.children?.map((c) => c.text || '').join('')).join('')
-		: String(header);
+function parseHeader(header: RichTextBlock[] | string | undefined, fallback: string): { before: string; em: string; after: string } {
+	const fromCms = !header
+		? ''
+		: Array.isArray(header)
+			? header.map((b) => b.children?.map((c) => c.text || '').join('')).join('')
+			: String(header);
+	const text = fromCms || fallback;
 	// extract <em>...</em>
 	const match = text.match(/^(.*?)<em>(.*?)<\/em>(.*)$/s);
 	if (match) return { before: match[1], em: match[2], after: match[3] };
@@ -31,12 +34,14 @@ function parseHeader(header: RichTextBlock[] | string | undefined): { before: st
 }
 
 export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionProps) {
-	const available = ctaSection?.available || 'Available 2026';
-	const description = ctaSection?.description || 'Open to senior IC roles in mobile, ML engineering, or anywhere those two intersect. Remote, hybrid, or Sydney in person.';
+	const { t } = useI18n();
+	const copy = t.sections.contact;
+	const available = ctaSection?.available || copy.available;
+	const description = ctaSection?.description || copy.description;
 	const email = ctaSection?.email || socialNetworkLinks?.find((l) => l.type === 'email')?.href || 'hello@nelkit.dev';
 	const emailHref = email.startsWith('mailto:') ? email : `mailto:${email}`;
 
-	const { before, em, after } = parseHeader(ctaSection?.header);
+	const { before, em, after } = parseHeader(ctaSection?.header, copy.headline);
 
 	const ctaLinks: CtaLink[] = ctaSection?.links && ctaSection.links.length > 0
 		? ctaSection.links
@@ -78,7 +83,7 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 
 			<footer>
 				<div className="foot-row">
-					<span className="c">© {new Date().getFullYear()} Nelkit Chavez · Built in Sydney</span>
+					<span className="c">© {new Date().getFullYear()} Nelkit Chavez · {t.common.builtIn}</span>
 					<FooterButtons
 						github={github.startsWith('http') ? github : `https://${github}`}
 						linkedin={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`}

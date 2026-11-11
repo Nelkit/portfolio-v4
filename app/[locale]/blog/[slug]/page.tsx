@@ -9,6 +9,8 @@ import { PostBody } from '@/app/components/PostBody';
 import { highlightCode } from '@/app/lib/highlight';
 import type { BlocksContent } from '@strapi/blocks-react-renderer';
 import qs from 'qs';
+import { resolveLocale } from '@/app/lib/i18n/server';
+import type { Dictionary } from '@/app/lib/i18n/dictionaries';
 
 export const revalidate = 604800;
 
@@ -26,13 +28,14 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: { params: Promise<{ locale: string; slug: string }> }
 ): Promise<Metadata> {
+	const { locale } = await resolveLocale(params);
 	const { slug } = await params;
 	const post = await fetchPost(slug);
 	if (!post) return {};
 
-	const url = `https://nelkit.dev/blog/${slug}`;
+	const url = `https://nelkit.dev/${locale}/blog/${slug}`;
 	const ogImage = post.coverImage || 'https://nelkit.dev/img/og-image.jpg';
 
 	return {
@@ -87,9 +90,9 @@ const fetchPost = cache(async (slug: string) => {
 	};
 });
 
-function formatDate(date: string) {
+function formatDate(date: string, dateLocale: string) {
 	if (!date) return '';
-	return new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+	return new Date(date).toLocaleDateString(dateLocale, { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 
@@ -97,7 +100,8 @@ function formatDate(date: string) {
 // fetch lives in <PostContent>, so navigation completes immediately and the
 // user sees the skeleton (loading.tsx fallback) right away — instead of waiting
 // on the home page while Strapi (possibly cold-starting) responds.
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+	const { t, href } = await resolveLocale(params);
 	const { slug } = await params;
 
 	return (
@@ -108,12 +112,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 			</div>
 
 			<div className="post-wrap">
-				<Link href="/blog" className="proj-back">
-					<IArrowLeft /> All writing
+				<Link href={href('/blog')} className="proj-back">
+					<IArrowLeft /> {t.blog.allWriting}
 				</Link>
 
 				<Suspense fallback={<PostSkeleton />}>
-					<PostContent slug={slug} />
+					<PostContent slug={slug} t={t} />
 				</Suspense>
 			</div>
 		</div>
@@ -122,7 +126,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
 // Async data-dependent part — this is what Suspense waits on. While the fetch
 // (and code highlighting) runs, the fallback skeleton is shown and streamed in.
-async function PostContent({ slug }: { slug: string }) {
+async function PostContent({ slug, t }: { slug: string; t: Dictionary }) {
 	const post = await fetchPost(slug);
 
 	if (!post) notFound();
@@ -158,8 +162,8 @@ async function PostContent({ slug }: { slug: string }) {
 				<h1 className="post-title">{post.title}</h1>
 				{post.summary && <p className="post-summary">{post.summary}</p>}
 				<div className="post-meta">
-					{post.publishedDate && <span>{formatDate(post.publishedDate)}</span>}
-					{post.readingTime > 0 && <span>{post.readingTime} min read</span>}
+					{post.publishedDate && <span>{formatDate(post.publishedDate, t.meta.dateLocale)}</span>}
+					{post.readingTime > 0 && <span>{t.blog.minRead(post.readingTime)}</span>}
 				</div>
 			</header>
 
@@ -175,7 +179,7 @@ async function PostContent({ slug }: { slug: string }) {
 				</div>
 			) : (
 				<p className="post-body" style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>
-					Content coming soon.
+					{t.blog.comingSoon}
 				</p>
 			)}
 		</article>

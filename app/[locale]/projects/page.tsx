@@ -4,21 +4,28 @@ import { getStrapiData } from '@/app/lib/strapi';
 import { transformProjects } from '@/app/data/content';
 import { IArrowUR } from '@/app/components/icons';
 import qs from 'qs';
+import { resolveLocale } from '@/app/lib/i18n/server';
 
 export const revalidate = 604800;
 
-export const metadata: Metadata = {
-	title: 'Projects',
-	description: 'A collection of software, ML, and AI projects by Nelkit Chavez.',
-	alternates: { canonical: 'https://nelkit.dev/projects' },
-	openGraph: {
-		type: 'website',
-		url: 'https://nelkit.dev/projects',
-		title: 'Projects · Nelkit Chavez',
-		description: 'A collection of software, ML, and AI projects by Nelkit Chavez.',
-		images: [{ url: 'https://nelkit.dev/img/og-image.jpg', width: 1200, height: 630 }],
-	},
-};
+type Props = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { locale, t } = await resolveLocale(params);
+	const url = `https://nelkit.dev/${locale}/projects`;
+	return {
+		title: t.meta.projectsTitle,
+		description: t.meta.projectsDescription,
+		alternates: { canonical: url },
+		openGraph: {
+			type: 'website',
+			url,
+			title: `${t.meta.projectsTitle} · Nelkit Chavez`,
+			description: t.meta.projectsDescription,
+			images: [{ url: 'https://nelkit.dev/img/og-image.jpg', width: 1200, height: 630 }],
+		},
+	};
+}
 
 async function fetchProjects() {
 	const query = qs.stringify({
@@ -36,7 +43,9 @@ async function fetchProjects() {
 	return transformProjects(data?.data ?? []);
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({ params }: Props) {
+	const { t, href } = await resolveLocale(params);
+	const copy = t.projects;
 	const projects = await fetchProjects();
 
 	return (
@@ -48,21 +57,21 @@ export default async function ProjectsPage() {
 
 			<div className="proj-list-wrap">
 				<div className="blog-header">
-					<Link href="/#work" className="proj-back">← Back</Link>
-					<h1 className="blog-heading">Projects<span className="ac">.</span></h1>
+					<Link href={href('/#work')} className="proj-back">← {t.common.back}</Link>
+					<h1 className="blog-heading">{copy.heading}<span className="ac">.</span></h1>
 					{projects.length > 0 && (
-						<p className="blog-subheading">{projects.length} projects · software, ML &amp; AI</p>
+						<p className="blog-subheading">{copy.count(projects.length)}</p>
 					)}
 				</div>
 
 				{projects.length === 0 ? (
-					<p style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>No projects yet — check back soon.</p>
+					<p style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>{copy.empty}</p>
 				) : (
 					<div className="proj-list-grid">
 						{projects.map((p, idx) => {
 							const featured = idx === 0;
 							return (
-								<Link key={p.slug} href={`/projects/${p.slug}`}
+								<Link key={p.slug} href={href(`/projects/${p.slug}`)}
 									className={'proj-list-card' + (featured ? ' proj-list-card-feat' : '')}>
 									{p.image ? (
 										<div className="proj-list-thumb">

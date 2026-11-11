@@ -1,4 +1,5 @@
 import { type CareerTimelineItem } from '@/app/data/content';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type CareerSectionProps = {
 	title: string;
@@ -6,6 +7,8 @@ type CareerSectionProps = {
 };
 
 export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
+	const { t } = useI18n();
+	const copy = t.sections.career;
 	const rows = careerTimeline.map((c) => ({
 		period: c.period,
 		title: c.title,
@@ -24,14 +27,14 @@ export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 		<section id="career" className="section">
 			<div className="sec-head">
 				<h2><span className="num">04</span> {title}<span className="ac">.</span></h2>
-				<span className="note">{totalYears} years of receipts</span>
+				<span className="note">{copy.note(totalYears)}</span>
 			</div>
 
 			<div className="career-table">
 				<div className="career-row h">
-					<span>Period</span>
-					<span>Role</span>
-					<span>Status</span>
+					<span>{copy.period}</span>
+					<span>{copy.role}</span>
+					<span>{copy.status}</span>
 				</div>
 				{rows.map((c) => (
 					<div className="career-row" key={c.period + c.title}>
@@ -40,7 +43,7 @@ export function CareerSection({ title, careerTimeline }: CareerSectionProps) {
 							<b>{c.title}</b>
 							<span>{c.detail}</span>
 						</span>
-						<span className={'badge' + (c.cur ? ' cur' : '')}>{c.cur ? 'Current' : 'Past'}</span>
+						<span className={'badge' + (c.cur ? ' cur' : '')}>{c.cur ? copy.current : copy.past}</span>
 					</div>
 				))}
 			</div>

@@ -3,6 +3,7 @@ import { getStrapiData } from '@/app/lib/strapi';
 import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import qs from 'qs';
+import { resolveLocale } from '@/app/lib/i18n/server';
 
 export const revalidate = 604800;
 
@@ -27,16 +28,20 @@ async function fetchPosts(page: number): Promise<{ posts: BlogEntry[]; total: nu
 	};
 }
 
-function formatDate(date: string) {
+function formatDate(date: string, dateLocale: string) {
 	if (!date) return '';
-	return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+	return new Date(date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default async function BlogPage({
+	params,
 	searchParams,
 }: {
+	params: Promise<{ locale: string }>;
 	searchParams: Promise<{ page?: string }>;
 }) {
+	const { t, href } = await resolveLocale(params);
+	const copy = t.blog;
 	const { page: pageParam } = await searchParams;
 	const page = Math.max(1, parseInt(pageParam || '1'));
 	const { posts, total } = await fetchPosts(page);
@@ -53,19 +58,19 @@ export default async function BlogPage({
 
 			<div className="blog-wrap">
 				<div className="blog-header">
-					<Link href="/#writing" className="proj-back">
-						<IArrowLeft /> Back
+					<Link href={href('/#writing')} className="proj-back">
+						<IArrowLeft /> {t.common.back}
 					</Link>
-					<h1 className="blog-heading">Writing<span className="ac">.</span></h1>
+					<h1 className="blog-heading">{copy.heading}<span className="ac">.</span></h1>
 					{posts.length === 0 && (
-						<p className="blog-subheading" style={{ opacity: 0.5 }}>No posts yet — check back soon.</p>
+						<p className="blog-subheading" style={{ opacity: 0.5 }}>{copy.empty}</p>
 					)}
-					{total > 0 && <p className="blog-subheading">{total} posts · notes on building, mobile &amp; ML</p>}
+					{total > 0 && <p className="blog-subheading">{copy.count(total)}</p>}
 				</div>
 
 				<div className="blog-grid">
 					{featured && (
-						<Link href={`/blog/${featured.slug}`} className="blog-card blog-card-feat">
+						<Link href={href(`/blog/${featured.slug}`)} className="blog-card blog-card-feat">
 							{featured.coverImage && (
 								<div className="blog-card-img">
 									<img src={featured.coverImage} alt={featured.title} />
@@ -73,8 +78,8 @@ export default async function BlogPage({
 							)}
 							<div className="blog-card-body">
 								<div className="blog-card-meta">
-									<span className="blog-card-date">{formatDate(featured.publishedDate)}</span>
-									{featured.readingTime > 0 && <span className="blog-card-read">{featured.readingTime} min read</span>}
+									<span className="blog-card-date">{formatDate(featured.publishedDate, t.meta.dateLocale)}</span>
+									{featured.readingTime > 0 && <span className="blog-card-read">{copy.minRead(featured.readingTime)}</span>}
 								</div>
 								<h2 className="blog-card-title">{featured.title}</h2>
 								<p className="blog-card-summary">{featured.summary}</p>
@@ -94,7 +99,7 @@ export default async function BlogPage({
 						return (
 							<Link
 								key={p.slug}
-								href={`/blog/${p.slug}`}
+								href={href(`/blog/${p.slug}`)}
 								className="blog-card"
 								style={{ gridColumn: colSpan }}
 							>
@@ -105,8 +110,8 @@ export default async function BlogPage({
 								)}
 								<div className="blog-card-body">
 									<div className="blog-card-meta">
-										<span className="blog-card-date">{formatDate(p.publishedDate)}</span>
-										{p.readingTime > 0 && <span className="blog-card-read">{p.readingTime} min</span>}
+										<span className="blog-card-date">{formatDate(p.publishedDate, t.meta.dateLocale)}</span>
+										{p.readingTime > 0 && <span className="blog-card-read">{copy.minutes(p.readingTime)}</span>}
 									</div>
 									<h2 className="blog-card-title">{p.title}</h2>
 									<p className="blog-card-summary">{p.summary}</p>
@@ -125,14 +130,14 @@ export default async function BlogPage({
 				{totalPages > 1 && (
 					<div className="blog-pagination">
 						{page > 1 && (
-							<Link href={`/blog?page=${page - 1}`} className="btn btn-outline">
-								<IArrowLeft /> Previous
+							<Link href={href(`/blog?page=${page - 1}`)} className="btn btn-outline">
+								<IArrowLeft /> {copy.previous}
 							</Link>
 						)}
 						<span className="blog-page-info">{page} / {totalPages}</span>
 						{page < totalPages && (
-							<Link href={`/blog?page=${page + 1}`} className="btn btn-outline">
-								Next <IArrowUR />
+							<Link href={href(`/blog?page=${page + 1}`)} className="btn btn-outline">
+								{copy.next} <IArrowUR />
 							</Link>
 						)}
 					</div>

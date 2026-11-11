@@ -6,17 +6,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "admin:hash-password": "node scripts/hash-password.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.68",
     "@ai-sdk/react": "^3.0.199",
+    "@libsql/client": "0.18.0",
     "@next/third-parties": "^16.2.9",
     "@notionhq/client": "^5.22.0",
     "@strapi/blocks-react-renderer": "^1.0.2",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "ai": "^6.0.197",
+    "drizzle-orm": "0.45.4",
+    "jose": "6.2.17",
     "lucide-react": "^0.554.0",
     "next": "16.0.11",
     "qs": "^6.14.0",
@@ -24,17 +32,21 @@
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
     "shiki": "^4.2.0",
-    "yet-another-react-lightbox": "^3.32.0"
+    "yet-another-react-lightbox": "^3.32.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/qs": "^6.14.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.0.11",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^7.3.8",
+    "vitest": "5.1.0"
   }
 }

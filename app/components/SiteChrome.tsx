@@ -4,6 +4,8 @@ import { mediaUrl } from '@/app/lib/constant';
 import qs from 'qs';
 import { SiteTopbar } from '@/app/components/SiteTopbar';
 import { FooterButtons } from '@/app/components/FooterButtons';
+import { getDictionary } from '@/app/lib/i18n/dictionaries';
+import type { Locale } from '@/app/lib/i18n/locales';
 
 type SocialLink = { type: string; href: string };
 
@@ -29,7 +31,8 @@ function resolveLinks(links: SocialLink[]) {
 
 // Shared top bar + footer used by the /blog and /projects layouts.
 // The home page uses its own MainNav (which hosts the AI chat), so it's excluded.
-export async function SiteChrome({ children }: { children: React.ReactNode }) {
+export async function SiteChrome({ locale, children }: { locale: Locale; children: React.ReactNode }) {
+	const t = getDictionary(locale);
 	const { links, resumeUrl } = await fetchChromeData();
 	const { github, linkedin, email } = resolveLinks(links);
 
@@ -42,7 +45,7 @@ export async function SiteChrome({ children }: { children: React.ReactNode }) {
 			<div className="wrap">
 				<footer className="proj-simple-footer">
 					<div className="foot-row">
-						<span className="c">© 2026 Nelkit Chavez · Built in Sydney</span>
+						<span className="c">© 2026 Nelkit Chavez · {t.common.builtIn}</span>
 						<FooterButtons github={github} linkedin={linkedin} emailHref={email} />
 					</div>
 				</footer>

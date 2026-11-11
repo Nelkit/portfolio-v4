@@ -10,6 +10,7 @@ import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 import { TrackProjectView } from '@/app/components/TrackProjectView';
 import { PostBody } from '@/app/components/PostBody';
 import type { BlocksContent } from '@strapi/blocks-react-renderer';
+import { resolveLocale } from '@/app/lib/i18n/server';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -78,13 +79,14 @@ async function fetchOtherProjects(currentSlug: string) {
 }
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: { params: Promise<{ locale: string; slug: string }> }
 ): Promise<Metadata> {
+	const { locale } = await resolveLocale(params);
 	const { slug } = await params;
 	const project = await fetchProject(slug);
 	if (!project) return {};
 
-	const url = `https://nelkit.dev/projects/${slug}`;
+	const url = `https://nelkit.dev/${locale}/projects/${slug}`;
 	const ogImage = mediaUrl(project.image?.url) || 'https://nelkit.dev/img/og-image.jpg';
 	// description is now rich-text (blocks); only use it for meta if it's still a
 	// plain string (legacy). Otherwise fall back to summary to avoid "[object Object]".
@@ -112,7 +114,9 @@ export async function generateMetadata(
 	};
 }
 
-export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+	const { t, href } = await resolveLocale(params);
+	const copy = t.projects;
 	const { slug } = await params;
 	const [project, others] = await Promise.all([
 		fetchProject(slug),
@@ -152,8 +156,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 			</div>
 
 			<div className="proj-detail-wrap">
-				<Link href="/#work" className="proj-back">
-					<IArrowLeft /> Back to projects
+				<Link href={href('/#work')} className="proj-back">
+					<IArrowLeft /> {copy.backToProjects}
 				</Link>
 
 				<div className="proj-layout">
@@ -213,7 +217,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
 						{tech.length > 0 && (
 							<div className="proj-section proj-section-stack">
-								<h2 className="proj-section-title">Tech stack</h2>
+								<h2 className="proj-section-title">{copy.techStack}</h2>
 								<div className="proj-tags">
 									{tech.map((t: string) => (
 										<span key={t} className="proj-tag">{t}</span>
@@ -224,7 +228,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
 						{screenshots.length > 0 && (
 							<div className="proj-section">
-								<h2 className="proj-section-title">Screenshots</h2>
+								<h2 className="proj-section-title">{copy.screenshots}</h2>
 								<ScreenshotGallery screenshots={screenshots} />
 							</div>
 						)}
@@ -233,7 +237,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 					{/* Aside — other projects */}
 					{others.length > 0 && (
 						<aside className="proj-aside">
-							<p className="proj-aside-label">More projects</p>
+							<p className="proj-aside-label">{copy.moreProjects}</p>
 							<div className="proj-aside-list">
 								{others.map((p: any) => {
 									const thumb = mediaUrl(p.image?.url) || null;
@@ -241,7 +245,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 									return (
 										<Link
 											key={p.documentId}
-											href={`/projects/${p.documentId}`}
+											href={href(`/projects/${p.documentId}`)}
 											className="proj-aside-card"
 										>
 											{thumb ? (
