@@ -37,7 +37,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `376a406`._
 - [x] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
   _Commit `11d2dfa`._
-- [ ] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
+- [x] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
+  _Commit `8367449`._
 - [ ] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
 
 Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
@@ -153,6 +154,15 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
 - [ ] El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
 - [ ] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes.
+
+### Historia 13 — Tags del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0011`: `tags`, `tag_translations`, `post_tags`).
+- [ ] Crear los tags en `/admin/tags` y marcarlos en cada post.
+- [ ] El filtro de `/blog` solo muestra tags con posts en ese idioma; `?tag=` desconocido muestra todos.
+- [ ] Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
+- [ ] Probar en el navegador las casillas de tags del editor y los chips del filtro.
 
 ### Strapi como fuente opcional
 
