@@ -4,11 +4,13 @@ import { useState } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type Shot = { url: string; alt: string };
 
 export function ScreenshotGallery({ screenshots }: { screenshots: Shot[] }) {
 	const [index, setIndex] = useState(-1);
+	const { t } = useI18n();
 
 	return (
 		<>
@@ -19,7 +21,7 @@ export function ScreenshotGallery({ screenshots }: { screenshots: Shot[] }) {
 						type="button"
 						className="proj-screenshot-wrap"
 						onClick={() => setIndex(i)}
-						aria-label={`Open screenshot: ${s.alt}`}
+						aria-label={t.projects.openScreenshot(s.alt)}
 					>
 						<img src={s.url} alt={s.alt} className="proj-screenshot" />
 						<span className="proj-screenshot-overlay" aria-hidden="true">

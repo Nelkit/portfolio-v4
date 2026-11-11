@@ -1,0 +1,215 @@
+# Backlog
+
+Portfolio y blog con panel de administración propio que reemplaza a Strapi.
+Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
+
+**Cómo usar este documento**
+
+- `[x]` historia terminada · `[ ]` pendiente.
+- Al cerrar una historia: marcarla, anotar el commit y mover a **Pendientes** lo que quedó abierto.
+- Los pendientes se tachan (`[x]`) cuando se resuelven; no se borran, para conservar el historial.
+
+---
+
+## Historias
+
+- [x] **1.** Como administrador, quiero iniciar sesión en el panel y editar el titular del hero, para ver el cambio en el sitio público al instante.
+  _Commit `f980dd9` (junto con la #2)._
+- [x] **2.** Como visitante, quiero cambiar el sitio entre español e inglés, para leerlo en mi idioma. Requiere: #1
+  _Commit `f980dd9`._
+- [x] **3.** Como administrador, quiero editar la información de presentación (avatar, intro, CV, redes sociales y CTA), para mantener actualizada mi carta de presentación. Requiere: #1
+  _Commit `335cd63`._
+- [x] **4.** Como administrador, quiero crear, editar, eliminar y reordenar proyectos con descripción en rich text, para mostrar mi trabajo actual. Requiere: #1
+  _Commit `2ec1058`._
+- [x] **5.** Como administrador, quiero subir la imagen principal y las capturas de cada proyecto, para que los visitantes vean el resultado. Requiere: #4
+  _Commit `710e1eb`._
+- [x] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
+  _Commit `f3ba27d`._
+- [x] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
+  _Commit `0580387`._
+- [x] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
+  _Commit `232f177`._
+- [x] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
+  _Commit `a2d9073`._
+- [x] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
+  _Commit `56a0442`._
+- [x] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
+  _Commit `376a406`._
+- [x] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
+  _Commit `11d2dfa`._
+- [x] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
+  _Commit `8367449`._
+- [x] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
+  _Commit `c7a4e32`._
+
+Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
+
+---
+
+## Pendientes
+
+### Historia 1 — Login y titular
+
+- [x] Rate limiting del login: 5 intentos por IP cada 15 min (se comprueba antes de la contraseña), además de los 800 ms por intento fallido.
+- [ ] Crear una base Redis en Upstash (o la integración de Vercel) y configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` (o `KV_REST_API_URL`/`KV_REST_API_TOKEN`). Sin ellas el límite vive en la memoria de cada instancia y no se comparte en producción.
+- [ ] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy.
+- [x] `package-lock.json` borrado; el proyecto declara `packageManager: pnpm@10.14.0` (la versión que generó `pnpm-lock.yaml`).
+
+### Historia 2 — Español e inglés
+
+- [ ] Verificar en producción que `/es/no-existe` muestra el 404 en español (en dev el HTML inicial es el shell de error genérico de Next).
+- [ ] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)).
+- [ ] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe).
+- [x] Node fijado: `.nvmrc` = `22` y `engines.node` = `22.x` (Vercel construye con Node 22).
+- [ ] En tu terminal: `nvm use` (lee `.nvmrc`) y `corepack enable` para que `pnpm` use la 10.14.0; con el pnpm 9 global el proyecto ahora da `ERR_PNPM_BAD_PM_VERSION`.
+- [x] Borrar `app/components/sections/CareerTimeline.tsx` (borrado en la #11).
+
+### Historia 3 — Perfil
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0001`, tablas del perfil).
+- [x] Bucket R2 `portfolio-bucket` (jurisdicción US) con dominio `media.nelkit.dev` y variables `R2_*` + `R2_JURISDICTION=us` configuradas en local; subida y lectura pública verificadas.
+- [x] ⚠️ Resuelto con R2: las subidas ya no quedan en el disco local. Archivos subidos antes a `public/uploads/` (si los hay) siguen solo en tu disco: re-subirlos desde el admin.
+- [ ] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas).
+- [ ] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo).
+
+### Historia 4 — Proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos).
+- [ ] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran).
+- [ ] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript).
+- [ ] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`.
+- [ ] Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
+- [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
+
+### Historia 5 — Imágenes de proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0003`: tabla `project_screenshots` y columna `image_key`).
+- [ ] Las imágenes se gestionan en la página de edición del proyecto y se guardan al instante (un request por archivo, máx. 3 MB cada uno). Un proyecto nuevo primero se crea y luego se le agregan imágenes.
+- [ ] Probar en el navegador el flujo completo del admin (subir varias capturas a la vez, reordenar, quitar). En local se probó llamando a los server actions con el mismo protocolo que usa el navegador, no con el navegador real.
+- [ ] La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
+- [ ] Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
+
+### Historia 6 — Áreas de expertise
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0004`: tablas de áreas y columna `projects.area_id`).
+- [ ] Crear las áreas en `/admin/areas` y asignarlas a cada proyecto (las de Strapi no se migran).
+- [ ] Probar en el navegador el filtro por chips (home y `/projects`): el filtrado es estado del cliente y en local solo se verificó el HTML inicial (chips, conteos y etiquetas), no el clic.
+- [ ] El filtro solo aparece cuando hay 2 o más áreas con proyectos.
+- [ ] La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
+
+### Historia 7 — Stack tecnológico
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías).
+- [ ] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran).
+- [ ] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics.
+- [ ] Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
+- [x] Corregido de paso: `SkillsSection` llamaba a `useState` después de un `return` condicional (violaba las reglas de los hooks).
+
+### Historia 8 — Skills de los proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0006`: tabla `project_skills`).
+- [ ] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack").
+- [ ] Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
+- [ ] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics).
+
+### Historia 9 — Trayectoria
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0007`: tablas de trayectoria).
+- [ ] Cargar las entradas reales en `/admin/career` (las de Strapi no se migran).
+- [ ] El orden es automático (puesto actual primero, luego por inicio descendente); no hay orden manual.
+- [ ] Los años de experiencia se calculan al renderizar la página (que se regenera semanalmente); pueden tardar hasta una semana en sumar un año si no editas nada.
+- [ ] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`).
+- [x] Corregido de paso: los años de experiencia usaban 2026 escrito a mano y el estado "actual" se deducía buscando "now"/"present" en el texto.
+
+### Historia 10 — Educación
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0008`: tablas de educación).
+- [ ] Cargar las entradas reales en `/admin/education` (las de Strapi no se migran).
+- [ ] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador.
+- [ ] La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
+
+### Historia 11 — Editor del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0009`: `posts` y `post_translations`).
+- [ ] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran).
+- [ ] Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
+- [ ] El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
+- [ ] La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
+- [ ] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario.
+- [x] El contenedor del admin pasó de `max-w-3xl` a `max-w-6xl` para que el editor tenga escritura y vista previa lado a lado.
+
+### Historia 12 — Imágenes del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0010`: tabla `post_images` y columna `posts.cover_key`).
+- [ ] Las imágenes del cuerpo se referencian como `upload:<clave>` y se convierten en URL al renderizar: si cambias de almacenamiento (local → R2) los posts no se rompen. No escribas URLs `/uploads/...` a mano.
+- [ ] Un post nuevo primero se publica (guarda) y luego se le agregan portada e imágenes.
+- [ ] No se puede borrar una imagen que el cuerpo guardado todavía usa; si la quitas del texto, guarda antes de borrarla.
+- [ ] Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
+- [ ] El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
+- [ ] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes.
+
+### Historia 13 — Tags del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0011`: `tags`, `tag_translations`, `post_tags`).
+- [ ] Crear los tags en `/admin/tags` y marcarlos en cada post.
+- [ ] El filtro de `/blog` solo muestra tags con posts en ese idioma; `?tag=` desconocido muestra todos.
+- [ ] Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
+- [ ] Probar en el navegador las casillas de tags del editor y los chips del filtro.
+
+### Historia 14 — Borradores
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0012`: columna `posts.status`; los posts existentes quedan publicados).
+- [ ] Un borrador no aparece en listados, home, relacionados ni rutas generadas, y su URL responde como inexistente (404 pintado en el cliente por el `loading.tsx`, igual que el resto de soft 404).
+- [ ] No hay vista previa "en el sitio" de un borrador: se revisa con la vista previa del editor.
+- [ ] El estado es por post, no por idioma (no se puede publicar solo una de las dos versiones).
+- [ ] Probar en el navegador los botones Publicar / Guardar borrador / Despublicar.
+
+### Strapi como fuente opcional
+
+- [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
+- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído.
+- [x] El titular de prueba en caché ya no aplica: en desarrollo no se cachea (`cachedRead`).
+
+### Migración de contenido desde Strapi
+
+- [x] Contenido de Strapi importado a Turso (`portfolio-db-nelkit`) y R2 con `scripts/import-strapi/` (extract → traducción al español → import).
+- [ ] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre).
+- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron.
+
+### Para historias futuras
+
+- [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
+- [x] **#12:** las imágenes de los posts siguen el mismo patrón que la #5 (un request por archivo).
+- [x] **#4 a #10:** el home ya no consulta la página de inicio de Strapi; solo quedan los posts recientes del blog (#11 a #14).
+- [x] **#8:** las tarjetas y el detalle de proyectos ya muestran imagen (#5), área (#6) y tecnologías (#8).
+- [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
+
+### Generales
+
+- [x] R2 respondía `NoSuchBucket`/`AccessDenied` con credenciales correctas: el bucket tiene jurisdicción **US explícita** y vive en `<account>.us.r2.cloudflarestorage.com`, pero el código usaba siempre el endpoint por defecto. Ahora se configura con `R2_JURISDICTION` (`us` | `eu` | `fedramp`; vacío = por defecto).
+- [ ] Agregar `R2_JURISDICTION=us` en Vercel (además de las otras `R2_*`).
+- [ ] Borrar en Cloudflare los tokens de R2 de prueba que ya no se usan.
+
+- [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
+
+- [ ] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`.
+- [ ] Primer deploy de preview y verificación de punta a punta.
+- [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
+- [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
+- [ ] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo).
+- [ ] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores.
+- [ ] (Opcional) Regla de ciclo de vida en el bucket de respaldos para borrar los de más de N días.
+- [x] Strapi retirado en la #11: `strapi.ts`, `constant.ts`, `PostBody`, `inlineMarkdown`, los `transform*` de `content.ts`, `CareerTimeline.tsx`, las dependencias `qs`, `@types/qs` y `@strapi/blocks-react-renderer` y los `remotePatterns` de Strapi.
+- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa).

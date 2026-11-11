@@ -1,45 +1,43 @@
 'use client';
 
 import { useState } from 'react';
-import { type SkillCategory } from '@/app/data/content';
+import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type SkillsSectionProps = {
-	skillCategories: SkillCategory[];
+	categories: CategoryView[];
 };
 
-export function SkillsSection({ skillCategories }: SkillsSectionProps) {
-	if (skillCategories.length === 0) return null;
+export function SkillsSection({ categories }: SkillsSectionProps) {
+	const { t } = useI18n();
+	const [activeId, setActiveId] = useState<number | null>(categories[0]?.id ?? null);
+	if (categories.length === 0) return null;
 
-	const stacks: Record<string, string[]> = Object.fromEntries(
-		skillCategories.map((c) => [c.label, c.skills]),
-	);
-
-	const tabs = Object.keys(stacks);
-	const totalTools = Object.values(stacks).reduce((a, b) => a + b.length, 0);
-
-	const [activeTab, setActiveTab] = useState(tabs[0] ?? '');
+	// A skill listed in several categories counts once.
+	const totalTools = countUniqueSkills(categories);
+	const active = categories.find((c) => c.id === activeId) ?? categories[0];
 
 	return (
 		<section id="stack" className="section">
 			<div className="sec-head">
-				<h2><span className="num">03</span> Tech stack<span className="ac">.</span></h2>
-				<span className="note">{totalTools} tools · grouped by domain</span>
+				<h2><span className="num">03</span> {t.sections.stack.title}<span className="ac">.</span></h2>
+				<span className="note">{t.sections.stack.note(totalTools)}</span>
 			</div>
 
 			<div className="stack-tabs">
-				{tabs.map((k) => (
+				{categories.map((c) => (
 					<button
-						key={k}
-						className={'stack-tab' + (activeTab === k ? ' on' : '')}
-						onClick={() => setActiveTab(k)}
+						key={c.id}
+						className={'stack-tab' + (active.id === c.id ? ' on' : '')}
+						onClick={() => setActiveId(c.id)}
 					>
-						{k}<span className="c">{String(stacks[k].length).padStart(2, '0')}</span>
+						{c.name}<span className="c">{String(c.skills.length).padStart(2, '0')}</span>
 					</button>
 				))}
 			</div>
 
 			<div className="tool-grid">
-				{(stacks[activeTab] ?? []).map((tool) => (
+				{active.skills.map((tool) => (
 					<span className="tool" key={tool}>{tool}</span>
 				))}
 			</div>

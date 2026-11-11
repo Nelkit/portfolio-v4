@@ -9,56 +9,99 @@ import { EducationSection } from '@/app/components/sections/EducationSection';
 import { RecentWritingSection } from '@/app/components/sections/RecentWritingSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
-import { mediaUrl } from '@/app/lib/constant';
-import {
-	type SkillCategory,
-	type Expertise as ExpertiseType,
-	type BlogEntry,
-	transformExpertiseAreas,
-	transformSkillCategories,
-	transformProjects,
-	transformCareerEntries,
-	transformEducationEntries,
-} from '@/app/data/content';
+import type { PublicProfile } from '@/app/lib/content/profile/profile';
+import type { ProjectView } from '@/app/lib/content/projects/project';
+import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
+import type { CareerView } from '@/app/lib/content/career/career';
+import type { EducationView } from '@/app/lib/content/education/education';
+import { type Project, getIcon } from '@/app/data/content';
+import type { PostSummary } from '@/app/lib/content/posts/post';
 
 import { IHelp } from '@/app/components/icons';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
-type ClientWrapperProps = { strapiData: any; recentPosts: BlogEntry[] };
+type ClientWrapperProps = {
+	recentPosts: PostSummary[];
+	/** Hero headline from the admin (Turso). */
+	headline?: string;
+	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
+	profile: PublicProfile | null;
+	/** Projects from the admin (Turso), in display order. */
+	projects: ProjectView[];
+	/** Expertise areas from the admin (Turso), for the project filter. */
+	areas: { id: number; name: string }[];
+	/** Tech-stack categories from the admin (Turso). */
+	skillCategories: CategoryView[];
+	/** Career timeline from the admin (Turso), current roles first. */
+	career: CareerView[];
+	/** Full years since the earliest role (computed at render). */
+	careerYears: number;
+	/** Education entries from the admin (Turso), in-progress first. */
+	education: EducationView[];
+};
+
+/** Adapts admin projects to the card shape the section renders. */
+function toProjectCards(projects: ProjectView[]): Project[] {
+	return projects.map((p) => ({
+		slug: p.slug,
+		title: p.title,
+		summary: p.summary,
+		description: p.description,
+		company: p.company,
+		tech: p.skills,
+		color: '',
+		icon: getIcon(''),
+		expertise_area: p.area?.name ?? '',
+		areaId: p.area?.id ?? null,
+		image: p.imageUrl ?? '',
+		screenshots: p.screenshots,
+		links: p.links,
+	}));
+}
+
+/** Adapts admin links to the shape the existing sections render. */
+function toSectionLinks(profile: PublicProfile | null) {
+	return profile?.links.map((l) => ({
+		type: l.type,
+		href: l.url,
+		label: l.label,
+		isExternal: l.type !== 'email',
+	}));
+}
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
+export function ClientWrapper({ recentPosts, headline, profile, projects: projectViews, areas, skillCategories, career, careerYears, education }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [chatInputFocused, setChatInputFocused] = useState(false);
 	const heroRef = useRef<HTMLElement | null>(null);
+	const { t } = useI18n();
 
-	const data = strapiData?.data || {};
-	const { title, subtitle, description, headline, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
-	const resumeUrl = mediaUrl(resume?.url) || undefined;
+	const title = profile?.name;
+	const subtitle = profile?.role;
+	const description = profile?.intro;
+	const avatarImage = profile?.avatarUrl ? { url: profile.avatarUrl, alternativeText: profile.name } : undefined;
+	const socialNetworkLinks = toSectionLinks(profile);
+	const resumeUrl = profile?.cvUrl ?? undefined;
+	const ctaSection = profile
+		? {
+			available: profile.contact.available,
+			header: profile.contact.headline,
+			description: profile.contact.description,
+			email: profile.contact.email ?? undefined,
+		}
+		: undefined;
 
-	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
-		? transformExpertiseAreas(data.projectSection.expertiseAreas)
-		: [];
 
-	const skillCategories: SkillCategory[] = data.techStackSection?.skillCategories
-		? transformSkillCategories(data.techStackSection.skillCategories)
-		: [];
 
-	const projectSectionTitle: string = data.projectSection?.title || 'Selected work';
-	const projects = data.projectSection?.projects
-		? transformProjects(data.projectSection.projects)
-		: [];
+	// Section titles are fixed UI copy (dictionary), not editable content.
+	const projectSectionTitle = t.sections.projects.title;
+	const projects = toProjectCards(projectViews);
 
-	const careerSectionTitle: string = data.careerSection?.title || 'Career';
-	const careerTimeline = data.careerSection?.careerEntries
-		? transformCareerEntries(data.careerSection.careerEntries)
-		: [];
+	const careerSectionTitle = t.sections.career.title;
 
-	const education = data.educationSection?.educationEntries
-		? transformEducationEntries(data.educationSection.educationEntries)
-		: [];
 
 	// On mount: read the theme the inline <head> script already applied to <html>
 	// (OS preference or saved choice) and sync React state to it. We never write
@@ -124,25 +167,17 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 		if ((window as any).__askAgent) (window as any).__askAgent(q, key);
 	};
 
-	const totalTools = skillCategories.reduce((a, c) => a + c.skills.length, 0);
+	const totalTools = countUniqueSkills(skillCategories);
 	const totalDomains = skillCategories.length;
-	const careerYears = (() => {
-		if (!careerTimeline.length) return 0;
-		const years = careerTimeline
-			.flatMap((c) => [...(c.period.match(/\d{4}/g) ?? [])])
-			.map(Number)
-			.filter(Boolean);
-		if (!years.length) return 0;
-		return new Date().getFullYear() - Math.min(...years);
-	})();
 
+	const sub = t.home.navSub;
 	const navItems = [
-		{ id: 'work',      label: 'Work',      sub: `${projects.length} project${projects.length !== 1 ? 's' : ''} · shipped`,      meta: '01' },
-		{ id: 'stack',     label: 'Stack',     sub: `${totalTools || '—'} tools · ${totalDomains || '—'} domains`,                  meta: '02' },
-		{ id: 'career',    label: 'Career',    sub: `${careerYears ? `${careerYears} years` : '—'} · ${careerTimeline.length} roles`, meta: '03' },
-		{ id: 'education', label: 'Education', sub: `${education.length} entr${education.length !== 1 ? 'ies' : 'y'}`,              meta: '04' },
-		{ id: 'writing',   label: 'Writing',   sub: 'Recent notes',                                                                  meta: '05' },
-		{ id: 'contact',   label: 'Contact',   sub: 'Open to roles · 2026',                                                         meta: '06' },
+		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: '01' },
+		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: '02' },
+		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', career.length),         meta: '03' },
+		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: '04' },
+		{ id: 'writing',   label: t.common.nav.writing,   sub: sub.writing,                                                                          meta: '05' },
+		{ id: 'contact',   label: t.common.nav.contact,   sub: sub.contact,                                                                          meta: '06' },
 	];
 
 	return (
@@ -178,16 +213,18 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 				<ProjectsSection
 					title={projectSectionTitle}
 					projects={projects}
+					areas={areas}
 					onNav={navTo}
 				/>
 
 				<SkillsSection
-					skillCategories={skillCategories}
+					categories={skillCategories}
 				/>
 
 				<CareerSection
 					title={careerSectionTitle}
-					careerTimeline={careerTimeline}
+					entries={career}
+					years={careerYears}
 				/>
 
 				<EducationSection education={education} />
@@ -205,10 +242,10 @@ export function ClientWrapper({ strapiData, recentPosts }: ClientWrapperProps) {
 			    focused on mobile (keyboard open) so it doesn't overlap the keyboard. */}
 			<button
 				className={'ask-fab' + (chatInputFocused ? ' ask-fab-hidden' : '')}
-				aria-label="Ask the agent about Nelkit"
-				onClick={() => askAgent('Tell me about your ML work', 'ml')}
+				aria-label={t.home.fab.aria}
+				onClick={() => askAgent(t.home.fab.question, 'ml')}
 			>
-				<span className="pop">Ask the agent →</span>
+				<span className="pop">{t.home.fab.label}</span>
 				<IHelp />
 			</button>
 		</>

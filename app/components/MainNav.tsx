@@ -4,15 +4,10 @@ import Image from "next/image";
 import { ISun, IMoon } from '@/app/components/icons';
 import { NavDrawer } from '@/app/components/NavDrawer';
 import { trackEvent } from '@/app/lib/analytics';
+import { LanguageSwitch } from '@/app/components/LanguageSwitch';
+import { useI18n } from '@/app/lib/i18n/I18nProvider';
+import { NAV_IDS } from '@/app/components/NavDrawer';
 
-const NAV_ITEMS = [
-	{ id: 'work',      label: 'Work' },
-	{ id: 'stack',     label: 'Stack' },
-	{ id: 'career',    label: 'Career' },
-	{ id: 'education', label: 'Education' },
-	{ id: 'writing',   label: 'Writing' },
-	{ id: 'contact',   label: 'Contact' },
-];
 
 const IMenu = () => (
 	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -37,6 +32,9 @@ type MainNavProps = {
 };
 
 export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resumeUrl }: MainNavProps) {
+	const { t } = useI18n();
+	const navItems = NAV_IDS.map((id) => ({ id, label: t.common.nav[id] }));
+
 	const handleNav = (id: string) => {
 		onNav(id);
 		setOpen(false);
@@ -52,23 +50,24 @@ export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resu
 
 				{/* Desktop links */}
 				<div className="fn-links">
-					{NAV_ITEMS.map((n) => (
+					{navItems.map((n) => (
 						<a key={n.id} href={'#' + n.id}
 						   onClick={(e) => { e.preventDefault(); handleNav(n.id); }}>
 							{n.label}
 						</a>
 					))}
-					<button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+					<button className="theme-toggle" onClick={onToggleTheme} aria-label={t.common.toggleTheme}>
 						{theme === 'light' ? <IMoon /> : <ISun />}
 					</button>
+					<LanguageSwitch className="theme-toggle lang-toggle" />
 					<a className="fn-cta" href="#contact"
 					   onClick={(e) => { e.preventDefault(); handleNav('contact'); }}>
-						Get in touch
+						{t.common.getInTouch}
 					</a>
 				</div>
 
 				{/* Mobile hamburger */}
-				<button className="fn-hamburger" onClick={() => setOpen(!open)} aria-label="Menu">
+				<button className="fn-hamburger" onClick={() => setOpen(!open)} aria-label={t.common.menu}>
 					{open ? <IClose /> : <IMenu />}
 				</button>
 			</nav>
@@ -76,7 +75,7 @@ export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resu
 			{/* Drawer */}
 			{open && (
 				<NavDrawer
-					items={NAV_ITEMS}
+					items={navItems}
 					onClose={() => setOpen(false)}
 					theme={theme}
 					onToggleTheme={onToggleTheme}
@@ -92,7 +91,7 @@ export function MainNav({ show, theme, onToggleTheme, onNav, open, setOpen, resu
 					renderCta={() => (
 						<a className="btn btn-accent fn-drawer-cta" href="#contact"
 						   onClick={(e) => { e.preventDefault(); trackEvent('contact_cta_clicked', { location: 'drawer' }); handleNav('contact'); }}>
-							Get in touch
+							{t.common.getInTouch}
 						</a>
 					)}
 				/>

@@ -1210,6 +1210,18 @@ input {
   height: 17px;
 }
 
+/* Language switch — shares the shape of .soc / .theme-toggle, shows "ES"/"EN" */
+.lang-toggle {
+  font-family: var(--font-jetbrains-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.fn-drawer-foot .lang-toggle {
+  flex: none;
+}
+
 /* ---- FLOATING ASK FAB ---- */
 .ask-fab {
   position: fixed;
@@ -3270,4 +3282,18 @@ footer {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Images uploaded inside a post body (Markdown ![alt](upload:key)) */
+.post-body .post-body-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+}
+
+/* Related posts at the end of a blog post (reuses the project aside cards) */
+.post-related {
+  margin-top: 56px;
 }
