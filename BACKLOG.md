@@ -33,7 +33,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `a2d9073`._
 - [x] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
   _Commit `56a0442`._
-- [ ] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
+- [x] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
+  _Commit `376a406`._
 - [ ] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
 - [ ] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
 - [ ] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
@@ -56,7 +57,7 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)).
 - [ ] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe).
 - [ ] Fijar la versión de Node (`.nvmrc` y/o `engines`). Vitest 5 exige Node ≥ 22.12 y la terminal por defecto usa 20.17. Ojo: `engines` también cambia el Node de Vercel.
-- [ ] Borrar `app/components/sections/CareerTimeline.tsx` (código muerto, nadie lo importa).
+- [x] Borrar `app/components/sections/CareerTimeline.tsx` (borrado en la #11).
 
 ### Historia 3 — Perfil
 
@@ -130,6 +131,17 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador.
 - [ ] La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
 
+### Historia 11 — Editor del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0009`: `posts` y `post_translations`).
+- [ ] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran).
+- [ ] Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
+- [ ] El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
+- [ ] La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
+- [ ] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario.
+- [x] El contenedor del admin pasó de `max-w-3xl` a `max-w-6xl` para que el editor tenga escritura y vista previa lado a lado.
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -150,4 +162,5 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Primer deploy de preview y verificación de punta a punta.
 - [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
 - [ ] Cron diario que mantenga viva la base de Turso (el plan Free archiva tras 10 días sin actividad) y exporte un respaldo en JSON a R2.
-- [ ] Cuando todas las secciones estén migradas: retirar Strapi (`app/lib/strapi.ts`, `qs`, `@strapi/blocks-react-renderer`, `remotePatterns` de Strapi, `NEXT_PUBLIC_STRAPI_URL`).
+- [x] Strapi retirado en la #11: `strapi.ts`, `constant.ts`, `PostBody`, `inlineMarkdown`, los `transform*` de `content.ts`, `CareerTimeline.tsx`, las dependencias `qs`, `@types/qs` y `@strapi/blocks-react-renderer` y los `remotePatterns` de Strapi.
+- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa).
