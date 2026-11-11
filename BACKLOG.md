@@ -35,7 +35,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `56a0442`._
 - [x] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
   _Commit `376a406`._
-- [ ] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
+- [x] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
+  _Commit `11d2dfa`._
 - [ ] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
 - [ ] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
 
@@ -142,6 +143,17 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario.
 - [x] El contenedor del admin pasó de `max-w-3xl` a `max-w-6xl` para que el editor tenga escritura y vista previa lado a lado.
 
+### Historia 12 — Imágenes del blog
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0010`: tabla `post_images` y columna `posts.cover_key`).
+- [ ] Las imágenes del cuerpo se referencian como `upload:<clave>` y se convierten en URL al renderizar: si cambias de almacenamiento (local → R2) los posts no se rompen. No escribas URLs `/uploads/...` a mano.
+- [ ] Un post nuevo primero se publica (guarda) y luego se le agregan portada e imágenes.
+- [ ] No se puede borrar una imagen que el cuerpo guardado todavía usa; si la quitas del texto, guarda antes de borrarla.
+- [ ] Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
+- [ ] El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
+- [ ] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes.
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -151,12 +163,14 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 ### Para historias futuras
 
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
-- [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
+- [x] **#12:** las imágenes de los posts siguen el mismo patrón que la #5 (un request por archivo).
 - [x] **#4 a #10:** el home ya no consulta la página de inicio de Strapi; solo quedan los posts recientes del blog (#11 a #14).
 - [x] **#8:** las tarjetas y el detalle de proyectos ya muestran imagen (#5), área (#6) y tecnologías (#8).
 - [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
 
 ### Generales
+
+- [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
 
 - [ ] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`.
 - [ ] Primer deploy de preview y verificación de punta a punta.
