@@ -13,20 +13,19 @@ import type { PublicProfile } from '@/app/lib/content/profile/profile';
 import type { ProjectView } from '@/app/lib/content/projects/project';
 import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
 import type { CareerView } from '@/app/lib/content/career/career';
+import type { EducationView } from '@/app/lib/content/education/education';
 import {
 	type Project,
 	getIcon,
 	type BlogEntry,
-	transformEducationEntries,
 } from '@/app/data/content';
 
 import { IHelp } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type ClientWrapperProps = {
-	strapiData: any;
 	recentPosts: BlogEntry[];
-	/** Hero headline from the admin (Turso). Sections not yet migrated still read strapiData. */
+	/** Hero headline from the admin (Turso). */
 	headline?: string;
 	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
 	profile: PublicProfile | null;
@@ -40,6 +39,8 @@ type ClientWrapperProps = {
 	career: CareerView[];
 	/** Full years since the earliest role (computed at render). */
 	careerYears: number;
+	/** Education entries from the admin (Turso), in-progress first. */
+	education: EducationView[];
 };
 
 /** Adapts admin projects to the card shape the section renders. */
@@ -73,7 +74,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas, skillCategories, career, careerYears }: ClientWrapperProps) {
+export function ClientWrapper({ recentPosts, headline, profile, projects: projectViews, areas, skillCategories, career, careerYears, education }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -81,7 +82,6 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 	const heroRef = useRef<HTMLElement | null>(null);
 	const { t } = useI18n();
 
-	const data = strapiData?.data || {};
 	const title = profile?.name;
 	const subtitle = profile?.role;
 	const description = profile?.intro;
@@ -105,9 +105,6 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 
 	const careerSectionTitle = t.sections.career.title;
 
-	const education = data.educationSection?.educationEntries
-		? transformEducationEntries(data.educationSection.educationEntries)
-		: [];
 
 	// On mount: read the theme the inline <head> script already applied to <html>
 	// (OS preference or saved choice) and sync React state to it. We never write

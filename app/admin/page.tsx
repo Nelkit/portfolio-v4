@@ -59,6 +59,14 @@ export default async function AdminHome() {
 				</li>
 				<li>
 					<Link
+						href="/admin/education"
+						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+					>
+						Education <span className="text-zinc-500">— degrees and courses</span>
+					</Link>
+				</li>
+				<li>
+					<Link
 						href="/admin/hero"
 						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
 					>

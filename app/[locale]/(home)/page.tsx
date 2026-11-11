@@ -10,24 +10,13 @@ import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
 import { getPublishedSkillCategories } from '@/app/lib/content/skills/skill-service';
 import { getPublishedCareer } from '@/app/lib/content/career/career-service';
 import { careerYears } from '@/app/lib/content/career/career';
+import { getPublishedEducation } from '@/app/lib/content/education/education-service';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
 
-// Profile data (name, avatar, CV, links, contact) now comes from Turso.
-// Strapi still provides the sections that have not been migrated yet.
-const HOME_PAGE_QUERY = {
-    populate: {
-        educationSection: {
-            populate: {
-                educationEntries: {
-                    fields: ['degree', 'institution', 'period', 'description', 'completionStatus'],
-                },
-            },
-        },
-    },
-};
-
+// Every home section comes from Turso; only the recent blog posts still come
+// from Strapi (until the blog stories #11–#14).
 const BLOG_QUERY = qs.stringify({
     fields: ['title', 'summary', 'publishedDate', 'readingTime', 'slug'],
     populate: {
@@ -37,15 +26,6 @@ const BLOG_QUERY = qs.stringify({
     sort: ['publishedDate:desc'],
     pagination: { pageSize: 3 },
 }, { encodeValuesOnly: true });
-
-function buildQueryString(query: object): string {
-    return qs.stringify(query, { encodeValuesOnly: true });
-}
-
-async function fetchHomePageData() {
-    const queryString = buildQueryString(HOME_PAGE_QUERY);
-    return getStrapiData(`/api/home-page?${queryString}`);
-}
 
 async function fetchRecentPosts(): Promise<BlogEntry[]> {
     const data = await getStrapiData(`/api/blog-entries?${BLOG_QUERY}`);
@@ -57,8 +37,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero, profile, projects, areas, skillCategories, career] = await Promise.all([
-        fetchHomePageData(),
+    const [recentPosts, hero, profile, projects, areas, skillCategories, career, education] = await Promise.all([
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
         getPublishedHero(locale),
@@ -67,11 +46,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         getPublishedAreas(locale),
         getPublishedSkillCategories(locale),
         getPublishedCareer(locale),
+        getPublishedEducation(locale),
     ]);
 
     return (
         <ClientWrapper
-            strapiData={strapiData}
             recentPosts={recentPosts}
             headline={hero?.headline}
             profile={profile}
@@ -81,6 +60,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             career={career.entries}
             // Depends on today's date: computed at render (page revalidates weekly).
             careerYears={career.since ? careerYears([{ start: career.since }]) : 0}
+            education={education}
         />
     );
 }

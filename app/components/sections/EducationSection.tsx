@@ -1,8 +1,10 @@
-import { type EducationItem } from '@/app/data/content';
+'use client';
+
+import type { EducationView } from '@/app/lib/content/education/education';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type EducationSectionProps = {
-	education: EducationItem[];
+	education: EducationView[];
 };
 
 export function EducationSection({ education }: EducationSectionProps) {
@@ -25,15 +27,15 @@ export function EducationSection({ education }: EducationSectionProps) {
 					<span>{copy.status}</span>
 				</div>
 				{education.map((edu) => (
-					<div className="edu-row" key={edu.degree}>
+					<div className="edu-row" key={edu.id}>
 						<span className="edu-period">{edu.period}</span>
 						<span className="edu-role">
 							<b>{edu.degree}</b>
 							{edu.description && <span>{edu.description}</span>}
 						</span>
 						<span className="edu-org">{edu.institution}</span>
-						<span className={'badge' + (edu.status === 'In Progress' ? ' cur' : '')}>
-							{edu.status === 'In Progress' ? copy.inProgress : copy.completed}
+						<span className={'badge' + (edu.inProgress ? ' cur' : '')}>
+							{edu.inProgress ? copy.inProgress : copy.completed}
 						</span>
 					</div>
 				))}

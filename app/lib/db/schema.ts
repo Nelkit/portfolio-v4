@@ -183,3 +183,26 @@ export const careerEntryTranslations = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.entryId, table.locale] })],
 );
+
+/** Education entries. `inProgress` is explicit: an ongoing degree may have an expected end date. */
+export const educationEntries = sqliteTable('education_entries', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	startYear: integer('start_year').notNull(),
+	startMonth: integer('start_month').notNull(),
+	endYear: integer('end_year'),
+	endMonth: integer('end_month'),
+	inProgress: integer('in_progress', { mode: 'boolean' }).notNull().default(false),
+});
+
+/** Degree, institution and description per locale. */
+export const educationEntryTranslations = sqliteTable(
+	'education_entry_translations',
+	{
+		entryId: integer('entry_id').notNull().references(() => educationEntries.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		degree: text('degree').notNull(),
+		institution: text('institution').notNull(),
+		description: text('description').notNull().default(''),
+	},
+	(table) => [primaryKey({ columns: [table.entryId, table.locale] })],
+);
