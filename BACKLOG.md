@@ -23,7 +23,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `2ec1058`._
 - [x] **5.** Como administrador, quiero subir la imagen principal y las capturas de cada proyecto, para que los visitantes vean el resultado. Requiere: #4
   _Commit `710e1eb`._
-- [ ] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
+- [x] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
+  _Commit `f3ba27d`._
 - [ ] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
 - [ ] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
 - [ ] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
@@ -81,6 +82,15 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
 - [ ] Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
 
+### Historia 6 — Áreas de expertise
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0004`: tablas de áreas y columna `projects.area_id`).
+- [ ] Crear las áreas en `/admin/areas` y asignarlas a cada proyecto (las de Strapi no se migran).
+- [ ] Probar en el navegador el filtro por chips (home y `/projects`): el filtrado es estado del cliente y en local solo se verificó el HTML inicial (chips, conteos y etiquetas), no el clic.
+- [ ] El filtro solo aparece cuando hay 2 o más áreas con proyectos.
+- [ ] La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -92,7 +102,7 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
 - [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
 - [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
-- [ ] **#6 y #8:** las tarjetas y el detalle de proyectos no muestran área ni tecnologías hasta esas historias. (Imágenes: hecho en la #5.)
+- [ ] **#8:** las tarjetas y el detalle de proyectos no muestran tecnologías hasta esa historia. (Imágenes: #5; áreas: #6.)
 
 ### Generales
 
