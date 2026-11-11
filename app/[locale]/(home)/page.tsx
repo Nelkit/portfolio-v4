@@ -4,24 +4,15 @@ import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
+import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
 
+// Profile data (name, avatar, CV, links, contact) now comes from Turso.
+// Strapi still provides the sections that have not been migrated yet.
 const HOME_PAGE_QUERY = {
     populate: {
-        avatarImage: {
-            fields: ['url', 'alternativeText'],
-        },
-        resume: {
-            fields: ['url'],
-        },
-        ctaSection: {
-            populate: {
-                links: '*',
-            },
-        },
-        socialNetworkLinks: '*',
         projectSection: {
             populate: {
                 projects: {
@@ -96,11 +87,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero] = await Promise.all([
+    const [strapiData, recentPosts, hero, profile] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
         getPublishedHero(locale),
+        getPublishedProfile(locale),
     ]);
 
     return (
@@ -108,6 +100,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             strapiData={strapiData}
             recentPosts={recentPosts}
             headline={hero?.headline}
+            profile={profile}
         />
     );
 }

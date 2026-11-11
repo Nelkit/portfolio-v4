@@ -5,7 +5,6 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
-import { mediaUrl } from '@/app/lib/constant';
 import { trackEvent } from '@/app/lib/analytics';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
@@ -213,7 +212,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 					{avatarImage?.url ? (
 						<img
 							className="avatar"
-							src={mediaUrl(avatarImage.url)}
+							src={avatarImage.url}
 							alt={avatarImage.alternativeText || title || t.chat.profileAlt}
 						/>
 					) : (

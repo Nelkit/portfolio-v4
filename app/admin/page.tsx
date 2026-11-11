@@ -19,6 +19,14 @@ export default async function AdminHome() {
 			<ul className="flex flex-col gap-2">
 				<li>
 					<Link
+						href="/admin/profile"
+						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+					>
+						Profile <span className="text-zinc-500">— name, avatar, role, intro, CV, links, contact</span>
+					</Link>
+				</li>
+				<li>
+					<Link
 						href="/admin/hero"
 						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
 					>

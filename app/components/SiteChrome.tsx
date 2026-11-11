@@ -1,25 +1,10 @@
-import { cache } from 'react';
-import { getStrapiData } from '@/app/lib/strapi';
-import { mediaUrl } from '@/app/lib/constant';
-import qs from 'qs';
 import { SiteTopbar } from '@/app/components/SiteTopbar';
 import { FooterButtons } from '@/app/components/FooterButtons';
 import { getDictionary } from '@/app/lib/i18n/dictionaries';
 import type { Locale } from '@/app/lib/i18n/locales';
+import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 
 type SocialLink = { type: string; href: string };
-
-const fetchChromeData = cache(async (): Promise<{ links: SocialLink[]; resumeUrl?: string }> => {
-	const query = qs.stringify(
-		{ populate: { socialNetworkLinks: '*', resume: { fields: ['url'] } }, fields: ['id'] },
-		{ encodeValuesOnly: true },
-	);
-	const data = await getStrapiData(`/api/home-page?${query}`);
-	return {
-		links: data?.data?.socialNetworkLinks ?? [],
-		resumeUrl: mediaUrl(data?.data?.resume?.url) || undefined,
-	};
-});
 
 function resolveLinks(links: SocialLink[]) {
 	return {
@@ -33,7 +18,9 @@ function resolveLinks(links: SocialLink[]) {
 // The home page uses its own MainNav (which hosts the AI chat), so it's excluded.
 export async function SiteChrome({ locale, children }: { locale: Locale; children: React.ReactNode }) {
 	const t = getDictionary(locale);
-	const { links, resumeUrl } = await fetchChromeData();
+	const profile = await getPublishedProfile(locale);
+	const links: SocialLink[] = profile?.links.map((l) => ({ type: l.type, href: l.url })) ?? [];
+	const resumeUrl = profile?.cvUrl ?? undefined;
 	const { github, linkedin, email } = resolveLinks(links);
 
 	return (

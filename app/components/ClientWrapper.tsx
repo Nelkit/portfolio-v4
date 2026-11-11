@@ -9,7 +9,7 @@ import { EducationSection } from '@/app/components/sections/EducationSection';
 import { RecentWritingSection } from '@/app/components/sections/RecentWritingSection';
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
-import { mediaUrl } from '@/app/lib/constant';
+import type { PublicProfile } from '@/app/lib/content/profile/profile';
 import {
 	type SkillCategory,
 	type Expertise as ExpertiseType,
@@ -29,11 +29,23 @@ type ClientWrapperProps = {
 	recentPosts: BlogEntry[];
 	/** Hero headline from the admin (Turso). Sections not yet migrated still read strapiData. */
 	headline?: string;
+	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
+	profile: PublicProfile | null;
 };
+
+/** Adapts admin links to the shape the existing sections render. */
+function toSectionLinks(profile: PublicProfile | null) {
+	return profile?.links.map((l) => ({
+		type: l.type,
+		href: l.url,
+		label: l.label,
+		isExternal: l.type !== 'email',
+	}));
+}
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline, profile }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -42,8 +54,20 @@ export function ClientWrapper({ strapiData, recentPosts, headline }: ClientWrapp
 	const { t } = useI18n();
 
 	const data = strapiData?.data || {};
-	const { title, subtitle, description, avatarImage, socialNetworkLinks, resume, ctaSection } = data;
-	const resumeUrl = mediaUrl(resume?.url) || undefined;
+	const title = profile?.name;
+	const subtitle = profile?.role;
+	const description = profile?.intro;
+	const avatarImage = profile?.avatarUrl ? { url: profile.avatarUrl, alternativeText: profile.name } : undefined;
+	const socialNetworkLinks = toSectionLinks(profile);
+	const resumeUrl = profile?.cvUrl ?? undefined;
+	const ctaSection = profile
+		? {
+			available: profile.contact.available,
+			header: profile.contact.headline,
+			description: profile.contact.description,
+			email: profile.contact.email ?? undefined,
+		}
+		: undefined;
 
 	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
 		? transformExpertiseAreas(data.projectSection.expertiseAreas)

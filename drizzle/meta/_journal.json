@@ -8,6 +8,13 @@
       "when": 1794358130704,
       "tag": "0000_robust_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794361969756,
+      "tag": "0001_lively_angel",
+      "breakpoints": true
     }
   ]
 }

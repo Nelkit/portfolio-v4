@@ -75,3 +75,6 @@ next-env.d.ts
 # End of https://www.toptal.com/developers/gitignore/api/nextjs,macos
 # local Turso/libSQL database
 local.db*
+
+# local file uploads (development storage adapter)
+/public/uploads/
