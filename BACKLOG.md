@@ -25,7 +25,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `710e1eb`._
 - [x] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
   _Commit `f3ba27d`._
-- [ ] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
+- [x] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
+  _Commit `0580387`._
 - [ ] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
 - [ ] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
 - [ ] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
@@ -91,6 +92,15 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] El filtro solo aparece cuando hay 2 o más áreas con proyectos.
 - [ ] La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
 
+### Historia 7 — Stack tecnológico
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías).
+- [ ] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran).
+- [ ] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics.
+- [ ] Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
+- [x] Corregido de paso: `SkillsSection` llamaba a `useState` después de un `return` condicional (violaba las reglas de los hooks).
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -103,6 +113,7 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
 - [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
 - [ ] **#8:** las tarjetas y el detalle de proyectos no muestran tecnologías hasta esa historia. (Imágenes: #5; áreas: #6.)
+- [ ] **#8 ⚠️:** la limpieza de skills huérfanos (`deleteOrphanSkills` en `turso-skill-category-repository.ts`) solo mira las categorías. Al asignar skills a proyectos debe conservar también los usados por proyectos, o se borrarían.
 
 ### Generales
 
