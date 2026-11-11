@@ -81,3 +81,7 @@ local.db*
 
 # Strapi import: downloaded content and translations (personal data)
 /scripts/import-strapi/data/
+
+# env files without a leading dot (e.g. env.prod) — never commit secrets
+/env.*
+*.env
