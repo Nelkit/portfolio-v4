@@ -78,3 +78,6 @@ local.db*
 
 # local file uploads (development storage adapter)
 /public/uploads/
+
+# Strapi import: downloaded content and translations (personal data)
+/scripts/import-strapi/data/
