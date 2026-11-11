@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { publicUrlFor } from '@/app/lib/storage/storage';
@@ -14,8 +14,8 @@ export function profileRepository(): ProfileRepository {
 }
 
 /** Public-site read, cached until the admin saves the profile. */
-export const getPublishedProfile = unstable_cache(
+export const getPublishedProfile = cachedRead(
 	async (locale: Locale) => toPublicProfile(await profileRepository().getProfileData(), locale, publicUrlFor),
 	['profile'],
-	{ tags: [PROFILE_TAG] },
+	[PROFILE_TAG],
 );

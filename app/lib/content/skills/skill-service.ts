@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { toCategoryView, type CategoryView } from './skill-category';
@@ -12,11 +12,11 @@ export function skillCategoryRepository(): SkillCategoryRepository {
 	return createTursoSkillCategoryRepository(getDb());
 }
 
-export const getPublishedSkillCategories = unstable_cache(
+export const getPublishedSkillCategories = cachedRead(
 	async (locale: Locale): Promise<CategoryView[]> =>
 		(await skillCategoryRepository().listCategories())
 			.map((record) => toCategoryView(record, locale))
 			.filter((view): view is CategoryView => view !== null),
 	['skill-categories'],
-	{ tags: [SKILLS_TAG] },
+	[SKILLS_TAG],
 );

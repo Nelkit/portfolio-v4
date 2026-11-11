@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { publicUrlFor } from '@/app/lib/storage/storage';
@@ -15,7 +15,7 @@ export function projectRepository(): ProjectRepository {
 }
 
 /** All projects for one language, in display order. Also shows area names → both tags. */
-export const getPublishedProjects = unstable_cache(
+export const getPublishedProjects = cachedRead(
 	async (locale: Locale): Promise<ProjectView[]> => {
 		const [records, areas] = await Promise.all([projectRepository().listProjects(), loadAreaViews(locale)]);
 		return records
@@ -23,14 +23,14 @@ export const getPublishedProjects = unstable_cache(
 			.filter((view): view is ProjectView => view !== null);
 	},
 	['projects'],
-	{ tags: [PROJECTS_TAG, AREAS_TAG] },
+	[PROJECTS_TAG, AREAS_TAG],
 );
 
-export const getPublishedProject = unstable_cache(
+export const getPublishedProject = cachedRead(
 	async (locale: Locale, slug: string): Promise<ProjectView | null> => {
 		const [record, areas] = await Promise.all([projectRepository().getProjectBySlug(slug), loadAreaViews(locale)]);
 		return record ? toProjectView(record, locale, publicUrlFor, areas) : null;
 	},
 	['project'],
-	{ tags: [PROJECTS_TAG, AREAS_TAG] },
+	[PROJECTS_TAG, AREAS_TAG],
 );

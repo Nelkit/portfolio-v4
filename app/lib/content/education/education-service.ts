@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { getDictionary } from '@/app/lib/i18n/dictionaries';
@@ -13,7 +13,7 @@ export function educationRepository(): EducationRepository {
 	return createTursoEducationRepository(getDb());
 }
 
-export const getPublishedEducation = unstable_cache(
+export const getPublishedEducation = cachedRead(
 	async (locale: Locale): Promise<EducationView[]> => {
 		const { meta, sections } = getDictionary(locale);
 		return (await educationRepository().listEntries())
@@ -21,5 +21,5 @@ export const getPublishedEducation = unstable_cache(
 			.filter((v): v is EducationView => v !== null);
 	},
 	['education'],
-	{ tags: [EDUCATION_TAG] },
+	[EDUCATION_TAG],
 );

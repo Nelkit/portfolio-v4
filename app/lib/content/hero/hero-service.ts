@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { createTursoHeroRepository } from './turso-hero-repository';
@@ -15,8 +15,8 @@ export function heroRepository(): HeroRepository {
  * Public-site read. Cached until an admin save calls updateTag(HERO_TAG),
  * so the database is only hit when content actually changes.
  */
-export const getPublishedHero = unstable_cache(
+export const getPublishedHero = cachedRead(
 	(locale: Locale) => heroRepository().getHero(locale),
 	['hero'],
-	{ tags: [HERO_TAG] },
+	[HERO_TAG],
 );

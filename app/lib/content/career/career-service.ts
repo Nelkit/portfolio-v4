@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { getDictionary } from '@/app/lib/i18n/dictionaries';
@@ -17,7 +17,7 @@ export function careerRepository(): CareerRepository {
  * Entries for one language + the earliest start. Years of experience depend on
  * TODAY, so they are computed at render time (careerYears), not cached here.
  */
-export const getPublishedCareer = unstable_cache(
+export const getPublishedCareer = cachedRead(
 	async (locale: Locale): Promise<{ entries: CareerView[]; since: YearMonth | null }> => {
 		const { meta, sections } = getDictionary(locale);
 		const records = await careerRepository().listEntries();
@@ -32,5 +32,5 @@ export const getPublishedCareer = unstable_cache(
 		return { entries, since };
 	},
 	['career'],
-	{ tags: [CAREER_TAG] },
+	[CAREER_TAG],
 );

@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cachedRead } from '@/app/lib/cache/cached-read';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { toAreaView, type AreaView } from './area';
@@ -19,4 +19,4 @@ export async function loadAreaViews(locale: Locale): Promise<AreaView[]> {
 		.filter((view): view is AreaView => view !== null);
 }
 
-export const getPublishedAreas = unstable_cache(loadAreaViews, ['areas'], { tags: [AREAS_TAG] });
+export const getPublishedAreas = cachedRead(loadAreaViews, ['areas'], [AREAS_TAG]);
