@@ -31,7 +31,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `232f177`._
 - [x] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
   _Commit `a2d9073`._
-- [ ] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
+- [x] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
+  _Commit `56a0442`._
 - [ ] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
 - [ ] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
 - [ ] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
@@ -121,6 +122,14 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`).
 - [x] Corregido de paso: los años de experiencia usaban 2026 escrito a mano y el estado "actual" se deducía buscando "now"/"present" en el texto.
 
+### Historia 10 — Educación
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0008`: tablas de educación).
+- [ ] Cargar las entradas reales en `/admin/education` (las de Strapi no se migran).
+- [ ] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador.
+- [ ] La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -131,7 +140,7 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
 - [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
-- [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
+- [x] **#4 a #10:** el home ya no consulta la página de inicio de Strapi; solo quedan los posts recientes del blog (#11 a #14).
 - [x] **#8:** las tarjetas y el detalle de proyectos ya muestran imagen (#5), área (#6) y tecnologías (#8).
 - [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
 
