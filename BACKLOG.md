@@ -27,7 +27,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `f3ba27d`._
 - [x] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
   _Commit `0580387`._
-- [ ] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
+- [x] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
+  _Commit `232f177`._
 - [ ] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
 - [ ] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
 - [ ] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
@@ -101,6 +102,14 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
 - [x] Corregido de paso: `SkillsSection` llamaba a `useState` después de un `return` condicional (violaba las reglas de los hooks).
 
+### Historia 8 — Skills de los proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0006`: tabla `project_skills`).
+- [ ] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack").
+- [ ] Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
+- [ ] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics).
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -112,8 +121,8 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
 - [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
 - [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
-- [ ] **#8:** las tarjetas y el detalle de proyectos no muestran tecnologías hasta esa historia. (Imágenes: #5; áreas: #6.)
-- [ ] **#8 ⚠️:** la limpieza de skills huérfanos (`deleteOrphanSkills` en `turso-skill-category-repository.ts`) solo mira las categorías. Al asignar skills a proyectos debe conservar también los usados por proyectos, o se borrarían.
+- [x] **#8:** las tarjetas y el detalle de proyectos ya muestran imagen (#5), área (#6) y tecnologías (#8).
+- [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
 
 ### Generales
 
