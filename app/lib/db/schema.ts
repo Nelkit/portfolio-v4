@@ -162,3 +162,24 @@ export const projectSkills = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.projectId, table.skillId] })],
 );
+
+/** Career timeline entries. No end date = current role. Ordered by date (not manually). */
+export const careerEntries = sqliteTable('career_entries', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	startYear: integer('start_year').notNull(),
+	startMonth: integer('start_month').notNull(),
+	endYear: integer('end_year'),
+	endMonth: integer('end_month'),
+});
+
+/** Role title and detail per locale. */
+export const careerEntryTranslations = sqliteTable(
+	'career_entry_translations',
+	{
+		entryId: integer('entry_id').notNull().references(() => careerEntries.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		title: text('title').notNull(),
+		detail: text('detail').notNull().default(''),
+	},
+	(table) => [primaryKey({ columns: [table.entryId, table.locale] })],
+);

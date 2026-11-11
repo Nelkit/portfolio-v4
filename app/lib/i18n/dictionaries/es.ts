@@ -101,6 +101,7 @@ export const es: Dictionary = {
 			status: 'Estado',
 			current: 'Actual',
 			past: 'Anterior',
+			present: 'Actual',
 		},
 		education: {
 			title: 'Educación',

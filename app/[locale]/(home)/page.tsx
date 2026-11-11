@@ -8,6 +8,8 @@ import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
 import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
 import { getPublishedSkillCategories } from '@/app/lib/content/skills/skill-service';
+import { getPublishedCareer } from '@/app/lib/content/career/career-service';
+import { careerYears } from '@/app/lib/content/career/career';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
@@ -20,13 +22,6 @@ const HOME_PAGE_QUERY = {
             populate: {
                 educationEntries: {
                     fields: ['degree', 'institution', 'period', 'description', 'completionStatus'],
-                },
-            },
-        },
-        careerSection: {
-            populate: {
-                careerEntries: {
-                    fields: ['period', 'title', 'detail', 'accent'],
                 },
             },
         },
@@ -62,7 +57,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero, profile, projects, areas, skillCategories] = await Promise.all([
+    const [strapiData, recentPosts, hero, profile, projects, areas, skillCategories, career] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
@@ -71,6 +66,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         getPublishedProjects(locale),
         getPublishedAreas(locale),
         getPublishedSkillCategories(locale),
+        getPublishedCareer(locale),
     ]);
 
     return (
@@ -82,6 +78,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             projects={projects}
             areas={areas}
             skillCategories={skillCategories}
+            career={career.entries}
+            // Depends on today's date: computed at render (page revalidates weekly).
+            careerYears={career.since ? careerYears([{ start: career.since }]) : 0}
         />
     );
 }

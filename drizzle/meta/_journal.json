@@ -50,6 +50,13 @@
       "when": 1794365325035,
       "tag": "0006_stale_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794366030414,
+      "tag": "0007_striped_azazel",
+      "breakpoints": true
     }
   ]
 }

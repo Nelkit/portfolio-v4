@@ -12,11 +12,11 @@ import { MainNav } from '@/app/components/MainNav';
 import type { PublicProfile } from '@/app/lib/content/profile/profile';
 import type { ProjectView } from '@/app/lib/content/projects/project';
 import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
+import type { CareerView } from '@/app/lib/content/career/career';
 import {
 	type Project,
 	getIcon,
 	type BlogEntry,
-	transformCareerEntries,
 	transformEducationEntries,
 } from '@/app/data/content';
 
@@ -36,6 +36,10 @@ type ClientWrapperProps = {
 	areas: { id: number; name: string }[];
 	/** Tech-stack categories from the admin (Turso). */
 	skillCategories: CategoryView[];
+	/** Career timeline from the admin (Turso), current roles first. */
+	career: CareerView[];
+	/** Full years since the earliest role (computed at render). */
+	careerYears: number;
 };
 
 /** Adapts admin projects to the card shape the section renders. */
@@ -69,7 +73,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas, skillCategories }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas, skillCategories, career, careerYears }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -100,9 +104,6 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 	const projects = toProjectCards(projectViews);
 
 	const careerSectionTitle = t.sections.career.title;
-	const careerTimeline = data.careerSection?.careerEntries
-		? transformCareerEntries(data.careerSection.careerEntries)
-		: [];
 
 	const education = data.educationSection?.educationEntries
 		? transformEducationEntries(data.educationSection.educationEntries)
@@ -174,21 +175,12 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 
 	const totalTools = countUniqueSkills(skillCategories);
 	const totalDomains = skillCategories.length;
-	const careerYears = (() => {
-		if (!careerTimeline.length) return 0;
-		const years = careerTimeline
-			.flatMap((c) => [...(c.period.match(/\d{4}/g) ?? [])])
-			.map(Number)
-			.filter(Boolean);
-		if (!years.length) return 0;
-		return new Date().getFullYear() - Math.min(...years);
-	})();
 
 	const sub = t.home.navSub;
 	const navItems = [
 		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: '01' },
 		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: '02' },
-		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', careerTimeline.length),         meta: '03' },
+		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', career.length),         meta: '03' },
 		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: '04' },
 		{ id: 'writing',   label: t.common.nav.writing,   sub: sub.writing,                                                                          meta: '05' },
 		{ id: 'contact',   label: t.common.nav.contact,   sub: sub.contact,                                                                          meta: '06' },
@@ -237,7 +229,8 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 
 				<CareerSection
 					title={careerSectionTitle}
-					careerTimeline={careerTimeline}
+					entries={career}
+					years={careerYears}
 				/>
 
 				<EducationSection education={education} />

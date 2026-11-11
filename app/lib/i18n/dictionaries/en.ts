@@ -105,6 +105,8 @@ export const en = {
 			status: 'Status',
 			current: 'Current',
 			past: 'Past',
+			/** End of the period of a current role. */
+			present: 'Now',
 		},
 		education: {
 			title: 'Education',
