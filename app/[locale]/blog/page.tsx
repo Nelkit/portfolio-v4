@@ -1,36 +1,16 @@
 import Link from 'next/link';
-import { getStrapiData } from '@/app/lib/strapi';
-import { transformBlogEntries, type BlogEntry } from '@/app/data/content';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
-import qs from 'qs';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { getPublishedPosts } from '@/app/lib/content/posts/post-service';
 
 export const revalidate = 604800;
 
 const PAGE_SIZE = 10;
 
-async function fetchPosts(page: number): Promise<{ posts: BlogEntry[]; total: number }> {
-	const query = qs.stringify({
-		fields: ['title', 'summary', 'publishedDate', 'readingTime', 'slug'],
-		populate: {
-			featuredImage: { fields: ['url', 'alternativeText'] },
-			blog_tags: { fields: ['title'] },
-		},
-		sort: ['publishedDate:desc'],
-		pagination: { page, pageSize: PAGE_SIZE },
-	}, { encodeValuesOnly: true });
-
-	const data = await getStrapiData(`/api/blog-entries?${query}`, 604800);
-	if (!data?.data) return { posts: [], total: 0 };
-	return {
-		posts: transformBlogEntries(data.data),
-		total: data.meta?.pagination?.total ?? 0,
-	};
-}
-
 function formatDate(date: string, dateLocale: string) {
 	if (!date) return '';
-	return new Date(date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' });
+	// 'YYYY-MM-DD' is a calendar date: format it in UTC so it never shifts a day.
+	return new Date(`${date}T00:00:00Z`).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
 
 export default async function BlogPage({
@@ -40,12 +20,14 @@ export default async function BlogPage({
 	params: Promise<{ locale: string }>;
 	searchParams: Promise<{ page?: string }>;
 }) {
-	const { t, href } = await resolveLocale(params);
+	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.blog;
 	const { page: pageParam } = await searchParams;
-	const page = Math.max(1, parseInt(pageParam || '1'));
-	const { posts, total } = await fetchPosts(page);
-	const totalPages = Math.ceil(total / PAGE_SIZE);
+	const all = await getPublishedPosts(locale);
+	const total = all.length;
+	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+	const page = Math.min(totalPages, Math.max(1, parseInt(pageParam || '1') || 1));
+	const posts = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
 	const [featured, ...rest] = posts;
 
@@ -71,23 +53,13 @@ export default async function BlogPage({
 				<div className="blog-grid">
 					{featured && (
 						<Link href={href(`/blog/${featured.slug}`)} className="blog-card blog-card-feat">
-							{featured.coverImage && (
-								<div className="blog-card-img">
-									<img src={featured.coverImage} alt={featured.title} />
-								</div>
-							)}
 							<div className="blog-card-body">
 								<div className="blog-card-meta">
-									<span className="blog-card-date">{formatDate(featured.publishedDate, t.meta.dateLocale)}</span>
-									{featured.readingTime > 0 && <span className="blog-card-read">{copy.minRead(featured.readingTime)}</span>}
+									<span className="blog-card-date">{formatDate(featured.publishedOn, t.meta.dateLocale)}</span>
+									<span className="blog-card-read">{copy.minRead(featured.readingTime)}</span>
 								</div>
 								<h2 className="blog-card-title">{featured.title}</h2>
-								<p className="blog-card-summary">{featured.summary}</p>
-								{featured.tags.length > 0 && (
-									<div className="blog-card-tags">
-										{featured.tags.map((t) => <span key={t} className="blog-card-tag">{t}</span>)}
-									</div>
-								)}
+								{featured.summary && <p className="blog-card-summary">{featured.summary}</p>}
 							</div>
 							<span className="blog-card-go"><IArrowUR /></span>
 						</Link>
@@ -95,31 +67,20 @@ export default async function BlogPage({
 
 					{rest.map((p, idx) => {
 						const spans = ['span 1', 'span 1', 'span 2', 'span 1', 'span 1', 'span 1', 'span 1', 'span 2', 'span 1'];
-						const colSpan = spans[idx % spans.length];
 						return (
 							<Link
 								key={p.slug}
 								href={href(`/blog/${p.slug}`)}
 								className="blog-card"
-								style={{ gridColumn: colSpan }}
+								style={{ gridColumn: spans[idx % spans.length] }}
 							>
-								{p.coverImage && (
-									<div className="blog-card-img">
-										<img src={p.coverImage} alt={p.title} />
-									</div>
-								)}
 								<div className="blog-card-body">
 									<div className="blog-card-meta">
-										<span className="blog-card-date">{formatDate(p.publishedDate, t.meta.dateLocale)}</span>
-										{p.readingTime > 0 && <span className="blog-card-read">{copy.minutes(p.readingTime)}</span>}
+										<span className="blog-card-date">{formatDate(p.publishedOn, t.meta.dateLocale)}</span>
+										<span className="blog-card-read">{copy.minutes(p.readingTime)}</span>
 									</div>
 									<h2 className="blog-card-title">{p.title}</h2>
-									<p className="blog-card-summary">{p.summary}</p>
-									{p.tags.length > 0 && (
-										<div className="blog-card-tags">
-											{p.tags.map((t) => <span key={t} className="blog-card-tag">{t}</span>)}
-										</div>
-									)}
+									{p.summary && <p className="blog-card-summary">{p.summary}</p>}
 								</div>
 								<span className="blog-card-go"><IArrowUR /></span>
 							</Link>

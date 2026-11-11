@@ -19,6 +19,14 @@ export default async function AdminHome() {
 			<ul className="flex flex-col gap-2">
 				<li>
 					<Link
+						href="/admin/blog"
+						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+					>
+						Blog <span className="text-zinc-500">— write, edit and delete posts</span>
+					</Link>
+				</li>
+				<li>
+					<Link
 						href="/admin/profile"
 						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
 					>

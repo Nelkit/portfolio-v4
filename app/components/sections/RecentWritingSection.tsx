@@ -1,14 +1,15 @@
 import Link from 'next/link';
-import { type BlogEntry } from '@/app/data/content';
+import type { PostSummary } from '@/app/lib/content/posts/post';
 import { IArrowUR } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
+/** 'YYYY-MM-DD' calendar date, formatted in UTC so it never shifts a day. */
 function formatDate(date: string, dateLocale: string) {
 	if (!date) return '';
-	return new Date(date).toLocaleDateString(dateLocale, { month: 'short', year: 'numeric' });
+	return new Date(`${date}T00:00:00Z`).toLocaleDateString(dateLocale, { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-export function RecentWritingSection({ posts }: { posts: BlogEntry[] }) {
+export function RecentWritingSection({ posts }: { posts: PostSummary[] }) {
 	const { t, href } = useI18n();
 	const copy = t.sections.writing;
 	return (
@@ -21,14 +22,9 @@ export function RecentWritingSection({ posts }: { posts: BlogEntry[] }) {
 			<div className="write-list">
 				{posts.map((p) => (
 					<Link key={p.slug} className="write-row" href={href(`/blog/${p.slug}`)}>
-						<span className="wr-date">{formatDate(p.publishedDate, t.meta.dateLocale)}</span>
+						<span className="wr-date">{formatDate(p.publishedOn, t.meta.dateLocale)}</span>
 						<span className="wr-body">
 							<span className="wr-title">{p.title}</span>
-							{p.tags.length > 0 && (
-								<span className="wr-tags">
-									{p.tags.map((t) => <span key={t} className="wr-tag">{t}</span>)}
-								</span>
-							)}
 						</span>
 						<span className="wr-read">{p.readingTime > 0 ? copy.minutes(p.readingTime) : ''} <IArrowUR /></span>
 					</Link>

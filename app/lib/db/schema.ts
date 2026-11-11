@@ -206,3 +206,26 @@ export const educationEntryTranslations = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.entryId, table.locale] })],
 );
+
+/** Blog posts. The slug is shared by both languages; a post may exist in only one. */
+export const posts = sqliteTable('posts', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	slug: text('slug').notNull().unique(),
+	/** Publication date, 'YYYY-MM-DD'. */
+	publishedOn: text('published_on').notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+	updatedAt: updatedAt(),
+});
+
+/** Post copy per locale (only the languages it was written in); `body` is Markdown. */
+export const postTranslations = sqliteTable(
+	'post_translations',
+	{
+		postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		title: text('title').notNull(),
+		summary: text('summary').notNull().default(''),
+		body: text('body').notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.postId, table.locale] })],
+);

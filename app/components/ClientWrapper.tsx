@@ -14,17 +14,14 @@ import type { ProjectView } from '@/app/lib/content/projects/project';
 import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
 import type { CareerView } from '@/app/lib/content/career/career';
 import type { EducationView } from '@/app/lib/content/education/education';
-import {
-	type Project,
-	getIcon,
-	type BlogEntry,
-} from '@/app/data/content';
+import { type Project, getIcon } from '@/app/data/content';
+import type { PostSummary } from '@/app/lib/content/posts/post';
 
 import { IHelp } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type ClientWrapperProps = {
-	recentPosts: BlogEntry[];
+	recentPosts: PostSummary[];
 	/** Hero headline from the admin (Turso). */
 	headline?: string;
 	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
@@ -99,7 +96,7 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 
 
 
-	// Section titles are fixed UI copy (dictionary), not Strapi content.
+	// Section titles are fixed UI copy (dictionary), not editable content.
 	const projectSectionTitle = t.sections.projects.title;
 	const projects = toProjectCards(projectViews);
 

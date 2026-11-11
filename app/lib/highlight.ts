@@ -18,7 +18,7 @@ async function getHighlighter(): Promise<Highlighter> {
 	return highlighterPromise;
 }
 
-// Maps Strapi's language values to Shiki language IDs
+// Maps Markdown code-fence languages (and common aliases) to Shiki language IDs
 function normalizeLang(lang: string | undefined): BundledLanguage | 'text' {
 	if (!lang) return 'text';
 	const l = lang.toLowerCase();
