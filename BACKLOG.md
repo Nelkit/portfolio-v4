@@ -29,7 +29,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `0580387`._
 - [x] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
   _Commit `232f177`._
-- [ ] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
+- [x] **9.** Como administrador, quiero gestionar las entradas de mi trayectoria profesional, para que la línea de tiempo esté al día. Requiere: #1
+  _Commit `a2d9073`._
 - [ ] **10.** Como administrador, quiero gestionar mis entradas de educación, para mostrar mi formación. Requiere: #1
 - [ ] **11.** Como administrador, quiero escribir, editar y eliminar posts del blog en un editor dedicado con rich text y vista previa, para publicar artículos con comodidad. Requiere: #1
 - [ ] **12.** Como administrador, quiero añadir una portada a cada post e insertar imágenes dentro del contenido, para enriquecer los artículos. Requiere: #11
@@ -109,6 +110,16 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack").
 - [ ] Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
 - [ ] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics).
+
+### Historia 9 — Trayectoria
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0007`: tablas de trayectoria).
+- [ ] Cargar las entradas reales en `/admin/career` (las de Strapi no se migran).
+- [ ] El orden es automático (puesto actual primero, luego por inicio descendente); no hay orden manual.
+- [ ] Los años de experiencia se calculan al renderizar la página (que se regenera semanalmente); pueden tardar hasta una semana en sumar un año si no editas nada.
+- [ ] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`).
+- [x] Corregido de paso: los años de experiencia usaban 2026 escrito a mano y el estado "actual" se deducía buscando "now"/"present" en el texto.
 
 ### Strapi como fuente opcional
 
