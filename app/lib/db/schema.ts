@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { check, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 /**
  * Translatable hero copy — one row per locale.
@@ -46,6 +46,39 @@ export const profileTranslations = sqliteTable('profile_translations', {
 /** One ordered list of links, shared by the sidebar, footer and contact section. */
 export const socialLinks = sqliteTable('social_links', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
+	type: text('type').notNull(),
+	label: text('label').notNull(),
+	url: text('url').notNull(),
+	position: integer('position').notNull(),
+});
+
+/** Projects. The slug is shared by every language so the ES/EN switch keeps the URL. */
+export const projects = sqliteTable('projects', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	slug: text('slug').notNull().unique(),
+	company: text('company').notNull().default(''),
+	position: integer('position').notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+	updatedAt: updatedAt(),
+});
+
+/** Project copy per locale; `description` is Markdown. */
+export const projectTranslations = sqliteTable(
+	'project_translations',
+	{
+		projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		title: text('title').notNull(),
+		summary: text('summary').notNull(),
+		description: text('description').notNull().default(''),
+	},
+	(table) => [primaryKey({ columns: [table.projectId, table.locale] })],
+);
+
+/** Ordered links of a project (code, demo, store…). */
+export const projectLinks = sqliteTable('project_links', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
 	type: text('type').notNull(),
 	label: text('label').notNull(),
 	url: text('url').notNull(),

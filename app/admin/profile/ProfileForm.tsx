@@ -1,10 +1,9 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState } from 'react';
 import { saveProfile, type SaveProfileState } from './actions';
+import { LinksEditor } from '@/app/admin/components/LinksEditor';
 import {
-	LINK_TYPES,
-	MAX_LINKS,
 	TRANSLATED_KEYS,
 	translatedField,
 	type ProfileLink,
@@ -42,19 +41,7 @@ function FieldError({ message }: { message?: string }) {
 
 export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 	const [state, formAction, pending] = useActionState<SaveProfileState, FormData>(saveProfile, {});
-	const [links, setLinks] = useState<ProfileLink[]>(initial.links);
 	const errors = state.errors ?? {};
-
-	const updateLink = (index: number, patch: Partial<ProfileLink>) =>
-		setLinks((current) => current.map((l, i) => (i === index ? { ...l, ...patch } : l)));
-	const moveLink = (index: number, delta: -1 | 1) =>
-		setLinks((current) => {
-			const next = [...current];
-			const target = index + delta;
-			if (target < 0 || target >= next.length) return current;
-			[next[index], next[target]] = [next[target], next[index]];
-			return next;
-		});
 
 	return (
 		<form action={formAction} className="flex flex-col gap-8">
@@ -143,47 +130,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 				<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
 					Links <span className="normal-case text-zinc-500">— sidebar, footer and contact. The email link is the contact address.</span>
 				</h2>
-				<input type="hidden" name="links" value={JSON.stringify(links)} />
-				{links.map((link, index) => (
-					<div key={index} className="flex flex-wrap items-center gap-2">
-						<select
-							value={link.type}
-							onChange={(e) => updateLink(index, { type: e.target.value as ProfileLink['type'] })}
-							className="rounded border border-zinc-700 bg-zinc-900 px-2 py-2"
-							aria-label="Link type"
-						>
-							{LINK_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-						</select>
-						<input
-							value={link.label}
-							onChange={(e) => updateLink(index, { label: e.target.value })}
-							placeholder="Label"
-							aria-label="Link label"
-							className="w-32 rounded border border-zinc-700 bg-zinc-900 px-3 py-2"
-						/>
-						<input
-							value={link.url}
-							onChange={(e) => updateLink(index, { url: e.target.value })}
-							placeholder={link.type === 'email' ? 'you@example.com' : 'https://…'}
-							aria-label="Link URL"
-							className="min-w-48 flex-1 rounded border border-zinc-700 bg-zinc-900 px-3 py-2"
-						/>
-						<button type="button" onClick={() => moveLink(index, -1)} disabled={index === 0} className="px-2 text-zinc-400 disabled:opacity-30" aria-label="Move up">↑</button>
-						<button type="button" onClick={() => moveLink(index, 1)} disabled={index === links.length - 1} className="px-2 text-zinc-400 disabled:opacity-30" aria-label="Move down">↓</button>
-						<button type="button" onClick={() => setLinks((c) => c.filter((_, i) => i !== index))} className="px-2 text-red-400" aria-label="Remove link">✕</button>
-					</div>
-				))}
-				<div>
-					<button
-						type="button"
-						disabled={links.length >= MAX_LINKS}
-						onClick={() => setLinks((c) => [...c, { type: 'link', label: '', url: '' }])}
-						className="rounded border border-zinc-700 px-3 py-1 text-sm disabled:opacity-30"
-					>
-						+ Add link
-					</button>
-				</div>
-				<FieldError message={errors.links} />
+				<LinksEditor initial={initial.links} error={errors.links} />
 			</section>
 
 			<div className="flex items-center gap-4">

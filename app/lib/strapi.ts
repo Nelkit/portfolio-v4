@@ -11,7 +11,14 @@ const REQUEST_TIMEOUT_MS = 8000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * LEGACY: Strapi is being replaced by the admin (Turso). Sections not migrated
+ * yet still read from it, so it must never break a page: when Strapi is not
+ * configured or unreachable this returns null and those sections render empty.
+ */
 export async function getStrapiData(url: string, revalidate = 604800) {
+    if (!BASE_URL) return null;
+
     // In development, always fetch fresh — no caching, so new CMS content
     // shows up immediately without clearing .next/cache.
     const fetchOptions: RequestInit =
@@ -32,22 +39,19 @@ export async function getStrapiData(url: string, revalidate = 604800) {
 
             // 404 / 4xx — a valid "no data" answer; do not retry, do not throw.
             if (response.status < 500) {
-                console.error(`Strapi fetch failed: ${response.status} ${response.statusText} — ${url}`);
+                console.warn(`Strapi fetch failed: ${response.status} ${response.statusText} — ${url}`);
                 return null;
             }
 
-            // 5xx — transient. Retry; if all attempts fail, throw so Next.js
-            // does NOT cache a broken (empty) page and will retry next request.
-            console.error(`Strapi ${response.status} (attempt ${attempt}/${MAX_RETRIES}) — ${url}`);
-            if (attempt === MAX_RETRIES) {
-                throw new Error(`Strapi unavailable after ${MAX_RETRIES} attempts: ${response.status}`);
-            }
+            // 5xx — transient. Retry; give up (null) after the last attempt.
+            console.warn(`Strapi ${response.status} (attempt ${attempt}/${MAX_RETRIES}) — ${url}`);
+            if (attempt === MAX_RETRIES) return null;
         } catch (e) {
             if (attempt === MAX_RETRIES) {
-                console.error('Strapi fetch error (final):', e);
-                throw e;
+                console.warn(`Strapi unreachable, rendering without it — ${url}:`, (e as Error).message);
+                return null;
             }
-            console.error(`Strapi fetch error (attempt ${attempt}/${MAX_RETRIES}):`, e);
+            console.warn(`Strapi fetch error (attempt ${attempt}/${MAX_RETRIES}): ${(e as Error).message}`);
         }
         await sleep(RETRY_DELAY_MS * attempt);
     }

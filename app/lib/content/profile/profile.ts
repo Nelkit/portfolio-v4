@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { LINK_TYPES, MAX_LINKS, parseLinks, type Link, type LinkType } from '@/app/lib/content/links';
 
-/** Icon shown for a link; `email` links are mailto: and feed the contact CTA. */
-export const LINK_TYPES = ['github', 'linkedin', 'email', 'link'] as const;
-export type LinkType = (typeof LINK_TYPES)[number];
-export const MAX_LINKS = 12;
-
-export type ProfileLink = { type: LinkType; label: string; url: string };
+export { LINK_TYPES, MAX_LINKS };
+export type { LinkType };
+export type ProfileLink = Link;
 
 /** Per-language copy. `contactHeadline` may wrap the accent in <em>…</em>. */
 export type ProfileTranslation = {
@@ -60,33 +58,6 @@ export const translatedField = (key: TranslatedKey, locale: Locale) =>
 	`${TRANSLATED_FIELDS[key].field}_${locale}`;
 export const TRANSLATED_KEYS = Object.keys(TRANSLATED_FIELDS) as TranslatedKey[];
 
-const EMAIL = z.email();
-const WEB_URL = z.url({ protocol: /^https?$/ });
-
-const linkSchema = z
-	.object({
-		type: z.enum(LINK_TYPES),
-		label: text(40),
-		url: z.string().trim().min(1),
-	})
-	.transform((link, ctx) => {
-		if (link.type === 'email') {
-			const address = link.url.replace(/^mailto:/i, '');
-			if (!EMAIL.safeParse(address).success) {
-				ctx.addIssue({ code: 'custom', message: `Invalid email: ${link.url}` });
-				return z.NEVER;
-			}
-			return { ...link, url: `mailto:${address}` };
-		}
-		if (!WEB_URL.safeParse(link.url).success) {
-			ctx.addIssue({ code: 'custom', message: `Must be an http(s) URL: ${link.url}` });
-			return z.NEVER;
-		}
-		return link;
-	});
-
-const linksSchema = z.array(linkSchema).max(MAX_LINKS, `Max ${MAX_LINKS} links`);
-
 export type ProfileFormValue = {
 	name: string;
 	translations: ProfileTextFields;
@@ -116,14 +87,9 @@ export function parseProfileForm(fields: Record<string, unknown>): ProfileFormRe
 		translations[locale] = values;
 	}
 
-	let links: ProfileLink[] = [];
-	try {
-		const parsed = linksSchema.safeParse(JSON.parse(String(fields.links ?? '[]')));
-		if (parsed.success) links = parsed.data;
-		else errors.links = parsed.error.issues[0].message;
-	} catch {
-		errors.links = 'Links are not valid JSON';
-	}
+	const parsedLinks = parseLinks(fields.links);
+	const links: ProfileLink[] = parsedLinks.ok ? parsedLinks.links : [];
+	if (!parsedLinks.ok) errors.links = parsedLinks.error;
 
 	if (Object.keys(errors).length > 0) return { ok: false, errors };
 	return { ok: true, value: { name: name.data!, translations, links } };

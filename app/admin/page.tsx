@@ -27,6 +27,14 @@ export default async function AdminHome() {
 				</li>
 				<li>
 					<Link
+						href="/admin/projects"
+						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+					>
+						Projects <span className="text-zinc-500">— create, edit, delete and reorder</span>
+					</Link>
+				</li>
+				<li>
+					<Link
 						href="/admin/hero"
 						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
 					>

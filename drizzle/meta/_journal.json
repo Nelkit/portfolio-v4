@@ -15,6 +15,13 @@
       "when": 1794361969756,
       "tag": "0001_lively_angel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794362699211,
+      "tag": "0002_foamy_nick_fury",
+      "breakpoints": true
     }
   ]
 }

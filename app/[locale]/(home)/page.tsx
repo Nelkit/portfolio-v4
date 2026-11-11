@@ -5,6 +5,7 @@ import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
 import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
+import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
@@ -15,15 +16,7 @@ const HOME_PAGE_QUERY = {
     populate: {
         projectSection: {
             populate: {
-                projects: {
-                    fields: ['title', 'description', 'summary', 'company', 'documentId'],
-                    populate: {
-                        image: { fields: ['url', 'alternativeText'] },
-                        skills: { fields: ['title'] },
-                        expertiseArea: { fields: ['code', 'title'] },
-                        links: '*',
-                    },
-                },
+                // Projects come from Turso (story #4); expertise areas still from Strapi.
                 expertiseAreas: {
                     fields: ['code', 'title', 'description', 'icon', 'color'],
                 },
@@ -87,12 +80,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero, profile] = await Promise.all([
+    const [strapiData, recentPosts, hero, profile, projects] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
         getPublishedHero(locale),
         getPublishedProfile(locale),
+        getPublishedProjects(locale),
     ]);
 
     return (
@@ -101,6 +95,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             recentPosts={recentPosts}
             headline={hero?.headline}
             profile={profile}
+            projects={projects}
         />
     );
 }

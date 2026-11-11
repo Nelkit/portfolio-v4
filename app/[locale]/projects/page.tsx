@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getStrapiData } from '@/app/lib/strapi';
-import { transformProjects } from '@/app/data/content';
 import { IArrowUR } from '@/app/components/icons';
-import qs from 'qs';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
 
 export const revalidate = 604800;
 
@@ -27,26 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	};
 }
 
-async function fetchProjects() {
-	const query = qs.stringify({
-		populate: {
-			image: { fields: ['url', 'alternativeText'] },
-			skills: { fields: ['title'] },
-			expertiseArea: { fields: ['code', 'title'] },
-			links: '*',
-		},
-		sort: ['createdAt:desc'],
-		pagination: { pageSize: 100 },
-	}, { encodeValuesOnly: true });
-
-	const data = await getStrapiData(`/api/projects?${query}`);
-	return transformProjects(data?.data ?? []);
-}
-
 export default async function ProjectsPage({ params }: Props) {
-	const { t, href } = await resolveLocale(params);
+	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.projects;
-	const projects = await fetchProjects();
+	const projects = await getPublishedProjects(locale);
 
 	return (
 		<div className="proj-detail-root">
@@ -73,28 +55,16 @@ export default async function ProjectsPage({ params }: Props) {
 							return (
 								<Link key={p.slug} href={href(`/projects/${p.slug}`)}
 									className={'proj-list-card' + (featured ? ' proj-list-card-feat' : '')}>
-									{p.image ? (
-										<div className="proj-list-thumb">
-											<img src={p.image} alt={p.title} />
-										</div>
-									) : (
-										<div className="proj-list-thumb proj-list-thumb-empty">
-											<span>{String(idx + 1).padStart(2, '0')}</span>
-										</div>
-									)}
+									{/* Images arrive with story #5; until then the numbered placeholder. */}
+									<div className="proj-list-thumb proj-list-thumb-empty">
+										<span>{String(idx + 1).padStart(2, '0')}</span>
+									</div>
 									<div className="proj-list-body">
 										<div className="proj-list-meta">
-											{p.expertise_area && <span className="proj-area">{p.expertise_area}</span>}
+											{p.company && <span className="proj-area">{p.company}</span>}
 										</div>
 										<h2 className={'proj-list-title' + (featured ? ' proj-list-title-feat' : '')}>{p.title}</h2>
-										{(p.summary || p.description) && (
-											<p className="proj-list-summary">{p.summary || p.description}</p>
-										)}
-										{p.tech.length > 0 && (
-											<div className="proj-list-tags">
-												{p.tech.map((t) => <span key={t} className="proj-tag">{t}</span>)}
-											</div>
-										)}
+										{p.summary && <p className="proj-list-summary">{p.summary}</p>}
 									</div>
 									<span className="proj-list-go"><IArrowUR /></span>
 								</Link>

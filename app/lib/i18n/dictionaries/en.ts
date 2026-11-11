@@ -89,7 +89,7 @@ export const en = {
 	sections: {
 		projects: {
 			title: 'Selected work',
-			note: (n: number) => `${plural(n, 'project', 'projects')} · ordered by recency`,
+			note: (n: number) => plural(n, 'project', 'projects'),
 		},
 		stack: {
 			title: 'Tech stack',

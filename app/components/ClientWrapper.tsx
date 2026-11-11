@@ -10,13 +10,15 @@ import { RecentWritingSection } from '@/app/components/sections/RecentWritingSec
 import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
 import type { PublicProfile } from '@/app/lib/content/profile/profile';
+import type { ProjectView } from '@/app/lib/content/projects/project';
 import {
+	type Project,
+	getIcon,
 	type SkillCategory,
 	type Expertise as ExpertiseType,
 	type BlogEntry,
 	transformExpertiseAreas,
 	transformSkillCategories,
-	transformProjects,
 	transformCareerEntries,
 	transformEducationEntries,
 } from '@/app/data/content';
@@ -31,7 +33,30 @@ type ClientWrapperProps = {
 	headline?: string;
 	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
 	profile: PublicProfile | null;
+	/** Projects from the admin (Turso), in display order. */
+	projects: ProjectView[];
 };
+
+/**
+ * Adapts admin projects to the card shape the section renders. Image, area and
+ * tech are filled by later stories (#5 images, #6 areas, #8 skills).
+ */
+function toProjectCards(projects: ProjectView[]): Project[] {
+	return projects.map((p) => ({
+		slug: p.slug,
+		title: p.title,
+		summary: p.summary,
+		description: p.description,
+		company: p.company,
+		tech: [],
+		color: '',
+		icon: getIcon(''),
+		expertise_area: '',
+		image: '',
+		screenshots: [],
+		links: p.links,
+	}));
+}
 
 /** Adapts admin links to the shape the existing sections render. */
 function toSectionLinks(profile: PublicProfile | null) {
@@ -45,7 +70,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline, profile }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -79,9 +104,7 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile }: Cl
 
 	// Section titles are fixed UI copy (dictionary), not Strapi content.
 	const projectSectionTitle = t.sections.projects.title;
-	const projects = data.projectSection?.projects
-		? transformProjects(data.projectSection.projects)
-		: [];
+	const projects = toProjectCards(projectViews);
 
 	const careerSectionTitle = t.sections.career.title;
 	const careerTimeline = data.careerSection?.careerEntries

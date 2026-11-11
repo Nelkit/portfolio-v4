@@ -1,16 +1,17 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getStrapiData } from '@/app/lib/strapi';
-import { mediaUrl } from '@/app/lib/constant';
-import qs from 'qs';
 import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
-import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 import { TrackProjectView } from '@/app/components/TrackProjectView';
-import { PostBody } from '@/app/components/PostBody';
-import type { BlocksContent } from '@strapi/blocks-react-renderer';
+import { Markdown } from '@/app/components/Markdown';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { LOCALES } from '@/app/lib/i18n/locales';
+import {
+	getPublishedProject,
+	getPublishedProjects,
+	projectRepository,
+} from '@/app/lib/content/projects/project-service';
+import type { ProjectView } from '@/app/lib/content/projects/project';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -28,122 +29,65 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 
 export const revalidate = 604800;
 
-// Pre-generate every project page at build time so clicks are instant.
-// New projects added later are still rendered on-demand and then cached (ISR).
+type Params = { params: Promise<{ locale: string; slug: string }> };
+
+// Pre-generate every project page in every language so clicks are instant.
+// Projects added later render on demand and are then cached.
 export async function generateStaticParams() {
-	const query = qs.stringify({
-		fields: ['documentId'],
-		pagination: { pageSize: 100 },
-	}, { encodeValuesOnly: true });
-	const data = await getStrapiData(`/api/projects?${query}`);
-	return (data?.data ?? []).map((p: { documentId: string }) => ({ slug: p.documentId }));
+	const projects = await projectRepository().listProjects();
+	return LOCALES.flatMap((locale) => projects.map((p) => ({ locale, slug: p.slug })));
 }
 
-// Wrapped in React cache() so generateMetadata and the page component share a
-// SINGLE Strapi call per request instead of fetching the same project twice.
-const fetchProject = cache(async (slug: string) => {
-	const query = qs.stringify({
-		filters: { documentId: { $eq: slug } },
-		populate: {
-			image: { fields: ['url', 'alternativeText'] },
-			skills: { fields: ['title'] },
-			expertiseArea: { fields: ['code', 'title'] },
-			screenshots: { fields: ['url', 'alternativeText', 'width', 'height'] },
-			links: '*',
-		},
-	}, { encodeValuesOnly: true });
-
-	const data = await getStrapiData(`/api/projects?${query}`);
-	return data?.data?.[0] ?? null;
-});
-
-async function fetchOtherProjects(currentSlug: string) {
-	const query = qs.stringify({
-		filters: { documentId: { $ne: currentSlug } },
-		populate: {
-			image: { fields: ['url', 'alternativeText'] },
-			expertiseArea: { fields: ['code', 'title'] },
-		},
-		pagination: { pageSize: 20 },
-	}, { encodeValuesOnly: true });
-
-	const data = await getStrapiData(`/api/projects?${query}`);
-	const all: any[] = data?.data ?? [];
-
-	// Fisher-Yates shuffle, take 3
-	for (let i = all.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[all[i], all[j]] = [all[j], all[i]];
-	}
-	return all.slice(0, 3);
-}
-
-export async function generateMetadata(
-	{ params }: { params: Promise<{ locale: string; slug: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	const { locale } = await resolveLocale(params);
 	const { slug } = await params;
-	const project = await fetchProject(slug);
+	const project = await getPublishedProject(locale, slug);
 	if (!project) return {};
 
 	const url = `https://nelkit.dev/${locale}/projects/${slug}`;
-	const ogImage = mediaUrl(project.image?.url) || 'https://nelkit.dev/img/og-image.jpg';
-	// description is now rich-text (blocks); only use it for meta if it's still a
-	// plain string (legacy). Otherwise fall back to summary to avoid "[object Object]".
-	const description = project.summary
-		|| (typeof project.description === 'string' ? project.description : '')
-		|| '';
+	const ogImage = 'https://nelkit.dev/img/og-image.jpg';
 
 	return {
 		title: project.title,
-		description,
+		description: project.summary,
 		alternates: { canonical: url },
 		openGraph: {
 			type: 'website',
 			url,
 			title: `${project.title} · Nelkit Chavez`,
-			description,
+			description: project.summary,
 			images: [{ url: ogImage, width: 1200, height: 630, alt: project.title }],
 		},
 		twitter: {
 			card: 'summary_large_image',
 			title: `${project.title} · Nelkit Chavez`,
-			description,
+			description: project.summary,
 			images: [ogImage],
 		},
 	};
 }
 
-export default async function ProjectPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
-	const { t, href } = await resolveLocale(params);
+/** Up to 3 other projects, shuffled (Fisher-Yates). */
+function pickOthers(all: ProjectView[], currentSlug: string): ProjectView[] {
+	const others = all.filter((p) => p.slug !== currentSlug);
+	for (let i = others.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[others[i], others[j]] = [others[j], others[i]];
+	}
+	return others.slice(0, 3);
+}
+
+export default async function ProjectPage({ params }: Params) {
+	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.projects;
 	const { slug } = await params;
-	const [project, others] = await Promise.all([
-		fetchProject(slug),
-		fetchOtherProjects(slug),
+	const [project, all] = await Promise.all([
+		getPublishedProject(locale, slug),
+		getPublishedProjects(locale),
 	]);
 
 	if (!project) notFound();
-
-	const image = mediaUrl(project.image?.url) || null;
-	// Strapi rich-text comes as an array of blocks; anything else (legacy string)
-	// is handled by the fallback in the JSX below.
-	const descBlocks: BlocksContent | null = Array.isArray(project.description)
-		? (project.description as BlocksContent)
-		: null;
-	const tech: string[] = project.skills?.map((s: any) => s.title) || [];
-	const area: string = project.expertiseArea?.title || project.expertiseArea?.code || '';
-	const screenshots: { url: string; alt: string }[] = project.screenshots
-		? (Array.isArray(project.screenshots)
-			? project.screenshots.map((s: any) => ({ url: mediaUrl(s.url), alt: s.alternativeText || project.title }))
-			: [{ url: mediaUrl(project.screenshots.url), alt: project.title }])
-		: [];
-	const links: { label: string; url: string; type: string; isExternal: boolean }[] = project.links?.map((l: any) => ({
-		label: l.label || l.href || '',
-		url: l.href || l.url || '',
-		type: l.type || 'link',
-		isExternal: l.isExternal ?? true,
-	})) || [];
+	const others = pickOthers(all, slug);
 
 	return (
 		<div className="proj-detail-root">
@@ -161,33 +105,18 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
 				</Link>
 
 				<div className="proj-layout">
-					{/* Main article */}
 					<article className="proj-detail">
 						<header className="proj-header">
 							<div className="proj-meta">
-								{area && <span className="proj-area">{area}</span>}
 								{project.company && <span className="proj-company">{project.company}</span>}
 							</div>
 							<h1 className="proj-title">{project.title}</h1>
-							{project.summary && (
-								<p className="proj-summary">{project.summary}</p>
-							)}
+							{project.summary && <p className="proj-summary">{project.summary}</p>}
 						</header>
 
-						{image && (
-							<div className="proj-image-wrap">
-								<img
-									src={image}
-									alt={project.image?.alternativeText || project.title}
-									className="proj-image"
-									style={{ viewTransitionName: `project-image-${slug}` }}
-								/>
-							</div>
-						)}
-
-						{links.length > 0 && (
+						{project.links.length > 0 && (
 							<div className="proj-links-inline">
-								{links.map((l) => {
+								{project.links.map((l) => {
 									const Icon = LINK_ICONS[l.type] || ILink;
 									return (
 										<a
@@ -204,63 +133,27 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
 							</div>
 						)}
 
-						{/* description is now a Strapi rich-text (blocks) field. Render it
-						    through PostBody; fall back to a plain <p> for legacy string
-						    values so un-migrated projects still display. */}
-						{descBlocks ? (
+						{project.description.trim() && (
 							<div className="proj-desc proj-desc-body">
-								<PostBody content={descBlocks} highlighted={{}} />
-							</div>
-						) : typeof project.description === 'string' && project.description.trim() ? (
-							<p className="proj-desc proj-desc-body">{project.description}</p>
-						) : null}
-
-						{tech.length > 0 && (
-							<div className="proj-section proj-section-stack">
-								<h2 className="proj-section-title">{copy.techStack}</h2>
-								<div className="proj-tags">
-									{tech.map((t: string) => (
-										<span key={t} className="proj-tag">{t}</span>
-									))}
-								</div>
-							</div>
-						)}
-
-						{screenshots.length > 0 && (
-							<div className="proj-section">
-								<h2 className="proj-section-title">{copy.screenshots}</h2>
-								<ScreenshotGallery screenshots={screenshots} />
+								<Markdown>{project.description}</Markdown>
 							</div>
 						)}
 					</article>
 
-					{/* Aside — other projects */}
 					{others.length > 0 && (
 						<aside className="proj-aside">
 							<p className="proj-aside-label">{copy.moreProjects}</p>
 							<div className="proj-aside-list">
-								{others.map((p: any) => {
-									const thumb = mediaUrl(p.image?.url) || null;
-									const areaLabel = p.expertiseArea?.title || p.expertiseArea?.code || '';
-									return (
-										<Link
-											key={p.documentId}
-											href={href(`/projects/${p.documentId}`)}
-											className="proj-aside-card"
-										>
-											{thumb ? (
-												<img src={thumb} alt={p.title} className="proj-aside-thumb" />
-											) : (
-												<span className="proj-aside-thumb proj-aside-thumb-empty" />
-											)}
-											<div className="proj-aside-body">
-												{areaLabel && <span className="proj-aside-area">{areaLabel}</span>}
-												<span className="proj-aside-title">{p.title}</span>
-											</div>
-											<span className="proj-aside-go"><IArrowUR /></span>
-										</Link>
-									);
-								})}
+								{others.map((p) => (
+									<Link key={p.slug} href={href(`/projects/${p.slug}`)} className="proj-aside-card">
+										<span className="proj-aside-thumb proj-aside-thumb-empty" />
+										<div className="proj-aside-body">
+											{p.company && <span className="proj-aside-area">{p.company}</span>}
+											<span className="proj-aside-title">{p.title}</span>
+										</div>
+										<span className="proj-aside-go"><IArrowUR /></span>
+									</Link>
+								))}
 							</div>
 						</aside>
 					)}

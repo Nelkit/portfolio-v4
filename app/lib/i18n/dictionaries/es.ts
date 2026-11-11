@@ -85,7 +85,7 @@ export const es: Dictionary = {
 	sections: {
 		projects: {
 			title: 'Trabajo destacado',
-			note: (n: number) => `${plural(n, 'proyecto', 'proyectos')} · del más reciente al más antiguo`,
+			note: (n: number) => plural(n, 'proyecto', 'proyectos'),
 		},
 		stack: {
 			title: 'Stack tecnológico',
