@@ -2,6 +2,10 @@
   "name": "portfolio-v4",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
