@@ -19,7 +19,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `f980dd9`._
 - [x] **3.** Como administrador, quiero editar la información de presentación (avatar, intro, CV, redes sociales y CTA), para mantener actualizada mi carta de presentación. Requiere: #1
   _Commit `335cd63`._
-- [ ] **4.** Como administrador, quiero crear, editar, eliminar y reordenar proyectos con descripción en rich text, para mostrar mi trabajo actual. Requiere: #1
+- [x] **4.** Como administrador, quiero crear, editar, eliminar y reordenar proyectos con descripción en rich text, para mostrar mi trabajo actual. Requiere: #1
+  _Commit `2ec1058`._
 - [ ] **5.** Como administrador, quiero subir la imagen principal y las capturas de cada proyecto, para que los visitantes vean el resultado. Requiere: #4
 - [ ] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
 - [ ] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
@@ -60,10 +61,27 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas).
 - [ ] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo).
 
+### Historia 4 — Proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos).
+- [ ] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran).
+- [ ] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript).
+- [ ] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`.
+- [ ] Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
+- [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
+
+### Strapi como fuente opcional
+
+- [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
+- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído.
+- [ ] Tu `next dev` sirve un titular de prueba ("Shipping E2E-TEST from Turso") que quedó en su caché por una prueba mía de la historia #1: guarda el titular en `/admin/hero` (invalida la caché) o reinicia el servidor.
+
 ### Para historias futuras
 
 - [ ] **#5 y #12:** las imágenes de proyectos y posts probablemente necesiten subida directa a R2 desde el navegador (URLs prefirmadas + CORS en el bucket); el server action tiene un límite de 4 MB por request.
-- [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home.
+- [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
+- [ ] **#5, #6 y #8:** las tarjetas y el detalle de proyectos no muestran imagen, área ni tecnologías hasta esas historias.
 
 ### Generales
 
