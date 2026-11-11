@@ -14,3 +14,7 @@ Only the existing frontend/visual components are kept.
 
 ## Expensive decisions
 - Multi-language: Spanish and English (all managed content is bilingual)
+
+## Backlog
+- Stories and pending items live in [BACKLOG.md](BACKLOG.md), used as the TODO list.
+- When a story is finished, check it off, note the commit, and add what stayed open under "Pendientes".
