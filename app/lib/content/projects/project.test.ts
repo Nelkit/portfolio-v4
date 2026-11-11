@@ -59,6 +59,16 @@ describe('parseProjectForm', () => {
 		}
 	});
 
+	it('parses the area: empty → none, a positive id → that id', () => {
+		const none = parseProjectForm({ ...validFields, areaId: '' });
+		const some = parseProjectForm({ ...validFields, areaId: '3' });
+		expect(none.ok && none.value.areaId).toBeNull();
+		expect(some.ok && some.value.areaId).toBe(3);
+		const bad = parseProjectForm({ ...validFields, areaId: 'abc' });
+		expect(bad.ok).toBe(false);
+		if (!bad.ok) expect(bad.errors.areaId).toBeDefined();
+	});
+
 	it('validates project links like profile links', () => {
 		const links = JSON.stringify([{ type: 'link', label: 'Demo', url: 'ftp://nope' }]);
 		const result = parseProjectForm({ ...validFields, links });
@@ -73,6 +83,7 @@ describe('toProjectView', () => {
 		id: 7,
 		slug: 'banking',
 		company: 'Acme',
+		areaId: 2,
 		imageKey: 'projects/7/cover-a.webp',
 		screenshots: [
 			{ id: 1, key: 'projects/7/shot-1.png' },
@@ -106,6 +117,13 @@ describe('toProjectView', () => {
 		const view = toProjectView(record, 'en', url);
 		expect(view?.imageUrl).toBe('https://cdn.test/projects/7/cover-a.webp');
 		expect(view?.screenshots).toEqual(['https://cdn.test/projects/7/shot-1.png', 'https://cdn.test/projects/7/shot-2.png']);
+	});
+
+	it('shows the name of its area, or none when it has no (known) area', () => {
+		const areas = [{ id: 2, name: 'Móvil' }];
+		expect(toProjectView(record, 'es', url, areas)?.area).toEqual({ id: 2, name: 'Móvil' });
+		expect(toProjectView({ ...record, areaId: null }, 'es', url, areas)?.area).toBeNull();
+		expect(toProjectView(record, 'es', url, [])?.area).toBeNull();
 	});
 
 	it('has no image URL when the project has no image', () => {

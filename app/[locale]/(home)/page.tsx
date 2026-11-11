@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
 import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
+import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
@@ -14,14 +15,6 @@ export const revalidate = 604800;
 // Strapi still provides the sections that have not been migrated yet.
 const HOME_PAGE_QUERY = {
     populate: {
-        projectSection: {
-            populate: {
-                // Projects come from Turso (story #4); expertise areas still from Strapi.
-                expertiseAreas: {
-                    fields: ['code', 'title', 'description', 'icon', 'color'],
-                },
-            },
-        },
         techStackSection: {
             populate: {
                 skillCategories: {
@@ -80,13 +73,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero, profile, projects] = await Promise.all([
+    const [strapiData, recentPosts, hero, profile, projects, areas] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
         getPublishedHero(locale),
         getPublishedProfile(locale),
         getPublishedProjects(locale),
+        getPublishedAreas(locale),
     ]);
 
     return (
@@ -96,6 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             headline={hero?.headline}
             profile={profile}
             projects={projects}
+            areas={areas}
         />
     );
 }

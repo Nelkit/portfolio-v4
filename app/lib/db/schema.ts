@@ -59,6 +59,8 @@ export const projects = sqliteTable('projects', {
 	company: text('company').notNull().default(''),
 	/** Storage key of the main image (cover), not a URL. */
 	imageKey: text('image_key'),
+	/** Expertise area (one per project, optional). */
+	areaId: integer('area_id').references(() => expertiseAreas.id, { onDelete: 'set null' }),
 	position: integer('position').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),
@@ -94,3 +96,20 @@ export const projectScreenshots = sqliteTable('project_screenshots', {
 	key: text('key').notNull(),
 	position: integer('position').notNull(),
 });
+
+/** Expertise areas used to group and filter projects (ordered). */
+export const expertiseAreas = sqliteTable('expertise_areas', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	position: integer('position').notNull(),
+});
+
+/** Area name per locale. */
+export const expertiseAreaTranslations = sqliteTable(
+	'expertise_area_translations',
+	{
+		areaId: integer('area_id').notNull().references(() => expertiseAreas.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		name: text('name').notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.areaId, table.locale] })],
+);

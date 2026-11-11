@@ -42,6 +42,8 @@ export type Project = {
   color: string;
   icon: LucideIcon;
   expertise_area: string;
+  /** Expertise area id (for filtering); null when the project has no area. */
+  areaId?: number | null;
   image: string;
   screenshots: string[];
   links: ProjectLink[];

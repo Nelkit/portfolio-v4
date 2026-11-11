@@ -5,10 +5,12 @@ import { migrate } from 'drizzle-orm/libsql/migrator';
 import { createTursoProjectRepository } from './turso-project-repository';
 import type { ProjectRepository } from './project-repository';
 import type { ProjectInput } from './project';
+import { createTursoAreaRepository } from '../areas/turso-area-repository';
 
 const project = (slug: string, links: ProjectInput['links'] = []): ProjectInput => ({
 	slug,
 	company: 'Acme',
+	areaId: null,
 	translations: {
 		en: { title: `${slug} en`, summary: 'sum en', description: 'desc en' },
 		es: { title: `${slug} es`, summary: 'sum es', description: 'desc es' },
@@ -124,6 +126,19 @@ describe('TursoProjectRepository', () => {
 			['projects/1/cover.webp', 'projects/1/shot-1.png', 'projects/1/shot-2.png'],
 		);
 		expect(await repo.deleteProject(id)).toEqual([]);
+	});
+
+	it('stores and changes the area of a project', async () => {
+		const db = drizzle(createClient({ url: ':memory:' }));
+		await migrate(db, { migrationsFolder: './drizzle' });
+		const areas = createTursoAreaRepository(db);
+		const projects = createTursoProjectRepository(db);
+		const ml = await areas.createArea({ translations: { en: { name: 'ML' }, es: { name: 'ML' } } });
+
+		const id = await projects.createProject({ ...project('alpha'), areaId: ml });
+		expect((await projects.getProject(id))?.areaId).toBe(ml);
+		await projects.updateProject(id, { ...project('alpha'), areaId: null });
+		expect((await projects.getProject(id))?.areaId).toBeNull();
 	});
 
 	it('rejects a duplicated slug', async () => {

@@ -7,6 +7,7 @@ import type { ProjectInput, ProjectTranslation } from '@/app/lib/content/project
 import { ProjectForm } from '../ProjectForm';
 import { ProjectMedia } from '../ProjectMedia';
 import { publicUrlFor } from '@/app/lib/storage/storage';
+import { loadAreaViews } from '@/app/lib/content/areas/area-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,13 +17,14 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 	if (!Number.isInteger(id) || id <= 0) notFound();
 
 	// Uncached read: the editor always shows what is in the database.
-	const project = await projectRepository().getProject(id);
+	const [project, areas] = await Promise.all([projectRepository().getProject(id), loadAreaViews('en')]);
 	if (!project) notFound();
 
 	const blank: ProjectTranslation = { title: '', summary: '', description: '' };
 	const initial: ProjectInput = {
 		slug: project.slug,
 		company: project.company,
+		areaId: project.areaId,
 		links: project.links,
 		translations: Object.fromEntries(
 			LOCALES.map((locale) => [locale, project.translations[locale] ?? blank]),
@@ -45,7 +47,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 				imageUrl={project.imageKey ? publicUrlFor(project.imageKey) : null}
 				screenshots={project.screenshots.map((s) => ({ id: s.id, url: publicUrlFor(s.key) }))}
 			/>
-			<ProjectForm id={project.id} initial={initial} />
+			<ProjectForm id={project.id} initial={initial} areas={areas} />
 		</main>
 	);
 }

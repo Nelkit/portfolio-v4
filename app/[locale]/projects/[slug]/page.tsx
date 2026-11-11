@@ -110,6 +110,7 @@ export default async function ProjectPage({ params }: Params) {
 					<article className="proj-detail">
 						<header className="proj-header">
 							<div className="proj-meta">
+								{project.area && <span className="proj-area">{project.area.name}</span>}
 								{project.company && <span className="proj-company">{project.company}</span>}
 							</div>
 							<h1 className="proj-title">{project.title}</h1>
@@ -176,7 +177,7 @@ export default async function ProjectPage({ params }: Params) {
 											<span className="proj-aside-thumb proj-aside-thumb-empty" />
 										)}
 										<div className="proj-aside-body">
-											{p.company && <span className="proj-aside-area">{p.company}</span>}
+											{(p.area?.name || p.company) && <span className="proj-aside-area">{p.area?.name ?? p.company}</span>}
 											<span className="proj-aside-title">{p.title}</span>
 										</div>
 										<span className="proj-aside-go"><IArrowUR /></span>

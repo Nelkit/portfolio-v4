@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState } from 'react';
 import { saveProject, type SaveProjectState } from './actions';
 import { LinksEditor } from '@/app/admin/components/LinksEditor';
@@ -15,7 +16,9 @@ function FieldError({ message }: { message?: string }) {
 	return message ? <span className="text-sm text-red-400">{message}</span> : null;
 }
 
-export function ProjectForm({ id, initial }: { id?: number; initial: ProjectInput }) {
+export type AreaOption = { id: number; name: string };
+
+export function ProjectForm({ id, initial, areas }: { id?: number; initial: ProjectInput; areas: AreaOption[] }) {
 	const [state, formAction, pending] = useActionState<SaveProjectState, FormData>(saveProject, {});
 	const errors = state.errors ?? {};
 
@@ -30,6 +33,24 @@ export function ProjectForm({ id, initial }: { id?: number; initial: ProjectInpu
 					</span>
 					<input name="slug" defaultValue={initial.slug} placeholder="my-project" aria-invalid={Boolean(errors.slug)} className={input} />
 					<FieldError message={errors.slug} />
+				</label>
+				<label className="flex flex-col gap-2">
+					<span className="text-sm text-zinc-300">
+						Expertise area <span className="text-zinc-500">— used to filter projects</span>
+					</span>
+					<select
+						name="areaId"
+						defaultValue={initial.areaId ?? ''}
+						aria-invalid={Boolean(errors.areaId)}
+						className={input}
+					>
+						<option value="">— None —</option>
+						{areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}
+					</select>
+					{areas.length === 0 && (
+						<span className="text-xs text-zinc-500">No areas yet — create them in <Link href="/admin/areas" className="underline">Expertise areas</Link>.</span>
+					)}
+					<FieldError message={errors.areaId} />
 				</label>
 				<label className="flex flex-col gap-2">
 					<span className="text-sm text-zinc-300">Company <span className="text-zinc-500">— optional</span></span>

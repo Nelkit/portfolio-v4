@@ -85,6 +85,8 @@ export const es: Dictionary = {
 	sections: {
 		projects: {
 			title: 'Trabajo destacado',
+			all: 'Todos',
+			filterAria: 'Filtrar proyectos por área',
 			note: (n: number) => plural(n, 'proyecto', 'proyectos'),
 		},
 		stack: {

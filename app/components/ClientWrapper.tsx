@@ -15,9 +15,7 @@ import {
 	type Project,
 	getIcon,
 	type SkillCategory,
-	type Expertise as ExpertiseType,
 	type BlogEntry,
-	transformExpertiseAreas,
 	transformSkillCategories,
 	transformCareerEntries,
 	transformEducationEntries,
@@ -35,11 +33,13 @@ type ClientWrapperProps = {
 	profile: PublicProfile | null;
 	/** Projects from the admin (Turso), in display order. */
 	projects: ProjectView[];
+	/** Expertise areas from the admin (Turso), for the project filter. */
+	areas: { id: number; name: string }[];
 };
 
 /**
- * Adapts admin projects to the card shape the section renders. Area and tech
- * are filled by later stories (#6 areas, #8 skills).
+ * Adapts admin projects to the card shape the section renders. Tech is filled
+ * by a later story (#8 skills).
  */
 function toProjectCards(projects: ProjectView[]): Project[] {
 	return projects.map((p) => ({
@@ -51,7 +51,8 @@ function toProjectCards(projects: ProjectView[]): Project[] {
 		tech: [],
 		color: '',
 		icon: getIcon(''),
-		expertise_area: '',
+		expertise_area: p.area?.name ?? '',
+		areaId: p.area?.id ?? null,
 		image: p.imageUrl ?? '',
 		screenshots: p.screenshots,
 		links: p.links,
@@ -70,7 +71,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -94,9 +95,6 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 		}
 		: undefined;
 
-	const expertise: ExpertiseType[] = data.projectSection?.expertiseAreas
-		? transformExpertiseAreas(data.projectSection.expertiseAreas)
-		: [];
 
 	const skillCategories: SkillCategory[] = data.techStackSection?.skillCategories
 		? transformSkillCategories(data.techStackSection.skillCategories)
@@ -234,6 +232,7 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 				<ProjectsSection
 					title={projectSectionTitle}
 					projects={projects}
+					areas={areas}
 					onNav={navTo}
 				/>
 

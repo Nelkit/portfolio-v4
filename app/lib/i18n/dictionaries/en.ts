@@ -89,6 +89,8 @@ export const en = {
 	sections: {
 		projects: {
 			title: 'Selected work',
+			all: 'All',
+			filterAria: 'Filter projects by area',
 			note: (n: number) => plural(n, 'project', 'projects'),
 		},
 		stack: {

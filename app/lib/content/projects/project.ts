@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { parseLinks, type Link } from '@/app/lib/content/links';
+import type { AreaView } from '@/app/lib/content/areas/area';
 
 /** Per-language copy. `description` is Markdown. */
 export type ProjectTranslation = { title: string; summary: string; description: string };
@@ -9,6 +10,8 @@ export type ProjectTranslation = { title: string; summary: string; description: 
 export type ProjectInput = {
 	slug: string;
 	company: string;
+	/** Expertise area id, or null for none. */
+	areaId: number | null;
 	translations: Record<Locale, ProjectTranslation>;
 	links: Link[];
 };
@@ -32,6 +35,7 @@ export type ProjectView = {
 	title: string;
 	summary: string;
 	description: string;
+	area: AreaView | null;
 	links: (Link & { isExternal: boolean })[];
 	imageUrl: string | null;
 	/** Screenshot URLs, in display order. */
@@ -100,8 +104,16 @@ export function parseProjectForm(fields: Record<string, unknown>): ProjectFormRe
 	const links = parseLinks(fields.links);
 	if (!links.ok) errors.links = links.error;
 
-	if (Object.keys(errors).length > 0 || !company.success || !links.ok) return { ok: false, errors };
-	return { ok: true, value: { slug, company: company.data, translations, links: links.links } };
+	// '' (no area selected) → null; otherwise a positive integer id.
+	const rawArea = String(fields.areaId ?? '').trim();
+	const area = rawArea === '' ? { success: true as const, data: null } : z.coerce.number().int().positive().safeParse(rawArea);
+	if (!area.success) errors.areaId = 'Invalid area';
+
+	if (Object.keys(errors).length > 0 || !company.success || !links.ok || !area.success) return { ok: false, errors };
+	return {
+		ok: true,
+		value: { slug, company: company.data, areaId: area.data, translations, links: links.links },
+	};
 }
 
 // ---------- Public view ----------
@@ -110,6 +122,8 @@ export function toProjectView(
 	record: ProjectRecord,
 	locale: Locale,
 	publicUrl: (key: string) => string,
+	/** Areas already resolved for this locale; an unknown id shows as no area. */
+	areas: AreaView[] = [],
 ): ProjectView | null {
 	const t = record.translations[locale] ?? LOCALES.map((l) => record.translations[l]).find(Boolean);
 	if (!t) return null;
@@ -119,6 +133,7 @@ export function toProjectView(
 		title: t.title,
 		summary: t.summary,
 		description: t.description,
+		area: areas.find((a) => a.id === record.areaId) ?? null,
 		links: record.links.map((l) => ({ ...l, isExternal: l.type !== 'email' })),
 		imageUrl: record.imageKey ? publicUrl(record.imageKey) : null,
 		screenshots: record.screenshots.map((s) => publicUrl(s.key)),

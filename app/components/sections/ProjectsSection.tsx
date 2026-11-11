@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { AreaFilter, areaChips } from '@/app/components/AreaFilter';
 import { type Project, type ProjectLink } from '@/app/data/content';
 import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
@@ -20,6 +24,7 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 type ProjectsSectionProps = {
 	title: string;
 	projects: Project[];
+	areas: { id: number; name: string }[];
 	onNav: (id: string) => void;
 };
 
@@ -34,9 +39,14 @@ type CardItem = {
 	links: ProjectLink[];
 };
 
-export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
+export function ProjectsSection({ title, projects, areas }: ProjectsSectionProps) {
 	const { t, href } = useI18n();
-	const items: CardItem[] = projects.map((p, idx) => ({
+	const [selectedArea, setSelectedArea] = useState<number | null>(null);
+	const withArea = projects.map((p) => ({ ...p, areaId: p.areaId ?? null }));
+	const chips = areaChips(areas, withArea);
+	const visible = selectedArea === null ? withArea : withArea.filter((p) => p.areaId === selectedArea);
+
+	const items: CardItem[] = visible.map((p, idx) => ({
 		slug: p.slug,
 		i: String(idx + 1).padStart(2, '0'),
 		k: p.expertise_area || '',
@@ -47,9 +57,9 @@ export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
 		links: p.links || [],
 	}));
 
-	if (items.length === 0) return null;
+	if (projects.length === 0) return null;
 
-	const count = items.length;
+	const count = projects.length;
 
 	return (
 		<section id="work" className="section section-work">
@@ -57,6 +67,7 @@ export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
 				<h2><span className="num">02</span> {title}<span className="ac">.</span></h2>
 				<span className="note">{t.sections.projects.note(count)}</span>
 			</div>
+			<AreaFilter areas={chips} total={count} selected={selectedArea} onSelect={setSelectedArea} />
 			<div className="work-grid">
 				{items.map((w, idx) => (
 					<Link
@@ -75,7 +86,7 @@ export function ProjectsSection({ title, projects }: ProjectsSectionProps) {
 							<span className="work-shot-placeholder" aria-hidden="true" />
 						)}
 						<div className="wc-body">
-							<span className="idx">{w.i} · {w.k}</span>
+							<span className="idx">{w.i}{w.k && ` · ${w.k}`}</span>
 							<h3>{w.t}</h3>
 							<p className="desc">{w.d}</p>
 							{w.links.length > 0 && (

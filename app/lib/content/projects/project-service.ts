@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache';
 import { getDb } from '@/app/lib/db/client';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { publicUrlFor } from '@/app/lib/storage/storage';
+import { AREAS_TAG, loadAreaViews } from '@/app/lib/content/areas/area-service';
 import { toProjectView, type ProjectView } from './project';
 import { createTursoProjectRepository } from './turso-project-repository';
 import type { ProjectRepository } from './project-repository';
@@ -13,21 +14,23 @@ export function projectRepository(): ProjectRepository {
 	return createTursoProjectRepository(getDb());
 }
 
-/** All projects for one language, in display order. */
+/** All projects for one language, in display order. Also shows area names → both tags. */
 export const getPublishedProjects = unstable_cache(
-	async (locale: Locale): Promise<ProjectView[]> =>
-		(await projectRepository().listProjects())
-			.map((record) => toProjectView(record, locale, publicUrlFor))
-			.filter((view): view is ProjectView => view !== null),
+	async (locale: Locale): Promise<ProjectView[]> => {
+		const [records, areas] = await Promise.all([projectRepository().listProjects(), loadAreaViews(locale)]);
+		return records
+			.map((record) => toProjectView(record, locale, publicUrlFor, areas))
+			.filter((view): view is ProjectView => view !== null);
+	},
 	['projects'],
-	{ tags: [PROJECTS_TAG] },
+	{ tags: [PROJECTS_TAG, AREAS_TAG] },
 );
 
 export const getPublishedProject = unstable_cache(
 	async (locale: Locale, slug: string): Promise<ProjectView | null> => {
-		const record = await projectRepository().getProjectBySlug(slug);
-		return record ? toProjectView(record, locale, publicUrlFor) : null;
+		const [record, areas] = await Promise.all([projectRepository().getProjectBySlug(slug), loadAreaViews(locale)]);
+		return record ? toProjectView(record, locale, publicUrlFor, areas) : null;
 	},
 	['project'],
-	{ tags: [PROJECTS_TAG] },
+	{ tags: [PROJECTS_TAG, AREAS_TAG] },
 );

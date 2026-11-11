@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseProjectForm } from '@/app/lib/content/projects/project';
 import { PROJECTS_TAG, projectRepository } from '@/app/lib/content/projects/project-service';
+import { areaRepository } from '@/app/lib/content/areas/area-service';
 import { deleteStoredFiles } from '@/app/lib/storage/cleanup';
 
 export type SaveProjectState = { ok?: boolean; errors?: Record<string, string> };
@@ -22,6 +23,10 @@ export async function saveProject(_prev: SaveProjectState, formData: FormData): 
 	const rawId = formData.get('id');
 	const id = rawId ? idSchema.parse(rawId) : null;
 	const repo = projectRepository();
+
+	if (parsed.value.areaId !== null && !(await areaRepository().getArea(parsed.value.areaId))) {
+		return { errors: { areaId: 'That area no longer exists.' } };
+	}
 
 	// Friendly error instead of a unique-constraint crash.
 	const sameSlug = await repo.getProjectBySlug(parsed.value.slug);

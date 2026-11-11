@@ -35,6 +35,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 				id: row.id,
 				slug: row.slug,
 				company: row.company,
+				areaId: row.areaId,
 				imageKey: row.imageKey,
 				translations,
 				links: linkRows
@@ -82,7 +83,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 					.from(projects);
 				const [{ id }] = await tx
 					.insert(projects)
-					.values({ slug: input.slug, company: input.company, position: first - 1 })
+					.values({ slug: input.slug, company: input.company, areaId: input.areaId, position: first - 1 })
 					.returning({ id: projects.id });
 				for (const [locale, t] of Object.entries(input.translations) as [Locale, ProjectTranslation][]) {
 					await tx.insert(projectTranslations).values({ projectId: id, locale, ...t });
@@ -98,7 +99,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 			await db.batch([
 				db
 					.update(projects)
-					.set({ slug: input.slug, company: input.company, updatedAt: sql`(unixepoch())` })
+					.set({ slug: input.slug, company: input.company, areaId: input.areaId, updatedAt: sql`(unixepoch())` })
 					.where(eq(projects.id, id)),
 				...deleteTextChildren(id),
 				...childInserts(id, input),

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { IArrowUR } from '@/app/components/icons';
 import { resolveLocale } from '@/app/lib/i18n/server';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
+import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
+import { ProjectsListGrid } from './ProjectsListGrid';
 
 export const revalidate = 604800;
 
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProjectsPage({ params }: Props) {
 	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.projects;
-	const projects = await getPublishedProjects(locale);
+	const [projects, areas] = await Promise.all([getPublishedProjects(locale), getPublishedAreas(locale)]);
 
 	return (
 		<div className="proj-detail-root">
@@ -49,34 +50,7 @@ export default async function ProjectsPage({ params }: Props) {
 				{projects.length === 0 ? (
 					<p style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>{copy.empty}</p>
 				) : (
-					<div className="proj-list-grid">
-						{projects.map((p, idx) => {
-							const featured = idx === 0;
-							return (
-								<Link key={p.slug} href={href(`/projects/${p.slug}`)}
-									className={'proj-list-card' + (featured ? ' proj-list-card-feat' : '')}>
-									{p.imageUrl ? (
-										<div className="proj-list-thumb">
-											{/* eslint-disable-next-line @next/next/no-img-element */}
-											<img src={p.imageUrl} alt={p.title} />
-										</div>
-									) : (
-										<div className="proj-list-thumb proj-list-thumb-empty">
-											<span>{String(idx + 1).padStart(2, '0')}</span>
-										</div>
-									)}
-									<div className="proj-list-body">
-										<div className="proj-list-meta">
-											{p.company && <span className="proj-area">{p.company}</span>}
-										</div>
-										<h2 className={'proj-list-title' + (featured ? ' proj-list-title-feat' : '')}>{p.title}</h2>
-										{p.summary && <p className="proj-list-summary">{p.summary}</p>}
-									</div>
-									<span className="proj-list-go"><IArrowUR /></span>
-								</Link>
-							);
-						})}
-					</div>
+					<ProjectsListGrid projects={projects} areas={areas} />
 				)}
 			</div>
 		</div>
