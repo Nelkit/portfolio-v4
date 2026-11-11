@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { check, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 /**
  * Translatable hero copy — one row per locale.
@@ -112,4 +112,42 @@ export const expertiseAreaTranslations = sqliteTable(
 		name: text('name').notNull(),
 	},
 	(table) => [primaryKey({ columns: [table.areaId, table.locale] })],
+);
+
+/** Skill catalog (technologies). One name, unique ignoring case; shared by categories and projects. */
+export const skills = sqliteTable(
+	'skills',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		name: text('name').notNull(),
+	},
+	(table) => [uniqueIndex('skills_name_nocase').on(sql`lower(${table.name})`)],
+);
+
+/** Tech-stack categories (tabs), ordered. */
+export const skillCategories = sqliteTable('skill_categories', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	position: integer('position').notNull(),
+});
+
+/** Category name per locale. */
+export const skillCategoryTranslations = sqliteTable(
+	'skill_category_translations',
+	{
+		categoryId: integer('category_id').notNull().references(() => skillCategories.id, { onDelete: 'cascade' }),
+		locale: text('locale').notNull(),
+		name: text('name').notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.categoryId, table.locale] })],
+);
+
+/** Many-to-many: a skill can be in several categories; ordered within each category. */
+export const skillCategorySkills = sqliteTable(
+	'skill_category_skills',
+	{
+		categoryId: integer('category_id').notNull().references(() => skillCategories.id, { onDelete: 'cascade' }),
+		skillId: integer('skill_id').notNull().references(() => skills.id, { onDelete: 'cascade' }),
+		position: integer('position').notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.categoryId, table.skillId] })],
 );

@@ -11,12 +11,11 @@ import { FooterSection } from '@/app/components/sections/FooterSection';
 import { MainNav } from '@/app/components/MainNav';
 import type { PublicProfile } from '@/app/lib/content/profile/profile';
 import type { ProjectView } from '@/app/lib/content/projects/project';
+import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
 import {
 	type Project,
 	getIcon,
-	type SkillCategory,
 	type BlogEntry,
-	transformSkillCategories,
 	transformCareerEntries,
 	transformEducationEntries,
 } from '@/app/data/content';
@@ -35,6 +34,8 @@ type ClientWrapperProps = {
 	projects: ProjectView[];
 	/** Expertise areas from the admin (Turso), for the project filter. */
 	areas: { id: number; name: string }[];
+	/** Tech-stack categories from the admin (Turso). */
+	skillCategories: CategoryView[];
 };
 
 /**
@@ -71,7 +72,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas }: ClientWrapperProps) {
+export function ClientWrapper({ strapiData, recentPosts, headline, profile, projects: projectViews, areas, skillCategories }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -96,9 +97,6 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 		: undefined;
 
 
-	const skillCategories: SkillCategory[] = data.techStackSection?.skillCategories
-		? transformSkillCategories(data.techStackSection.skillCategories)
-		: [];
 
 	// Section titles are fixed UI copy (dictionary), not Strapi content.
 	const projectSectionTitle = t.sections.projects.title;
@@ -177,7 +175,7 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 		if ((window as any).__askAgent) (window as any).__askAgent(q, key);
 	};
 
-	const totalTools = skillCategories.reduce((a, c) => a + c.skills.length, 0);
+	const totalTools = countUniqueSkills(skillCategories);
 	const totalDomains = skillCategories.length;
 	const careerYears = (() => {
 		if (!careerTimeline.length) return 0;
@@ -237,7 +235,7 @@ export function ClientWrapper({ strapiData, recentPosts, headline, profile, proj
 				/>
 
 				<SkillsSection
-					skillCategories={skillCategories}
+					categories={skillCategories}
 				/>
 
 				<CareerSection

@@ -7,6 +7,7 @@ import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
 import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
 import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
+import { getPublishedSkillCategories } from '@/app/lib/content/skills/skill-service';
 import { isLocale } from '@/app/lib/i18n/routing';
 
 export const revalidate = 604800;
@@ -15,18 +16,6 @@ export const revalidate = 604800;
 // Strapi still provides the sections that have not been migrated yet.
 const HOME_PAGE_QUERY = {
     populate: {
-        techStackSection: {
-            populate: {
-                skillCategories: {
-                    fields: ['code', 'label', 'gradient', 'description', 'emphasis', 'isFeatured'],
-                    populate: {
-                        skills: {
-                            fields: ['title'],
-                        },
-                    },
-                },
-            },
-        },
         educationSection: {
             populate: {
                 educationEntries: {
@@ -73,7 +62,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [strapiData, recentPosts, hero, profile, projects, areas] = await Promise.all([
+    const [strapiData, recentPosts, hero, profile, projects, areas, skillCategories] = await Promise.all([
         fetchHomePageData(),
         fetchRecentPosts(),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
@@ -81,6 +70,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         getPublishedProfile(locale),
         getPublishedProjects(locale),
         getPublishedAreas(locale),
+        getPublishedSkillCategories(locale),
     ]);
 
     return (
@@ -91,6 +81,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             profile={profile}
             projects={projects}
             areas={areas}
+            skillCategories={skillCategories}
         />
     );
 }
