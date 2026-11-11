@@ -50,7 +50,8 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
 ### Historia 1 — Login y titular
 
-- [ ] Rate limiting del login. Hoy solo hay 800 ms de espera por intento fallido; Upstash está instalado pero sin usar.
+- [x] Rate limiting del login: 5 intentos por IP cada 15 min (se comprueba antes de la contraseña), además de los 800 ms por intento fallido.
+- [ ] Crear una base Redis en Upstash (o la integración de Vercel) y configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` (o `KV_REST_API_URL`/`KV_REST_API_TOKEN`). Sin ellas el límite vive en la memoria de cada instancia y no se comparte en producción.
 - [ ] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy.
 - [x] `package-lock.json` borrado; el proyecto declara `packageManager: pnpm@10.14.0` (la versión que generó `pnpm-lock.yaml`).
 
@@ -181,6 +182,10 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído.
 - [x] El titular de prueba en caché ya no aplica: en desarrollo no se cachea (`cachedRead`).
 
+### Migración de contenido desde Strapi
+
+- [ ] Importar el contenido de Strapi (local en `http://localhost:1337`) a Turso y R2 (pedido después de decidir greenfield).
+
 ### Para historias futuras
 
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
@@ -200,6 +205,9 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`.
 - [ ] Primer deploy de preview y verificación de punta a punta.
 - [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
-- [ ] Cron diario que mantenga viva la base de Turso (el plan Free archiva tras 10 días sin actividad) y exporte un respaldo en JSON a R2.
+- [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
+- [ ] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo).
+- [ ] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores.
+- [ ] (Opcional) Regla de ciclo de vida en el bucket de respaldos para borrar los de más de N días.
 - [x] Strapi retirado en la #11: `strapi.ts`, `constant.ts`, `PostBody`, `inlineMarkdown`, los `transform*` de `content.ts`, `CareerTimeline.tsx`, las dependencias `qs`, `@types/qs` y `@strapi/blocks-react-renderer` y los `remotePatterns` de Strapi.
 - [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa).
