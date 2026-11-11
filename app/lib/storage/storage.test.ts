@@ -69,9 +69,23 @@ describe('R2 storage', () => {
 		expect(request.headers.get('content-type')).toBe('image/webp');
 	});
 
-	it('throws when R2 rejects the upload', async () => {
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('denied', { status: 403 })));
-		await expect(createR2Storage(config).put('profile/a-1.png', new Uint8Array(1), 'image/png')).rejects.toThrow(/403/);
+	it('throws when R2 rejects the upload, including R2\'s error code', async () => {
+		const xml = '<?xml version="1.0"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>';
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(xml, { status: 403 })));
+		await expect(createR2Storage(config).put('profile/a-1.png', new Uint8Array(1), 'image/png')).rejects.toThrow(
+			/403 AccessDenied/,
+		);
+	});
+
+	it('targets the jurisdiction endpoint when the bucket has one (US / EU / FedRAMP)', async () => {
+		const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+		vi.stubGlobal('fetch', fetchMock);
+
+		await createR2Storage({ ...config, jurisdiction: 'us' }).put('profile/a-1.png', new Uint8Array(1), 'image/png');
+		await createR2Storage({ ...config, jurisdiction: 'eu' }).put('profile/a-1.png', new Uint8Array(1), 'image/png');
+
+		expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://acc123.us.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
+		expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://acc123.eu.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
 	});
 
 	it('builds public URLs from the configured public base', () => {

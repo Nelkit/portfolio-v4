@@ -51,7 +51,16 @@ export type R2Config = {
 	bucket: string;
 	/** Public base URL of the bucket (custom domain), e.g. https://media.nelkit.dev */
 	publicUrl: string;
+	/**
+	 * Bucket jurisdiction (dashboard → bucket → "Jurisdiction"). Buckets created
+	 * with an explicit jurisdiction live on their own S3 endpoint
+	 * (<account>.us.r2… / .eu. / .fedramp.); the default endpoint answers
+	 * NoSuchBucket for them. Omit for buckets without a jurisdiction.
+	 */
+	jurisdiction?: 'us' | 'eu' | 'fedramp';
 };
+
+export const R2_JURISDICTIONS = ['us', 'eu', 'fedramp'] as const;
 
 export function createR2Storage(config: R2Config): FileStorage {
 	const client = new AwsClient({
@@ -60,15 +69,18 @@ export function createR2Storage(config: R2Config): FileStorage {
 		service: 's3',
 		region: 'auto',
 	});
-	const objectUrl = (key: string) =>
-		`https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${key}`;
+	const host = `${config.accountId}${config.jurisdiction ? `.${config.jurisdiction}` : ''}.r2.cloudflarestorage.com`;
+	const objectUrl = (key: string) => `https://${host}/${config.bucket}/${key}`;
 	const publicBase = config.publicUrl.replace(/\/+$/, '');
 
 	const send = async (key: string, init: RequestInit) => {
 		assertSafeKey(key);
 		const response = await client.fetch(objectUrl(key), init);
 		if (!response.ok && response.status !== 404) {
-			throw new Error(`R2 ${init.method} ${key} failed: ${response.status}`);
+			// R2 explains failures in an S3 XML body (<Code>AccessDenied</Code>, SignatureDoesNotMatch…).
+			const code = /<Code>([^<]+)<\/Code>/.exec(await response.text().catch(() => ''))?.[1];
+			const hint = code === 'AccessDenied' ? ' — check the API token permission (Object Read & Write) and its bucket scope' : '';
+			throw new Error(`R2 ${init.method} ${key} failed: ${response.status}${code ? ` ${code}` : ''}${hint}`);
 		}
 	};
 
@@ -94,7 +106,11 @@ function r2ConfigFromEnv(): R2Config | null {
 		bucket: process.env.R2_BUCKET,
 		publicUrl: process.env.R2_PUBLIC_URL,
 	};
-	return Object.values(config).every(Boolean) ? (config as R2Config) : null;
+	if (!Object.values(config).every(Boolean)) return null;
+	const raw = process.env.R2_JURISDICTION?.trim().toLowerCase() || undefined;
+	const jurisdiction = R2_JURISDICTIONS.find((j) => j === raw);
+	if (raw && !jurisdiction) throw new Error(`R2_JURISDICTION must be one of: ${R2_JURISDICTIONS.join(', ')} (got "${raw}")`);
+	return { ...(config as Omit<R2Config, 'jurisdiction'>), jurisdiction };
 }
 
 /** R2 when configured; local disk in development; otherwise uploads fail loudly. */
