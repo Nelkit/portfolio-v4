@@ -55,10 +55,16 @@ export default async function ProjectsPage({ params }: Props) {
 							return (
 								<Link key={p.slug} href={href(`/projects/${p.slug}`)}
 									className={'proj-list-card' + (featured ? ' proj-list-card-feat' : '')}>
-									{/* Images arrive with story #5; until then the numbered placeholder. */}
-									<div className="proj-list-thumb proj-list-thumb-empty">
-										<span>{String(idx + 1).padStart(2, '0')}</span>
-									</div>
+									{p.imageUrl ? (
+										<div className="proj-list-thumb">
+											{/* eslint-disable-next-line @next/next/no-img-element */}
+											<img src={p.imageUrl} alt={p.title} />
+										</div>
+									) : (
+										<div className="proj-list-thumb proj-list-thumb-empty">
+											<span>{String(idx + 1).padStart(2, '0')}</span>
+										</div>
+									)}
 									<div className="proj-list-body">
 										<div className="proj-list-meta">
 											{p.company && <span className="proj-area">{p.company}</span>}

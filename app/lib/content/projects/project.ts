@@ -13,10 +13,16 @@ export type ProjectInput = {
 	links: Link[];
 };
 
-/** What is stored, as read back. */
+export const MAX_SCREENSHOTS = 12;
+
+export type Screenshot = { id: number; key: string };
+
+/** What is stored, as read back. Images are storage keys, managed separately from the text. */
 export type ProjectRecord = Omit<ProjectInput, 'translations'> & {
 	id: number;
 	translations: Partial<Record<Locale, ProjectTranslation>>;
+	imageKey: string | null;
+	screenshots: Screenshot[];
 };
 
 /** What the public site renders for one language. */
@@ -27,6 +33,9 @@ export type ProjectView = {
 	summary: string;
 	description: string;
 	links: (Link & { isExternal: boolean })[];
+	imageUrl: string | null;
+	/** Screenshot URLs, in display order. */
+	screenshots: string[];
 };
 
 // ---------- Slugs ----------
@@ -97,7 +106,11 @@ export function parseProjectForm(fields: Record<string, unknown>): ProjectFormRe
 
 // ---------- Public view ----------
 
-export function toProjectView(record: ProjectRecord, locale: Locale): ProjectView | null {
+export function toProjectView(
+	record: ProjectRecord,
+	locale: Locale,
+	publicUrl: (key: string) => string,
+): ProjectView | null {
 	const t = record.translations[locale] ?? LOCALES.map((l) => record.translations[l]).find(Boolean);
 	if (!t) return null;
 	return {
@@ -107,5 +120,7 @@ export function toProjectView(record: ProjectRecord, locale: Locale): ProjectVie
 		summary: t.summary,
 		description: t.description,
 		links: record.links.map((l) => ({ ...l, isExternal: l.type !== 'email' })),
+		imageUrl: record.imageKey ? publicUrl(record.imageKey) : null,
+		screenshots: record.screenshots.map((s) => publicUrl(s.key)),
 	};
 }

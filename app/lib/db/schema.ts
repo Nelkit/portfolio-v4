@@ -57,6 +57,8 @@ export const projects = sqliteTable('projects', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	slug: text('slug').notNull().unique(),
 	company: text('company').notNull().default(''),
+	/** Storage key of the main image (cover), not a URL. */
+	imageKey: text('image_key'),
 	position: integer('position').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),
@@ -82,5 +84,13 @@ export const projectLinks = sqliteTable('project_links', {
 	type: text('type').notNull(),
 	label: text('label').notNull(),
 	url: text('url').notNull(),
+	position: integer('position').notNull(),
+});
+
+/** Ordered screenshots of a project (storage keys). */
+export const projectScreenshots = sqliteTable('project_screenshots', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+	key: text('key').notNull(),
 	position: integer('position').notNull(),
 });

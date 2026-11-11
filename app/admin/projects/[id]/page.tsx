@@ -5,6 +5,8 @@ import { projectRepository } from '@/app/lib/content/projects/project-service';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import type { ProjectInput, ProjectTranslation } from '@/app/lib/content/projects/project';
 import { ProjectForm } from '../ProjectForm';
+import { ProjectMedia } from '../ProjectMedia';
+import { publicUrlFor } from '@/app/lib/storage/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +38,13 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 					View on site ↗
 				</a>
 			</header>
+			<ProjectMedia
+				// remount with fresh order after each media change
+				key={project.screenshots.map((s) => s.id).join(',') + (project.imageKey ?? '')}
+				projectId={project.id}
+				imageUrl={project.imageKey ? publicUrlFor(project.imageKey) : null}
+				screenshots={project.screenshots.map((s) => ({ id: s.id, url: publicUrlFor(s.key) }))}
+			/>
 			<ProjectForm id={project.id} initial={initial} />
 		</main>
 	);

@@ -38,8 +38,8 @@ type ClientWrapperProps = {
 };
 
 /**
- * Adapts admin projects to the card shape the section renders. Image, area and
- * tech are filled by later stories (#5 images, #6 areas, #8 skills).
+ * Adapts admin projects to the card shape the section renders. Area and tech
+ * are filled by later stories (#6 areas, #8 skills).
  */
 function toProjectCards(projects: ProjectView[]): Project[] {
 	return projects.map((p) => ({
@@ -52,8 +52,8 @@ function toProjectCards(projects: ProjectView[]): Project[] {
 		color: '',
 		icon: getIcon(''),
 		expertise_area: '',
-		image: '',
-		screenshots: [],
+		image: p.imageUrl ?? '',
+		screenshots: p.screenshots,
 		links: p.links,
 	}));
 }

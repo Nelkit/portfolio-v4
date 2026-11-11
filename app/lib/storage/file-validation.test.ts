@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_BYTES, validateUpload } from './file-validation';
+import { MAX_BYTES, PROJECT_IMAGE_MAX_BYTES, validateUpload } from './file-validation';
 
 const bytes = (...values: number[]) => new Uint8Array(values);
 const ascii = (text: string) => new TextEncoder().encode(text);
@@ -30,6 +30,12 @@ describe('validateUpload', () => {
 		expect(validateUpload(pad(bytes(0x89, 0x50, 0x4e, 0x47)), 'pdf').ok).toBe(false);
 		// An SVG/HTML renamed to .png must not pass (could carry scripts).
 		expect(validateUpload(pad(ascii('<svg onload=alert(1)>')), 'image').ok).toBe(false);
+	});
+
+	it('accepts a custom size limit (project images allow more than the avatar)', () => {
+		const png = pad(bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a), MAX_BYTES.image + 10);
+		expect(validateUpload(png, 'image').ok).toBe(false);
+		expect(validateUpload(png, 'image', PROJECT_IMAGE_MAX_BYTES).ok).toBe(true);
 	});
 
 	it('rejects empty files and files over the size limit', () => {

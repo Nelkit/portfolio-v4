@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseProjectForm } from '@/app/lib/content/projects/project';
 import { PROJECTS_TAG, projectRepository } from '@/app/lib/content/projects/project-service';
+import { deleteStoredFiles } from '@/app/lib/storage/cleanup';
 
 export type SaveProjectState = { ok?: boolean; errors?: Record<string, string> };
 
@@ -41,7 +42,8 @@ export async function saveProject(_prev: SaveProjectState, formData: FormData): 
 
 export async function deleteProject(formData: FormData): Promise<void> {
 	await requireAdmin();
-	await projectRepository().deleteProject(idSchema.parse(formData.get('id')));
+	const fileKeys = await projectRepository().deleteProject(idSchema.parse(formData.get('id')));
+	await deleteStoredFiles(fileKeys); // best effort: cover + screenshots
 	updateTag(PROJECTS_TAG);
 }
 

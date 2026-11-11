@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { TrackProjectView } from '@/app/components/TrackProjectView';
 import { Markdown } from '@/app/components/Markdown';
+import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 import { resolveLocale } from '@/app/lib/i18n/server';
 import { LOCALES } from '@/app/lib/i18n/locales';
 import {
@@ -45,7 +46,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	if (!project) return {};
 
 	const url = `https://nelkit.dev/${locale}/projects/${slug}`;
-	const ogImage = 'https://nelkit.dev/img/og-image.jpg';
+	// Relative URLs (local uploads) are resolved against metadataBase.
+	const ogImage = project.imageUrl ?? 'https://nelkit.dev/img/og-image.jpg';
 
 	return {
 		title: project.title,
@@ -114,6 +116,18 @@ export default async function ProjectPage({ params }: Params) {
 							{project.summary && <p className="proj-summary">{project.summary}</p>}
 						</header>
 
+						{project.imageUrl && (
+							<div className="proj-image-wrap">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src={project.imageUrl}
+									alt={project.title}
+									className="proj-image"
+									style={{ viewTransitionName: `project-image-${slug}` }}
+								/>
+							</div>
+						)}
+
 						{project.links.length > 0 && (
 							<div className="proj-links-inline">
 								{project.links.map((l) => {
@@ -138,6 +152,15 @@ export default async function ProjectPage({ params }: Params) {
 								<Markdown>{project.description}</Markdown>
 							</div>
 						)}
+
+						{project.screenshots.length > 0 && (
+							<div className="proj-section">
+								<h2 className="proj-section-title">{copy.screenshots}</h2>
+								<ScreenshotGallery
+									screenshots={project.screenshots.map((url, i) => ({ url, alt: `${project.title} — ${i + 1}` }))}
+								/>
+							</div>
+						)}
 					</article>
 
 					{others.length > 0 && (
@@ -146,7 +169,12 @@ export default async function ProjectPage({ params }: Params) {
 							<div className="proj-aside-list">
 								{others.map((p) => (
 									<Link key={p.slug} href={href(`/projects/${p.slug}`)} className="proj-aside-card">
-										<span className="proj-aside-thumb proj-aside-thumb-empty" />
+										{p.imageUrl ? (
+											// eslint-disable-next-line @next/next/no-img-element
+											<img src={p.imageUrl} alt={p.title} className="proj-aside-thumb" />
+										) : (
+											<span className="proj-aside-thumb proj-aside-thumb-empty" />
+										)}
 										<div className="proj-aside-body">
 											{p.company && <span className="proj-aside-area">{p.company}</span>}
 											<span className="proj-aside-title">{p.title}</span>

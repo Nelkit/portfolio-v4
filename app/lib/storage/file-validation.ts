@@ -9,6 +9,12 @@ export const MAX_BYTES: Record<UploadKind, number> = {
 	pdf: 1.25 * 1024 * 1024,
 };
 
+/**
+ * Project images (cover, screenshots) are uploaded one file per request, so
+ * they can be bigger than the avatar while staying under the 4 MB action limit.
+ */
+export const PROJECT_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
+
 export type UploadCheck =
 	| { ok: true; ext: string; contentType: string }
 	| { ok: false; error: string };
@@ -31,10 +37,10 @@ const SIGNATURES: Record<UploadKind, { ext: string; contentType: string; match: 
  * MIME type: files are served publicly, so an HTML/SVG disguised as .png must
  * not get through.
  */
-export function validateUpload(bytes: Uint8Array, kind: UploadKind): UploadCheck {
+export function validateUpload(bytes: Uint8Array, kind: UploadKind, maxBytes = MAX_BYTES[kind]): UploadCheck {
 	if (bytes.length === 0) return { ok: false, error: 'The file is empty.' };
-	if (bytes.length > MAX_BYTES[kind]) {
-		const mb = (MAX_BYTES[kind] / 1024 / 1024).toFixed(2).replace(/\.?0+$/, '');
+	if (bytes.length > maxBytes) {
+		const mb = (maxBytes / 1024 / 1024).toFixed(2).replace(/\.?0+$/, '');
 		return { ok: false, error: `The file is larger than ${mb} MB.` };
 	}
 	const match = SIGNATURES[kind].find((s) => s.match(bytes));

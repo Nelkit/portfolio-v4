@@ -68,10 +68,16 @@ describe('parseProjectForm', () => {
 });
 
 describe('toProjectView', () => {
+	const url = (key: string) => `https://cdn.test/${key}`;
 	const record: ProjectRecord = {
 		id: 7,
 		slug: 'banking',
 		company: 'Acme',
+		imageKey: 'projects/7/cover-a.webp',
+		screenshots: [
+			{ id: 1, key: 'projects/7/shot-1.png' },
+			{ id: 2, key: 'projects/7/shot-2.png' },
+		],
 		translations: {
 			en: { title: 'Banking', summary: 'S-en', description: 'D-en' },
 			es: { title: 'Banca', summary: 'S-es', description: 'D-es' },
@@ -83,16 +89,26 @@ describe('toProjectView', () => {
 	};
 
 	it('picks the requested language', () => {
-		expect(toProjectView(record, 'es')).toMatchObject({ slug: 'banking', title: 'Banca', summary: 'S-es', description: 'D-es' });
+		expect(toProjectView(record, 'es', url)).toMatchObject({ slug: 'banking', title: 'Banca', summary: 'S-es', description: 'D-es' });
 	});
 
 	it('falls back to the other language when one is missing', () => {
 		const onlyEn = { ...record, translations: { en: record.translations.en } };
-		expect(toProjectView(onlyEn, 'es')?.title).toBe('Banking');
+		expect(toProjectView(onlyEn, 'es', url)?.title).toBe('Banking');
 	});
 
 	it('marks email links as internal and the rest as external', () => {
-		const view = toProjectView(record, 'en');
+		const view = toProjectView(record, 'en', url);
 		expect(view?.links.map((l) => l.isExternal)).toEqual([true, false]);
+	});
+
+	it('resolves the main image and screenshots (in order) to public URLs', () => {
+		const view = toProjectView(record, 'en', url);
+		expect(view?.imageUrl).toBe('https://cdn.test/projects/7/cover-a.webp');
+		expect(view?.screenshots).toEqual(['https://cdn.test/projects/7/shot-1.png', 'https://cdn.test/projects/7/shot-2.png']);
+	});
+
+	it('has no image URL when the project has no image', () => {
+		expect(toProjectView({ ...record, imageKey: null, screenshots: [] }, 'en', url)).toMatchObject({ imageUrl: null, screenshots: [] });
 	});
 });
