@@ -21,7 +21,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `335cd63`._
 - [x] **4.** Como administrador, quiero crear, editar, eliminar y reordenar proyectos con descripción en rich text, para mostrar mi trabajo actual. Requiere: #1
   _Commit `2ec1058`._
-- [ ] **5.** Como administrador, quiero subir la imagen principal y las capturas de cada proyecto, para que los visitantes vean el resultado. Requiere: #4
+- [x] **5.** Como administrador, quiero subir la imagen principal y las capturas de cada proyecto, para que los visitantes vean el resultado. Requiere: #4
+  _Commit `710e1eb`._
 - [ ] **6.** Como administrador, quiero gestionar las áreas de expertise y asignarlas a los proyectos, para que los visitantes los exploren por área. Requiere: #4
 - [ ] **7.** Como administrador, quiero gestionar las categorías de skills y sus skills, para mantener al día mi stack tecnológico. Requiere: #1
 - [ ] **8.** Como administrador, quiero asignar skills a cada proyecto, para que se vea qué tecnologías usé. Requiere: #4, #7
@@ -71,6 +72,15 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
 - [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
 
+### Historia 5 — Imágenes de proyectos
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0003`: tabla `project_screenshots` y columna `image_key`).
+- [ ] Las imágenes se gestionan en la página de edición del proyecto y se guardan al instante (un request por archivo, máx. 3 MB cada uno). Un proyecto nuevo primero se crea y luego se le agregan imágenes.
+- [ ] Probar en el navegador el flujo completo del admin (subir varias capturas a la vez, reordenar, quitar). En local se probó llamando a los server actions con el mismo protocolo que usa el navegador, no con el navegador real.
+- [ ] La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
+- [ ] Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
@@ -79,9 +89,10 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
 ### Para historias futuras
 
-- [ ] **#5 y #12:** las imágenes de proyectos y posts probablemente necesiten subida directa a R2 desde el navegador (URLs prefirmadas + CORS en el bucket); el server action tiene un límite de 4 MB por request.
+- [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
+- [ ] **#12:** las imágenes de los posts pueden seguir el mismo patrón que la #5.
 - [ ] **#4 a #14:** al migrar cada sección, quitar su parte de la query de Strapi en el home. (#4: hecho.)
-- [ ] **#5, #6 y #8:** las tarjetas y el detalle de proyectos no muestran imagen, área ni tecnologías hasta esas historias.
+- [ ] **#6 y #8:** las tarjetas y el detalle de proyectos no muestran área ni tecnologías hasta esas historias. (Imágenes: hecho en la #5.)
 
 ### Generales
 
