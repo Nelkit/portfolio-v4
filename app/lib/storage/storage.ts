@@ -123,6 +123,19 @@ export function getStorage(): FileStorage {
 	return createLocalStorage({ rootDir: join(process.cwd(), 'public', 'uploads'), urlPrefix: '/uploads' });
 }
 
+/**
+ * PRIVATE bucket for database backups (R2_BACKUP_BUCKET), reusing the R2
+ * credentials. Must NOT be the public media bucket: backups include drafts.
+ * Returns null when not configured (the cron then skips the backup).
+ */
+export function getBackupStorage(): FileStorage | null {
+	const bucket = process.env.R2_BACKUP_BUCKET?.trim();
+	const r2 = r2ConfigFromEnv();
+	if (!bucket || !r2) return null;
+	if (bucket === r2.bucket) throw new Error('R2_BACKUP_BUCKET must be a private bucket, not the public media bucket.');
+	return createR2Storage({ ...r2, bucket });
+}
+
 /** Public base URL of stored files: the R2 public domain, or local /uploads in development. */
 export function uploadBaseUrl(): string {
 	return process.env.R2_PUBLIC_URL?.replace(/\/+$/, '') || '/uploads';
