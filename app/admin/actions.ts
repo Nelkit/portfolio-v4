@@ -1,8 +1,9 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyPassword } from '@/app/lib/auth/password';
+import { clientIp, getLoginRateLimiter } from '@/app/lib/auth/rate-limit';
 import {
 	createSessionToken,
 	SESSION_COOKIE,
@@ -19,6 +20,12 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 	const storedHash = process.env.ADMIN_PASSWORD_HASH;
 	if (!secret || !storedHash) {
 		return { error: 'Admin auth is not configured (AUTH_SECRET / ADMIN_PASSWORD_HASH).' };
+	}
+
+	// Checked BEFORE the password: a blocked client cannot keep probing (or make us run scrypt).
+	const { allowed, retryAfterSeconds } = await getLoginRateLimiter().attempt(`login:${clientIp(await headers())}`);
+	if (!allowed) {
+		return { error: `Too many attempts. Try again in ${Math.ceil(retryAfterSeconds / 60)} min.` };
 	}
 
 	const password = formData.get('password');
