@@ -39,7 +39,8 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `11d2dfa`._
 - [x] **13.** Como administrador, quiero gestionar tags y asignarlos a los posts, para que los visitantes encuentren artículos relacionados. Requiere: #11
   _Commit `8367449`._
-- [ ] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
+- [x] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
+  _Commit `c7a4e32`._
 
 Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
@@ -51,22 +52,23 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 
 - [ ] Rate limiting del login. Hoy solo hay 800 ms de espera por intento fallido; Upstash está instalado pero sin usar.
 - [ ] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy.
-- [ ] Hay dos lockfiles (`package-lock.json` y `pnpm-lock.yaml`); solo se mantiene el de pnpm. Confirmar que Vercel instala con pnpm y borrar el otro.
+- [x] `package-lock.json` borrado; el proyecto declara `packageManager: pnpm@10.14.0` (la versión que generó `pnpm-lock.yaml`).
 
 ### Historia 2 — Español e inglés
 
 - [ ] Verificar en producción que `/es/no-existe` muestra el 404 en español (en dev el HTML inicial es el shell de error genérico de Next).
 - [ ] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)).
 - [ ] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe).
-- [ ] Fijar la versión de Node (`.nvmrc` y/o `engines`). Vitest 5 exige Node ≥ 22.12 y la terminal por defecto usa 20.17. Ojo: `engines` también cambia el Node de Vercel.
+- [x] Node fijado: `.nvmrc` = `22` y `engines.node` = `22.x` (Vercel construye con Node 22).
+- [ ] En tu terminal: `nvm use` (lee `.nvmrc`) y `corepack enable` para que `pnpm` use la 10.14.0; con el pnpm 9 global el proyecto ahora da `ERR_PNPM_BAD_PM_VERSION`.
 - [x] Borrar `app/components/sections/CareerTimeline.tsx` (borrado en la #11).
 
 ### Historia 3 — Perfil
 
 - [x] Hacer commit y push.
 - [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0001`, tablas del perfil).
-- [ ] Crear el bucket de R2 con dominio propio y configurar `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` y `R2_PUBLIC_URL`. Sin R2 no se puede subir archivos en producción.
-- [ ] ⚠️ Hasta tener R2: no subir archivos en local contra la base de producción (el archivo queda en tu disco y producción lo vería roto).
+- [x] Bucket R2 `portfolio-bucket` (jurisdicción US) con dominio `media.nelkit.dev` y variables `R2_*` + `R2_JURISDICTION=us` configuradas en local; subida y lectura pública verificadas.
+- [x] ⚠️ Resuelto con R2: las subidas ya no quedan en el disco local. Archivos subidos antes a `public/uploads/` (si los hay) siguen solo en tu disco: re-subirlos desde el admin.
 - [ ] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas).
 - [ ] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo).
 
@@ -164,11 +166,20 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [ ] Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
 - [ ] Probar en el navegador las casillas de tags del editor y los chips del filtro.
 
+### Historia 14 — Borradores
+
+- [x] Hacer commit y push.
+- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0012`: columna `posts.status`; los posts existentes quedan publicados).
+- [ ] Un borrador no aparece en listados, home, relacionados ni rutas generadas, y su URL responde como inexistente (404 pintado en el cliente por el `loading.tsx`, igual que el resto de soft 404).
+- [ ] No hay vista previa "en el sitio" de un borrador: se revisa con la vista previa del editor.
+- [ ] El estado es por post, no por idioma (no se puede publicar solo una de las dos versiones).
+- [ ] Probar en el navegador los botones Publicar / Guardar borrador / Despublicar.
+
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
 - [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído.
-- [ ] Tu `next dev` sirve un titular de prueba ("Shipping E2E-TEST from Turso") que quedó en su caché por una prueba mía de la historia #1: guarda el titular en `/admin/hero` (invalida la caché) o reinicia el servidor.
+- [x] El titular de prueba en caché ya no aplica: en desarrollo no se cachea (`cachedRead`).
 
 ### Para historias futuras
 
@@ -179,6 +190,10 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
 
 ### Generales
+
+- [x] R2 respondía `NoSuchBucket`/`AccessDenied` con credenciales correctas: el bucket tiene jurisdicción **US explícita** y vive en `<account>.us.r2.cloudflarestorage.com`, pero el código usaba siempre el endpoint por defecto. Ahora se configura con `R2_JURISDICTION` (`us` | `eu` | `fedramp`; vacío = por defecto).
+- [ ] Agregar `R2_JURISDICTION=us` en Vercel (además de las otras `R2_*`).
+- [ ] Borrar en Cloudflare los tokens de R2 de prueba que ya no se usan.
 
 - [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
 
