@@ -85,6 +85,13 @@
       "when": 1794375201414,
       "tag": "0011_red_korg",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1794375835614,
+      "tag": "0012_aspiring_sunspot",
+      "breakpoints": true
     }
   ]
 }

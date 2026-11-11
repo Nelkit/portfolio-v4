@@ -30,6 +30,9 @@ export default async function BlogAdminPage() {
 						return (
 							<li key={post.id} className="flex items-center gap-4 px-4 py-3">
 								<span className="w-24 text-sm text-zinc-500">{post.publishedOn}</span>
+								<span className={`w-20 rounded px-1.5 py-0.5 text-center text-xs ${post.status === 'published' ? 'bg-emerald-900 text-emerald-200' : 'bg-zinc-800 text-zinc-400'}`}>
+									{post.status === 'published' ? 'Published' : 'Draft'}
+								</span>
 								<div className="flex flex-1 flex-col">
 									<Link href={`/admin/blog/${post.id}`} className="hover:underline">{title}</Link>
 									<span className="text-xs text-zinc-500">/{post.slug}</span>

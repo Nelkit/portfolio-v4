@@ -3,6 +3,7 @@ import {
 	extractCodeBlocks,
 	imageMarkdown,
 	parsePostForm,
+	publishedOnly,
 	readingTime,
 	referencedUploadKeys,
 	relatedPosts,
@@ -54,6 +55,15 @@ describe('parsePostForm', () => {
 		expect(parsePostForm({ ...base, ...en, tagIds: ['abc'] }).ok).toBe(false);
 	});
 
+	it('saves as a draft unless the "publish" button was used', () => {
+		const draft = parsePostForm({ ...base, ...en });
+		expect(draft.ok && draft.value.status).toBe('draft');
+		const published = parsePostForm({ ...base, ...en, intent: 'publish' });
+		expect(published.ok && published.value.status).toBe('published');
+		const unknown = parsePostForm({ ...base, ...en, intent: 'hack' });
+		expect(unknown.ok && unknown.value.status).toBe('draft');
+	});
+
 	it('validates the slug and the publication date', () => {
 		expect(parsePostForm({ ...base, ...en, slug: 'Bad Slug' }).ok).toBe(false);
 		expect(parsePostForm({ ...base, ...en, publishedOn: '2026-13-01' }).ok).toBe(false);
@@ -86,6 +96,7 @@ const record = (id: number, publishedOn: string, langs: ('en' | 'es')[], coverKe
 	publishedOn,
 	coverKey,
 	tagIds: [],
+	status: 'published',
 	translations: Object.fromEntries(langs.map((l) => [l, { title: `t${id}-${l}`, summary: 's', body: 'b' }])),
 });
 
@@ -147,6 +158,13 @@ describe('relatedPosts', () => {
 		expect(relatedPosts(current, all, 3).map((p) => p.slug)).toEqual(['two-shared', 'one-shared-new', 'one-shared-old']);
 		expect(relatedPosts(current, all, 1).map((p) => p.slug)).toEqual(['two-shared']);
 		expect(relatedPosts(view('lonely', '2026-01-01', []), all, 3)).toEqual([]);
+	});
+});
+
+describe('publishedOnly', () => {
+	it('keeps only published posts (drafts are never public)', () => {
+		const posts = [record(1, '2026-01-01', ['en']), { ...record(2, '2026-01-02', ['en']), status: 'draft' as const }];
+		expect(publishedOnly(posts).map((p) => p.id)).toEqual([1]);
 	});
 });
 

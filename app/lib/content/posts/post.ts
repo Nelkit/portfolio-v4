@@ -5,9 +5,13 @@ import type { TagView } from '@/app/lib/content/tags/tag';
 
 export type PostTranslation = { title: string; summary: string; body: string };
 /** A post may exist in one or both languages (only written languages are stored). */
+/** Drafts are visible only in the admin. */
+export type PostStatus = 'draft' | 'published';
+
 export type PostInput = {
 	slug: string;
 	publishedOn: string;
+	status: PostStatus;
 	tagIds: number[];
 	translations: Partial<Record<Locale, PostTranslation>>;
 };
@@ -100,8 +104,16 @@ export function parsePostForm(fields: Record<string, unknown>): PostFormResult {
 	const tagIds = z.array(z.coerce.number().int().positive()).max(30).safeParse(rawTags);
 	if (!tagIds.success) errors.tagIds = 'Invalid tags';
 
+	// The submit button decides: "publish" publishes; anything else saves a draft.
+	const status: PostStatus = fields.intent === 'publish' ? 'published' : 'draft';
+
 	if (Object.keys(errors).length > 0 || !tagIds.success) return { ok: false, errors };
-	return { ok: true, value: { slug, publishedOn, tagIds: [...new Set(tagIds.data)], translations } };
+	return { ok: true, value: { slug, publishedOn, status, tagIds: [...new Set(tagIds.data)], translations } };
+}
+
+/** What the public site may show: drafts are never public. */
+export function publishedOnly<T extends { status: PostStatus }>(list: T[]): T[] {
+	return list.filter((p) => p.status === 'published');
 }
 
 /** Newest publication date first; ties: newest post first. */

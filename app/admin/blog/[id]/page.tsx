@@ -25,9 +25,13 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 			<Link href="/admin/blog" className="text-sm text-zinc-400 hover:text-zinc-100">← Blog</Link>
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Edit post</h1>
-				<a href={`/${viewLocale}/blog/${post.slug}`} target="_blank" rel="noreferrer" className="text-sm text-zinc-400 hover:text-zinc-100">
-					View on site ↗
-				</a>
+				{post.status === 'published' ? (
+					<a href={`/${viewLocale}/blog/${post.slug}`} target="_blank" rel="noreferrer" className="text-sm text-zinc-400 hover:text-zinc-100">
+						View on site ↗
+					</a>
+				) : (
+					<span className="text-sm text-zinc-500">Draft — use the preview below</span>
+				)}
 			</header>
 			<PostEditor
 				key={`${post.id}:${post.slug}`}

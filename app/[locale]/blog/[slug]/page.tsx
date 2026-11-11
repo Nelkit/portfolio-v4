@@ -9,7 +9,7 @@ import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { localizePath } from '@/app/lib/i18n/routing';
 import type { Dictionary } from '@/app/lib/i18n/dictionaries';
 import { getPublishedPost, getPublishedPosts, postRepository } from '@/app/lib/content/posts/post-service';
-import { relatedPosts } from '@/app/lib/content/posts/post';
+import { publishedOnly, relatedPosts } from '@/app/lib/content/posts/post';
 import { highlightMarkdownCode } from '@/app/lib/content/posts/highlight-post';
 import { uploadBaseUrl } from '@/app/lib/storage/storage';
 
@@ -19,7 +19,7 @@ type Params = { params: Promise<{ locale: string; slug: string }> };
 
 // Pre-generate every post in each language it was written in.
 export async function generateStaticParams() {
-	const posts = await postRepository().listPosts();
+	const posts = publishedOnly(await postRepository().listPosts());
 	return LOCALES.flatMap((locale) => posts.filter((p) => p.translations[locale]).map((p) => ({ locale, slug: p.slug })));
 }
 

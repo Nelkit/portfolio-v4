@@ -27,6 +27,7 @@ describe('TursoTagRepository', () => {
 	const post = (slug: string, tagIds: number[]) => ({
 		slug,
 		publishedOn: '2026-01-01',
+		status: 'published' as const,
 		tagIds,
 		translations: { en: { title: slug, summary: '', body: 'b' } },
 	});

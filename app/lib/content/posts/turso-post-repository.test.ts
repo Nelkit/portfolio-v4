@@ -9,6 +9,7 @@ import type { PostInput } from './post';
 const post = (slug: string, publishedOn: string, langs: ('en' | 'es')[] = ['en', 'es']): PostInput => ({
 	slug,
 	publishedOn,
+	status: 'published',
 	tagIds: [],
 	translations: Object.fromEntries(langs.map((l) => [l, { title: `${slug}-${l}`, summary: '', body: `# ${l}` }])),
 });
@@ -68,6 +69,15 @@ describe('TursoPostRepository', () => {
 		await repo.addPostImage(id, 'posts/1/img-1.png');
 		expect((await repo.deletePost(id)).sort()).toEqual(['posts/1/cover.webp', 'posts/1/img-1.png']);
 		expect(await repo.deletePost(id)).toEqual([]);
+	});
+
+	it('stores the status and changes it on update (publish / unpublish)', async () => {
+		const id = await repo.createPost({ ...post('draft-post', '2026-01-05'), status: 'draft' });
+		expect((await repo.getPost(id))?.status).toBe('draft');
+		await repo.updatePost(id, { ...post('draft-post', '2026-01-05'), status: 'published' });
+		expect((await repo.getPost(id))?.status).toBe('published');
+		await repo.updatePost(id, { ...post('draft-post', '2026-01-05'), status: 'draft' });
+		expect((await repo.getPost(id))?.status).toBe('draft');
 	});
 
 	it('deletes a post with its translations and rejects duplicated slugs', async () => {

@@ -41,9 +41,14 @@ export function PostEditor({
 	uploadBaseUrl: string;
 }) {
 	const [inserted, setInserted] = useState(false);
+	// Status of the post as last saved (updated from each save's intent).
+	const [isPublished, setIsPublished] = useState(initial.status === 'published');
 	const [state, formAction, pending] = useActionState<SavePostState, FormData>(async (prev, data) => {
 		const result = await savePost(prev, data);
-		if (result.ok) setInserted(false);
+		if (result.ok) {
+			setInserted(false);
+			setIsPublished(data.get('intent') === 'publish');
+		}
 		return result;
 	}, {});
 	const errors = state.errors ?? {};
@@ -104,7 +109,7 @@ export function PostEditor({
 			{id && media ? (
 				<PostMedia postId={id} coverUrl={media.coverUrl} images={media.images} onInsert={insertIntoBody} />
 			) : (
-				<p className="text-sm text-zinc-500">Cover and images can be added after the post is published (saved) for the first time.</p>
+				<p className="text-sm text-zinc-500">Cover and images can be added once the post is saved (a draft is enough).</p>
 			)}
 			{inserted && <p className="text-sm text-amber-400">Image inserted into the {LANGUAGE_NAMES[active]} body — remember to Save.</p>}
 
@@ -177,11 +182,20 @@ export function PostEditor({
 				</section>
 			))}
 
-			<div className="flex items-center gap-4">
-				<button type="submit" disabled={pending} className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50">
-					{pending ? 'Saving…' : id ? 'Save' : 'Publish post'}
+			<div className="flex flex-wrap items-center gap-3">
+				<span className={`rounded px-2 py-1 text-xs ${isPublished ? 'bg-emerald-900 text-emerald-200' : 'bg-zinc-800 text-zinc-300'}`}>
+					{isPublished ? 'Published' : 'Draft — not visible on the site'}
+				</span>
+				{/* The clicked button's name/value ("intent") decides draft vs. published. */}
+				<button type="submit" name="intent" value="publish" disabled={pending} className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50">
+					{pending ? 'Saving…' : isPublished ? 'Update' : 'Publish'}
 				</button>
-				{state.ok && !pending && !inserted && <span className="text-sm text-emerald-400">Saved — live on the site.</span>}
+				<button type="submit" name="intent" value="draft" disabled={pending} className="rounded border border-zinc-600 px-4 py-2 text-sm disabled:opacity-50">
+					{isPublished ? 'Unpublish (back to draft)' : 'Save draft'}
+				</button>
+				{state.ok && !pending && !inserted && (
+					<span className="text-sm text-emerald-400">{isPublished ? 'Saved — live on the site.' : 'Draft saved.'}</span>
+				)}
 				{Object.keys(errors).length > 0 && <span className="text-sm text-red-400">Fix the highlighted fields.</span>}
 			</div>
 		</form>

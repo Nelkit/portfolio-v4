@@ -14,7 +14,11 @@ export default async function NewPostPage() {
 		<main className="flex flex-col gap-6">
 			<Link href="/admin/blog" className="text-sm text-zinc-400 hover:text-zinc-100">← Blog</Link>
 			<h1 className="text-xl font-semibold">New post</h1>
-			<PostEditor initial={{ slug: '', publishedOn: today, tagIds: [], translations: {} }} uploadBaseUrl={uploadBaseUrl()} tags={tags} />
+			<PostEditor
+				initial={{ slug: '', publishedOn: today, status: 'draft', tagIds: [], translations: {} }}
+				uploadBaseUrl={uploadBaseUrl()}
+				tags={tags}
+			/>
 		</main>
 	);
 }

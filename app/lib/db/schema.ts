@@ -215,6 +215,8 @@ export const posts = sqliteTable('posts', {
 	publishedOn: text('published_on').notNull(),
 	/** Storage key of the cover image, not a URL. */
 	coverKey: text('cover_key'),
+	/** 'draft' (admin only) or 'published'. Existing posts were public → default 'published'. */
+	status: text('status', { enum: ['draft', 'published'] }).notNull().default('published'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),
 });

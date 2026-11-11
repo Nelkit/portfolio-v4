@@ -28,6 +28,7 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 					id: row.id,
 					slug: row.slug,
 					publishedOn: row.publishedOn,
+					status: row.status,
 					coverKey: row.coverKey,
 					tagIds: tagRows.filter((t) => t.postId === row.id).map((t) => t.tagId),
 					translations,
@@ -58,7 +59,7 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 			return db.transaction(async (tx) => {
 				const [{ id }] = await tx
 					.insert(posts)
-					.values({ slug: input.slug, publishedOn: input.publishedOn })
+					.values({ slug: input.slug, publishedOn: input.publishedOn, status: input.status })
 					.returning({ id: posts.id });
 				for (const [locale, t] of Object.entries(input.translations) as [Locale, PostTranslation][]) {
 					await tx.insert(postTranslations).values({ postId: id, locale, ...t });
@@ -73,7 +74,7 @@ export function createTursoPostRepository(db: LibSQLDatabase): PostRepository {
 			await db.batch([
 				db
 					.update(posts)
-					.set({ slug: input.slug, publishedOn: input.publishedOn, updatedAt: sql`(unixepoch())` })
+					.set({ slug: input.slug, publishedOn: input.publishedOn, status: input.status, updatedAt: sql`(unixepoch())` })
 					.where(eq(posts.id, id)),
 				db.delete(postTranslations).where(eq(postTranslations.postId, id)),
 				db.delete(postTags).where(eq(postTags.postId, id)),
