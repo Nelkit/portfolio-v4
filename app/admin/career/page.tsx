@@ -21,9 +21,9 @@ export default async function CareerAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<h1 className="text-xl font-semibold">Career</h1>
-			<p className="text-sm text-zinc-500">Entries are ordered automatically: current roles first, then newest first.</p>
+			<p className="text-sm text-ui-faint">Entries are ordered automatically: current roles first, then newest first.</p>
 			<CareerEditor
 				key={rows.map((r) => `${r.id}:${r.start}:${r.end}:${r.texts.en.title}:${r.texts.es.title}`).join('|')}
 				initial={rows}

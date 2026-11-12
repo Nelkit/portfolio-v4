@@ -45,9 +45,9 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 	const fileName = (key: string) => key.split('/').pop() ?? key;
 
 	return (
-		<section className="flex flex-col gap-4 rounded border border-zinc-800 p-4">
-			<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-				Images <span className="normal-case text-zinc-500">— saved immediately · PNG, JPEG or WEBP · max {PROJECT_IMAGE_MAX_BYTES / 1024 / 1024} MB each</span>
+		<section className="flex flex-col gap-4 rounded border border-ui-border p-4">
+			<h2 className="text-sm font-semibold uppercase tracking-wide text-ui-dim">
+				Images <span className="normal-case text-ui-faint">— saved immediately · PNG, JPEG or WEBP · max {PROJECT_IMAGE_MAX_BYTES / 1024 / 1024} MB each</span>
 			</h2>
 
 			<div className="flex flex-wrap items-start gap-4">
@@ -55,10 +55,10 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 					// eslint-disable-next-line @next/next/no-img-element
 					<img src={coverUrl} alt="Cover" className="h-24 w-44 rounded object-cover" />
 				) : (
-					<div className="flex h-24 w-44 items-center justify-center rounded border border-dashed border-zinc-700 text-xs text-zinc-500">No cover</div>
+					<div className="flex h-24 w-44 items-center justify-center rounded border border-dashed border-ui-border-2 text-xs text-ui-faint">No cover</div>
 				)}
 				<div className="flex flex-col gap-2">
-					<span className="text-sm text-zinc-300">Cover (cards, post header, social preview)</span>
+					<span className="text-sm text-ui-text">Cover (cards, post header, social preview)</span>
 					<input
 						type="file"
 						accept={ACCEPT}
@@ -79,7 +79,7 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 			</div>
 
 			<div className="flex flex-col gap-2">
-				<span className="text-sm text-zinc-300">Body images — uploading inserts them at the cursor of the active language</span>
+				<span className="text-sm text-ui-text">Body images — uploading inserts them at the cursor of the active language</span>
 				<input
 					type="file"
 					accept={ACCEPT}
@@ -125,7 +125,7 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 				)}
 			</div>
 
-			{status && <p className="text-sm text-zinc-400">{status}</p>}
+			{status && <p className="text-sm text-ui-dim">{status}</p>}
 			{errors.map((error) => <p key={error} className="text-sm text-red-400">{error}</p>)}
 		</section>
 	);

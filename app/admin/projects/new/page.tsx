@@ -24,9 +24,9 @@ export default async function NewProjectPage() {
 	const [areas, catalog] = await Promise.all([loadAreaViews('en'), skillCategoryRepository().listSkills()]);
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin/projects" className="text-sm text-zinc-400 hover:text-zinc-100">← Projects</Link>
+			<Link href="/admin/projects" className="text-sm text-ui-dim hover:text-ui-text">← Projects</Link>
 			<h1 className="text-xl font-semibold">New project</h1>
-			<p className="text-sm text-zinc-500">Images (main image and screenshots) can be added after the project is created.</p>
+			<p className="text-sm text-ui-faint">Images (main image and screenshots) can be added after the project is created.</p>
 			<ProjectForm initial={EMPTY} areas={areas} skillCatalog={catalog.map((s) => s.name)} />
 		</main>
 	);

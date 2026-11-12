@@ -22,15 +22,15 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin/blog" className="text-sm text-zinc-400 hover:text-zinc-100">← Blog</Link>
+			<Link href="/admin/blog" className="text-sm text-ui-dim hover:text-ui-text">← Blog</Link>
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Edit post</h1>
 				{post.status === 'published' ? (
-					<a href={`/${viewLocale}/blog/${post.slug}`} target="_blank" rel="noreferrer" className="text-sm text-zinc-400 hover:text-zinc-100">
+					<a href={`/${viewLocale}/blog/${post.slug}`} target="_blank" rel="noreferrer" className="text-sm text-ui-dim hover:text-ui-text">
 						View on site ↗
 					</a>
 				) : (
-					<span className="text-sm text-zinc-500">Draft — use the preview below</span>
+					<span className="text-sm text-ui-faint">Draft — use the preview below</span>
 				)}
 			</header>
 			<PostEditor

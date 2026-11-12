@@ -26,20 +26,20 @@ export function ProjectList({ initial }: { initial: ProjectRow[] }) {
 			setDirty(false);
 		});
 
-	if (rows.length === 0) return <p className="text-zinc-500">No projects yet.</p>;
+	if (rows.length === 0) return <p className="text-ui-faint">No projects yet.</p>;
 
 	return (
 		<div className="flex flex-col gap-3">
-			<ul className="flex flex-col divide-y divide-zinc-800 rounded border border-zinc-800">
+			<ul className="flex flex-col divide-y divide-ui-border rounded border border-ui-border">
 				{rows.map((row, index) => (
 					<li key={row.id} className="flex items-center gap-3 px-4 py-3">
-						<span className="w-6 text-right text-sm text-zinc-500">{index + 1}</span>
+						<span className="w-6 text-right text-sm text-ui-faint">{index + 1}</span>
 						<div className="flex flex-1 flex-col">
 							<Link href={`/admin/projects/${row.id}`} className="hover:underline">{row.title}</Link>
-							<span className="text-xs text-zinc-500">/{row.slug}</span>
+							<span className="text-xs text-ui-faint">/{row.slug}</span>
 						</div>
-						<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 text-zinc-400 disabled:opacity-30" aria-label="Move up">↑</button>
-						<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-2 text-zinc-400 disabled:opacity-30" aria-label="Move down">↓</button>
+						<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 text-ui-dim disabled:opacity-30" aria-label="Move up">↑</button>
+						<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-2 text-ui-dim disabled:opacity-30" aria-label="Move down">↓</button>
 						<form
 							action={deleteProject}
 							onSubmit={(e) => {
@@ -54,7 +54,7 @@ export function ProjectList({ initial }: { initial: ProjectRow[] }) {
 			</ul>
 			{dirty && (
 				<div>
-					<button type="button" onClick={saveOrder} disabled={saving} className="rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50">
+					<button type="button" onClick={saveOrder} disabled={saving} className="rounded bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-ink disabled:opacity-50">
 						{saving ? 'Saving order…' : 'Save order'}
 					</button>
 				</div>

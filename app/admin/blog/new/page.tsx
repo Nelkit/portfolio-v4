@@ -12,7 +12,7 @@ export default async function NewPostPage() {
 	const tags = await loadTagViews('en');
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin/blog" className="text-sm text-zinc-400 hover:text-zinc-100">← Blog</Link>
+			<Link href="/admin/blog" className="text-sm text-ui-dim hover:text-ui-text">← Blog</Link>
 			<h1 className="text-xl font-semibold">New post</h1>
 			<PostEditor
 				initial={{ slug: '', publishedOn: today, status: 'draft', tagIds: [], translations: {} }}

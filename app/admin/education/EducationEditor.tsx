@@ -14,7 +14,7 @@ export type EducationRow = {
 };
 
 const input =
-	'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500';
+	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 const PLACEHOLDERS: Record<(typeof EDUCATION_KEYS)[number], string> = {
 	degree: 'Degree',
 	institution: 'Institution',
@@ -38,23 +38,23 @@ function EducationForm({ entry, onSaved }: { entry?: EducationRow; onSaved?: () 
 			{entry && <input type="hidden" name="id" value={entry.id} />}
 			<div className="flex flex-wrap items-start gap-3">
 				<label className="flex flex-col gap-1">
-					<span className="text-xs text-zinc-500">Start</span>
+					<span className="text-xs text-ui-faint">Start</span>
 					<input type="month" name="start" required defaultValue={entry?.start} aria-invalid={Boolean(errors.start)} className={input} />
 					<Err message={errors.start} />
 				</label>
 				<label className="flex flex-col gap-1">
-					<span className="text-xs text-zinc-500">End — or expected end; optional while in progress</span>
+					<span className="text-xs text-ui-faint">End — or expected end; optional while in progress</span>
 					<input type="month" name="end" defaultValue={entry?.end} aria-invalid={Boolean(errors.end)} className={input} />
 					<Err message={errors.end} />
 				</label>
-				<label className="mt-6 flex items-center gap-2 text-sm text-zinc-300">
+				<label className="mt-6 flex items-center gap-2 text-sm text-ui-text">
 					<input type="checkbox" name="inProgress" defaultChecked={entry?.inProgress ?? false} /> In progress
 				</label>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2">
 				{LOCALES.map((locale) => (
 					<fieldset key={locale} lang={locale} className="flex flex-col gap-2">
-						<legend className="text-xs text-zinc-500">{locale}</legend>
+						<legend className="text-xs text-ui-faint">{locale}</legend>
 						{EDUCATION_KEYS.map((key) => {
 							const name = educationField(key, locale);
 							return (
@@ -75,7 +75,7 @@ function EducationForm({ entry, onSaved }: { entry?: EducationRow; onSaved?: () 
 				))}
 			</div>
 			<div className="flex items-center gap-3">
-				<button type="submit" disabled={pending} className="rounded border border-zinc-600 px-3 py-2 text-sm disabled:opacity-50">
+				<button type="submit" disabled={pending} className="rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
 					{pending ? 'Saving…' : entry ? 'Save' : '+ Add entry'}
 				</button>
 				{state.ok && !pending && entry && <span className="text-xs text-emerald-400">Saved — live on the site.</span>}
@@ -89,10 +89,10 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{initial.length === 0 && <p className="text-zinc-500">No entries yet.</p>}
+			{initial.length === 0 && <p className="text-ui-faint">No entries yet.</p>}
 			<ul className="flex flex-col gap-4">
 				{initial.map((entry) => (
-					<li key={entry.id} className="flex flex-col gap-3 rounded border border-zinc-800 p-4">
+					<li key={entry.id} className="flex flex-col gap-3 rounded border border-ui-border p-4">
 						<EducationForm entry={entry} />
 						<form
 							action={deleteEducationEntry}
@@ -104,8 +104,8 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
 					</li>
 				))}
 			</ul>
-			<section className="flex flex-col gap-2 rounded border border-dashed border-zinc-700 p-4">
-				<h2 className="text-sm font-semibold text-zinc-300">New entry</h2>
+			<section className="flex flex-col gap-2 rounded border border-dashed border-ui-border-2 p-4">
+				<h2 className="text-sm font-semibold text-ui-text">New entry</h2>
 				<EducationForm key={newFormKey} onSaved={() => setNewFormKey((k) => k + 1)} />
 			</section>
 		</div>

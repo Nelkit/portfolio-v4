@@ -36,7 +36,7 @@ export default async function ProfileAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">
 				← Dashboard
 			</Link>
 			<h1 className="text-xl font-semibold">Profile</h1>

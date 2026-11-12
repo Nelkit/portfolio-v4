@@ -10,7 +10,7 @@ export default async function AdminHome() {
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Dashboard</h1>
 				<form action={logout}>
-					<button type="submit" className="text-sm text-zinc-400 hover:text-zinc-100">
+					<button type="submit" className="text-sm text-ui-dim hover:text-ui-text">
 						Log out
 					</button>
 				</form>
@@ -20,73 +20,73 @@ export default async function AdminHome() {
 				<li>
 					<Link
 						href="/admin/blog"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Blog <span className="text-zinc-500">— write, edit and delete posts</span>
+						Blog <span className="text-ui-faint">— write, edit and delete posts</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/tags"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Blog tags <span className="text-zinc-500">— filter the blog and relate posts</span>
+						Blog tags <span className="text-ui-faint">— filter the blog and relate posts</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/profile"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Profile <span className="text-zinc-500">— name, avatar, role, intro, CV, links, contact</span>
+						Profile <span className="text-ui-faint">— name, avatar, role, intro, CV, links, contact</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/projects"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Projects <span className="text-zinc-500">— create, edit, delete and reorder</span>
+						Projects <span className="text-ui-faint">— create, edit, delete and reorder</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/areas"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Expertise areas <span className="text-zinc-500">— group and filter projects</span>
+						Expertise areas <span className="text-ui-faint">— group and filter projects</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/skills"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Tech stack <span className="text-zinc-500">— skill categories and skills</span>
+						Tech stack <span className="text-ui-faint">— skill categories and skills</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/career"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Career <span className="text-zinc-500">— timeline entries</span>
+						Career <span className="text-ui-faint">— timeline entries</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/education"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Education <span className="text-zinc-500">— degrees and courses</span>
+						Education <span className="text-ui-faint">— degrees and courses</span>
 					</Link>
 				</li>
 				<li>
 					<Link
 						href="/admin/hero"
-						className="block rounded border border-zinc-800 px-4 py-3 hover:border-zinc-500"
+						className="block rounded border border-ui-border px-4 py-3 hover:border-ui-accent"
 					>
-						Hero <span className="text-zinc-500">— headline</span>
+						Hero <span className="text-ui-faint">— headline</span>
 					</Link>
 				</li>
 			</ul>

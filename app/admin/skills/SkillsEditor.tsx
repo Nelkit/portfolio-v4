@@ -9,7 +9,7 @@ import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 export type CategoryRow = { id: number; names: Record<Locale, string>; skills: string[] };
 
 const input =
-	'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500';
+	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; catalog: string[]; onSaved?: () => void }) {
 	const [state, action, pending] = useActionState<CategoryFormState, FormData>(async (prev, data) => {
@@ -25,7 +25,7 @@ function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; 
 			<div className="flex flex-wrap gap-2">
 				{LOCALES.map((locale) => (
 					<label key={locale} className="flex min-w-40 flex-1 flex-col gap-1">
-						<span className="text-xs text-zinc-500">Name ({locale})</span>
+						<span className="text-xs text-ui-faint">Name ({locale})</span>
 						<input
 							name={categoryField(locale)}
 							lang={locale}
@@ -40,11 +40,11 @@ function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; 
 				))}
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-zinc-500">Skills — existing names are reused (ignoring case)</span>
+				<span className="text-xs text-ui-faint">Skills — existing names are reused (ignoring case)</span>
 				<TagsInput name="skills" initial={category?.skills ?? []} suggestions={catalog} placeholder="Swift, Kotlin… (Enter or comma)" error={errors.skills} />
 			</div>
 			<div className="flex items-center gap-3">
-				<button type="submit" disabled={pending} className="rounded border border-zinc-600 px-3 py-2 text-sm disabled:opacity-50">
+				<button type="submit" disabled={pending} className="rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
 					{pending ? 'Saving…' : category ? 'Save' : '+ Add category'}
 				</button>
 				{state.ok && !pending && category && <span className="text-xs text-emerald-400">Saved — live on the site.</span>}
@@ -70,15 +70,15 @@ export function SkillsEditor({ initial, catalog }: { initial: CategoryRow[]; cat
 
 	return (
 		<div className="flex flex-col gap-6">
-			{rows.length === 0 && <p className="text-zinc-500">No categories yet.</p>}
+			{rows.length === 0 && <p className="text-ui-faint">No categories yet.</p>}
 			<ul className="flex flex-col gap-4">
 				{rows.map((row, index) => (
-					<li key={row.id} className="flex flex-col gap-3 rounded border border-zinc-800 p-4">
+					<li key={row.id} className="flex flex-col gap-3 rounded border border-ui-border p-4">
 						<CategoryForm category={row} catalog={catalog} />
 						<div className="flex items-center gap-3 text-sm">
-							<span className="text-zinc-500">Tab {index + 1}</span>
-							<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move up">↑</button>
-							<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move down">↓</button>
+							<span className="text-ui-faint">Tab {index + 1}</span>
+							<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move up">↑</button>
+							<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move down">↓</button>
 							<form
 								action={deleteCategory}
 								onSubmit={(e) => { if (!confirm(`Delete “${row.names.en}”?`)) e.preventDefault(); }}
@@ -96,14 +96,14 @@ export function SkillsEditor({ initial, catalog }: { initial: CategoryRow[]; cat
 					type="button"
 					disabled={saving}
 					onClick={() => startSaving(async () => { await reorderCategories(rows.map((r) => r.id)); setDirty(false); })}
-					className="self-start rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+					className="self-start rounded bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-ink disabled:opacity-50"
 				>
 					{saving ? 'Saving order…' : 'Save order'}
 				</button>
 			)}
 
-			<section className="flex flex-col gap-2 rounded border border-dashed border-zinc-700 p-4">
-				<h2 className="text-sm font-semibold text-zinc-300">New category</h2>
+			<section className="flex flex-col gap-2 rounded border border-dashed border-ui-border-2 p-4">
+				<h2 className="text-sm font-semibold text-ui-text">New category</h2>
 				<CategoryForm key={newFormKey} catalog={catalog} onSaved={() => setNewFormKey((k) => k + 1)} />
 			</section>
 		</div>

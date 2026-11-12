@@ -60,9 +60,9 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 	const remaining = MAX_SCREENSHOTS - order.length;
 
 	return (
-		<section className="flex flex-col gap-6 rounded border border-zinc-800 p-4">
-			<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-				Images <span className="normal-case text-zinc-500">— saved immediately · {LIMIT}</span>
+		<section className="flex flex-col gap-6 rounded border border-ui-border p-4">
+			<h2 className="text-sm font-semibold uppercase tracking-wide text-ui-dim">
+				Images <span className="normal-case text-ui-faint">— saved immediately · {LIMIT}</span>
 			</h2>
 
 			{/* ---- Main image ---- */}
@@ -71,10 +71,10 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 					// eslint-disable-next-line @next/next/no-img-element
 					<img src={imageUrl} alt="Main image" className="h-28 w-48 rounded object-cover" />
 				) : (
-					<div className="flex h-28 w-48 items-center justify-center rounded border border-dashed border-zinc-700 text-xs text-zinc-500">No main image</div>
+					<div className="flex h-28 w-48 items-center justify-center rounded border border-dashed border-ui-border-2 text-xs text-ui-faint">No main image</div>
 				)}
 				<div className="flex flex-col gap-2">
-					<span className="text-sm text-zinc-300">Main image (cards and project header)</span>
+					<span className="text-sm text-ui-text">Main image (cards and project header)</span>
 					<input
 						type="file"
 						accept={ACCEPT}
@@ -101,7 +101,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 
 			{/* ---- Screenshots ---- */}
 			<div className="flex flex-col gap-3">
-				<span className="text-sm text-zinc-300">Screenshots ({order.length}/{MAX_SCREENSHOTS})</span>
+				<span className="text-sm text-ui-text">Screenshots ({order.length}/{MAX_SCREENSHOTS})</span>
 				{order.length > 0 && (
 					<ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 						{order.map((shot, index) => (
@@ -109,10 +109,10 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img src={shot.url} alt={`Screenshot ${index + 1}`} className="aspect-video w-full rounded object-cover" />
 								<div className="flex items-center justify-between text-sm">
-									<span className="text-zinc-500">{index + 1}</span>
+									<span className="text-ui-faint">{index + 1}</span>
 									<span className="flex gap-1">
-										<button type="button" disabled={busy || index === 0} onClick={() => move(index, -1)} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move left">←</button>
-										<button type="button" disabled={busy || index === order.length - 1} onClick={() => move(index, 1)} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move right">→</button>
+										<button type="button" disabled={busy || index === 0} onClick={() => move(index, -1)} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move left">←</button>
+										<button type="button" disabled={busy || index === order.length - 1} onClick={() => move(index, 1)} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move right">→</button>
 										<button
 											type="button"
 											disabled={busy}
@@ -133,7 +133,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 						type="button"
 						disabled={busy}
 						onClick={() => run('Saving order', [() => reorderProjectScreenshots(projectId, order.map((s) => s.id))])}
-						className="self-start rounded bg-zinc-100 px-3 py-1 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+						className="self-start rounded bg-ui-accent px-3 py-1 text-sm font-semibold text-ui-accent-ink disabled:opacity-50"
 					>
 						Save screenshot order
 					</button>
@@ -155,7 +155,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 				)}
 			</div>
 
-			{status && <p className="text-sm text-zinc-400">{status}</p>}
+			{status && <p className="text-sm text-ui-dim">{status}</p>}
 			{errors.map((error) => <p key={error} className="text-sm text-red-400">{error}</p>)}
 		</section>
 	);
