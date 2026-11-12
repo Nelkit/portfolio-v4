@@ -295,10 +295,14 @@ body {
   font-size: 10px;
   color: var(--text-dim);
   display: flex;
-  align-items: center;
+  /* Wraps (the Spanish label is longer than the box); the dot stays on the first line. */
+  align-items: flex-start;
   gap: 5px;
   margin-top: 2px;
-  white-space: nowrap;
+}
+.brand .wm span .dot-live {
+  /* Centers the 6px dot on the first line (line-height 1.15em). */
+  margin-top: calc((1.15em - 6px) / 2);
 }
 .dot-live {
   width: 6px;

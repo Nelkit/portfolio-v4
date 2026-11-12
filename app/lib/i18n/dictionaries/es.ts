@@ -44,7 +44,8 @@ export const es: Dictionary = {
 		},
 	},
 	home: {
-		agentOnline: 'Agente del portfolio · en línea',
+		// \u00a0 before the dot: if it wraps, the break falls after "·", not before it.
+		agentOnline: 'Agente del portfolio\u00a0· en línea',
 		threads: (n: number) => plural(n, 'hilo', 'hilos'),
 		location: 'Sídney · AUS',
 		navSub: {
