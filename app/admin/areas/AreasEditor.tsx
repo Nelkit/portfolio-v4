@@ -8,7 +8,7 @@ import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 export type AreaRow = { id: number; names: Record<Locale, string>; projects: number };
 
 const input =
-	'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500';
+	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 /** One form per area (rename) or for a new area (no `area`). */
 function AreaForm({ area, onSaved }: { area?: AreaRow; onSaved?: () => void }) {
@@ -24,7 +24,7 @@ function AreaForm({ area, onSaved }: { area?: AreaRow; onSaved?: () => void }) {
 			{area && <input type="hidden" name="id" value={area.id} />}
 			{LOCALES.map((locale) => (
 				<label key={locale} className="flex min-w-40 flex-1 flex-col gap-1">
-					<span className="text-xs text-zinc-500">{locale}</span>
+					<span className="text-xs text-ui-faint">{locale}</span>
 					<input
 						name={areaField(locale)}
 						lang={locale}
@@ -37,7 +37,7 @@ function AreaForm({ area, onSaved }: { area?: AreaRow; onSaved?: () => void }) {
 					{errors[areaField(locale)] && <span className="text-xs text-red-400">{errors[areaField(locale)]}</span>}
 				</label>
 			))}
-			<button type="submit" disabled={pending} className="mt-5 rounded border border-zinc-600 px-3 py-2 text-sm disabled:opacity-50">
+			<button type="submit" disabled={pending} className="mt-5 rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
 				{pending ? 'Saving…' : area ? 'Save' : '+ Add area'}
 			</button>
 			{state.ok && !pending && area && <span className="mt-7 text-xs text-emerald-400">Saved</span>}
@@ -62,15 +62,15 @@ export function AreasEditor({ initial }: { initial: AreaRow[] }) {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{rows.length === 0 && <p className="text-zinc-500">No areas yet.</p>}
+			{rows.length === 0 && <p className="text-ui-faint">No areas yet.</p>}
 			<ul className="flex flex-col gap-4">
 				{rows.map((row, index) => (
-					<li key={row.id} className="flex flex-col gap-2 rounded border border-zinc-800 p-3">
+					<li key={row.id} className="flex flex-col gap-2 rounded border border-ui-border p-3">
 						<AreaForm area={row} />
 						<div className="flex items-center gap-3 text-sm">
-							<span className="text-zinc-500">{row.projects} project{row.projects === 1 ? '' : 's'}</span>
-							<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move up">↑</button>
-							<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-1 text-zinc-400 disabled:opacity-30" aria-label="Move down">↓</button>
+							<span className="text-ui-faint">{row.projects} project{row.projects === 1 ? '' : 's'}</span>
+							<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move up">↑</button>
+							<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move down">↓</button>
 							<form
 								action={deleteArea}
 								onSubmit={(e) => {
@@ -91,14 +91,14 @@ export function AreasEditor({ initial }: { initial: AreaRow[] }) {
 					type="button"
 					disabled={saving}
 					onClick={() => startSaving(async () => { await reorderAreas(rows.map((r) => r.id)); setDirty(false); })}
-					className="self-start rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+					className="self-start rounded bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-ink disabled:opacity-50"
 				>
 					{saving ? 'Saving order…' : 'Save order'}
 				</button>
 			)}
 
-			<section className="flex flex-col gap-2 rounded border border-dashed border-zinc-700 p-3">
-				<h2 className="text-sm font-semibold text-zinc-300">New area</h2>
+			<section className="flex flex-col gap-2 rounded border border-dashed border-ui-border-2 p-3">
+				<h2 className="text-sm font-semibold text-ui-text">New area</h2>
 				{/* remount after a successful add to clear the inputs */}
 				<AreaForm key={newFormKey} onSaved={() => setNewFormKey((k) => k + 1)} />
 			</section>

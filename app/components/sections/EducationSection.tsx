@@ -1,6 +1,7 @@
 'use client';
 
 import type { EducationView } from '@/app/lib/content/education/education';
+import { navNumber } from '@/app/lib/nav';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type EducationSectionProps = {
@@ -15,7 +16,7 @@ export function EducationSection({ education }: EducationSectionProps) {
 	return (
 		<section id="education" className="section">
 			<div className="sec-head">
-				<h2><span className="num">05</span> {copy.title}<span className="ac">.</span></h2>
+				<h2><span className="num">{navNumber('education')}</span> {copy.title}<span className="ac">.</span></h2>
 				<span className="note">{copy.note}</span>
 			</div>
 

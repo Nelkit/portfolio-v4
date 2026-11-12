@@ -23,9 +23,9 @@ export default async function EducationAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<h1 className="text-xl font-semibold">Education</h1>
-			<p className="text-sm text-zinc-500">Ordered automatically: in-progress entries first, then newest first.</p>
+			<p className="text-sm text-ui-faint">Ordered automatically: in-progress entries first, then newest first.</p>
 			<EducationEditor
 				key={rows.map((r) => `${r.id}:${r.start}:${r.end}:${r.inProgress}:${r.texts.en.degree}:${r.texts.es.degree}`).join('|')}
 				initial={rows}

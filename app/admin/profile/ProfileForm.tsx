@@ -32,7 +32,7 @@ const LABELS: Record<(typeof TRANSLATED_KEYS)[number], { label: string; multilin
 };
 
 const input =
-	'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500';
+	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(2).replace(/\.?0+$/, '')} MB`;
 
 function FieldError({ message }: { message?: string }) {
@@ -47,9 +47,9 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 		<form action={formAction} className="flex flex-col gap-8">
 			{/* ---- Language-independent ---- */}
 			<section className="flex flex-col gap-4">
-				<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">General</h2>
+				<h2 className="text-sm font-semibold uppercase tracking-wide text-ui-dim">General</h2>
 				<label className="flex flex-col gap-2">
-					<span className="text-sm text-zinc-300">Name</span>
+					<span className="text-sm text-ui-text">Name</span>
 					<input name="name" required defaultValue={initial.name} aria-invalid={Boolean(errors.name)} className={input} />
 					<FieldError message={errors.name} />
 				</label>
@@ -59,13 +59,13 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 						// eslint-disable-next-line @next/next/no-img-element
 						<img src={initial.avatarUrl} alt="Current avatar" className="h-16 w-16 rounded-full object-cover" />
 					) : (
-						<div className="h-16 w-16 rounded-full border border-dashed border-zinc-700" />
+						<div className="h-16 w-16 rounded-full border border-dashed border-ui-border-2" />
 					)}
 					<div className="flex flex-col gap-2">
-						<span className="text-sm text-zinc-300">Avatar (PNG, JPEG or WEBP · max {mb(MAX_BYTES.image)})</span>
+						<span className="text-sm text-ui-text">Avatar (PNG, JPEG or WEBP · max {mb(MAX_BYTES.image)})</span>
 						<input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" className="text-sm" />
 						{initial.avatarUrl && (
-							<label className="flex items-center gap-2 text-sm text-zinc-400">
+							<label className="flex items-center gap-2 text-sm text-ui-dim">
 								<input type="checkbox" name="remove_avatar" /> Remove current avatar
 							</label>
 						)}
@@ -80,9 +80,9 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 					const t = initial.translations[locale];
 					const cvField = `cv_${locale}`;
 					return (
-						<fieldset key={locale} lang={locale} className="flex flex-col gap-4 rounded border border-zinc-800 p-4">
-							<legend className="px-1 text-sm font-semibold text-zinc-300">
-								{LANGUAGE_NAMES[locale]} <span className="text-zinc-500">({locale})</span>
+						<fieldset key={locale} lang={locale} className="flex flex-col gap-4 rounded border border-ui-border p-4">
+							<legend className="px-1 text-sm font-semibold text-ui-text">
+								{LANGUAGE_NAMES[locale]} <span className="text-ui-faint">({locale})</span>
 							</legend>
 							{TRANSLATED_KEYS.map((key) => {
 								const name = translatedField(key, locale);
@@ -96,8 +96,8 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 								};
 								return (
 									<label key={key} className="flex flex-col gap-2">
-										<span className="text-sm text-zinc-300">
-											{meta.label} {meta.hint && <span className="text-zinc-500">— {meta.hint}</span>}
+										<span className="text-sm text-ui-text">
+											{meta.label} {meta.hint && <span className="text-ui-faint">— {meta.hint}</span>}
 										</span>
 										{meta.multiline ? <textarea rows={3} {...common} /> : <input {...common} />}
 										<FieldError message={errors[name]} />
@@ -106,7 +106,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 							})}
 
 							<div className="flex flex-col gap-2">
-								<span className="text-sm text-zinc-300">CV (PDF · max {mb(MAX_BYTES.pdf)})</span>
+								<span className="text-sm text-ui-text">CV (PDF · max {mb(MAX_BYTES.pdf)})</span>
 								{t.cvUrl && (
 									<a href={t.cvUrl} target="_blank" rel="noreferrer" className="text-sm text-emerald-400 underline">
 										Current CV
@@ -114,7 +114,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 								)}
 								<input type="file" name={cvField} accept="application/pdf" className="text-sm" />
 								{t.cvUrl && (
-									<label className="flex items-center gap-2 text-sm text-zinc-400">
+									<label className="flex items-center gap-2 text-sm text-ui-dim">
 										<input type="checkbox" name={`remove_${cvField}`} /> Remove current CV
 									</label>
 								)}
@@ -127,8 +127,8 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 
 			{/* ---- Links ---- */}
 			<section className="flex flex-col gap-3">
-				<h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-					Links <span className="normal-case text-zinc-500">— sidebar, footer and contact. The email link is the contact address.</span>
+				<h2 className="text-sm font-semibold uppercase tracking-wide text-ui-dim">
+					Links <span className="normal-case text-ui-faint">— sidebar, footer and contact. The email link is the contact address.</span>
 				</h2>
 				<LinksEditor initial={initial.links} error={errors.links} />
 			</section>
@@ -137,7 +137,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 				<button
 					type="submit"
 					disabled={pending}
-					className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50"
+					className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
 				>
 					{pending ? 'Saving…' : 'Save'}
 				</button>

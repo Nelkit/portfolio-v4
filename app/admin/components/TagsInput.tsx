@@ -45,10 +45,10 @@ export function TagsInput({
 			<input type="hidden" name={name} value={JSON.stringify(tags)} />
 			<div className="flex flex-wrap gap-2">
 				{tags.map((tag, index) => (
-					<span key={tag} className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-sm">
-						<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="text-zinc-500 disabled:opacity-30" aria-label={`Move ${tag} left`}>‹</button>
+					<span key={tag} className="flex items-center gap-1 rounded bg-ui-surface-2 px-2 py-1 text-sm">
+						<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="text-ui-faint disabled:opacity-30" aria-label={`Move ${tag} left`}>‹</button>
 						{tag}
-						<button type="button" onClick={() => move(index, 1)} disabled={index === tags.length - 1} className="text-zinc-500 disabled:opacity-30" aria-label={`Move ${tag} right`}>›</button>
+						<button type="button" onClick={() => move(index, 1)} disabled={index === tags.length - 1} className="text-ui-faint disabled:opacity-30" aria-label={`Move ${tag} right`}>›</button>
 						<button type="button" onClick={() => setTags((c) => c.filter((t) => t !== tag))} className="ml-1 text-red-400" aria-label={`Remove ${tag}`}>✕</button>
 					</span>
 				))}
@@ -69,7 +69,7 @@ export function TagsInput({
 					}
 				}}
 				onBlur={() => add(draft)}
-				className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400"
+				className="rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent"
 			/>
 			<datalist id={listId}>
 				{suggestions.filter((s) => !tags.some((t) => t.toLowerCase() === s.toLowerCase())).map((s) => <option key={s} value={s} />)}

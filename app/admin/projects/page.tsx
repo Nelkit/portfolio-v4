@@ -16,10 +16,10 @@ export default async function ProjectsAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Projects</h1>
-				<Link href="/admin/projects/new" className="rounded bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-950">
+				<Link href="/admin/projects/new" className="rounded bg-ui-accent px-3 py-2 text-sm font-semibold text-ui-accent-ink">
 					+ New project
 				</Link>
 			</header>

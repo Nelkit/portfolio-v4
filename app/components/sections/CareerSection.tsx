@@ -1,6 +1,7 @@
 'use client';
 
 import type { CareerView } from '@/app/lib/content/career/career';
+import { navNumber } from '@/app/lib/nav';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type CareerSectionProps = {
@@ -19,7 +20,7 @@ export function CareerSection({ title, entries, years }: CareerSectionProps) {
 	return (
 		<section id="career" className="section">
 			<div className="sec-head">
-				<h2><span className="num">04</span> {title}<span className="ac">.</span></h2>
+				<h2><span className="num">{navNumber('career')}</span> {title}<span className="ac">.</span></h2>
 				<span className="note">{copy.note(years)}</span>
 			</div>
 

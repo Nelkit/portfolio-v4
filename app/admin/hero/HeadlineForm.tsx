@@ -12,7 +12,7 @@ export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
 
 	return (
 		<form action={formAction} className="flex flex-col gap-5">
-			<p className="text-sm text-zinc-400">
+			<p className="text-sm text-ui-dim">
 				Wrap the accent words in <code>&lt;em&gt;…&lt;/em&gt;</code>. Both languages are required.
 			</p>
 
@@ -21,8 +21,8 @@ export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
 				const error = state.errors?.[locale];
 				return (
 					<div key={locale} className="flex flex-col gap-2">
-						<label htmlFor={name} className="text-sm text-zinc-300">
-							Headline — {LANGUAGE_NAMES[locale]} <span className="text-zinc-500">({locale})</span>
+						<label htmlFor={name} className="text-sm text-ui-text">
+							Headline — {LANGUAGE_NAMES[locale]} <span className="text-ui-faint">({locale})</span>
 						</label>
 						<textarea
 							id={name}
@@ -33,7 +33,7 @@ export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
 							maxLength={HEADLINE_MAX_LENGTH}
 							defaultValue={initial[locale]}
 							aria-invalid={Boolean(error)}
-							className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500"
+							className="rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500"
 						/>
 						{error && <span className="text-sm text-red-400">{error}</span>}
 					</div>
@@ -44,7 +44,7 @@ export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
 				<button
 					type="submit"
 					disabled={pending}
-					className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50"
+					className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
 				>
 					{pending ? 'Saving…' : 'Save'}
 				</button>

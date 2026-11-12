@@ -19,9 +19,9 @@ export default async function SkillsAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<h1 className="text-xl font-semibold">Tech stack</h1>
-			<p className="text-sm text-zinc-500">
+			<p className="text-sm text-ui-faint">
 				Each category is a tab in the stack section. A skill can be in several categories; skills not used by any category are removed from the catalog.
 			</p>
 			<SkillsEditor

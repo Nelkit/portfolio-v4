@@ -39,10 +39,10 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin/projects" className="text-sm text-zinc-400 hover:text-zinc-100">← Projects</Link>
+			<Link href="/admin/projects" className="text-sm text-ui-dim hover:text-ui-text">← Projects</Link>
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Edit project</h1>
-				<a href={`/en/projects/${project.slug}`} target="_blank" rel="noreferrer" className="text-sm text-zinc-400 hover:text-zinc-100">
+				<a href={`/en/projects/${project.slug}`} target="_blank" rel="noreferrer" className="text-sm text-ui-dim hover:text-ui-text">
 					View on site ↗
 				</a>
 			</header>

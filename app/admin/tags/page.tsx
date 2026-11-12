@@ -19,9 +19,9 @@ export default async function TagsAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<h1 className="text-xl font-semibold">Blog tags</h1>
-			<p className="text-sm text-zinc-500">Assign tags to posts from the post editor. Visitors filter the blog by tag and see related posts.</p>
+			<p className="text-sm text-ui-faint">Assign tags to posts from the post editor. Visitors filter the blog by tag and see related posts.</p>
 			<TagsEditor key={rows.map((r) => `${r.id}:${r.slug}:${r.names.en}:${r.names.es}:${r.posts}`).join('|')} initial={rows} />
 		</main>
 	);

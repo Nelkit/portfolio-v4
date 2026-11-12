@@ -16,13 +16,13 @@ export default function LoginPage() {
 				autoFocus
 				autoComplete="current-password"
 				placeholder="Password"
-				className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400"
+				className="rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent"
 			/>
 			{state.error && <p className="text-sm text-red-400">{state.error}</p>}
 			<button
 				type="submit"
 				disabled={pending}
-				className="rounded bg-zinc-100 px-3 py-2 font-semibold text-zinc-950 disabled:opacity-50"
+				className="rounded bg-ui-accent px-3 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
 			>
 				{pending ? 'Signing in…' : 'Sign in'}
 			</button>

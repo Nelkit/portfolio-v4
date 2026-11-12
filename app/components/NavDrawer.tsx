@@ -11,8 +11,7 @@ const IClose = () => (
 	</svg>
 );
 
-/** Section anchors shared by every nav (labels come from the dictionary). */
-export const NAV_IDS = ['work', 'stack', 'career', 'education', 'writing', 'contact'] as const;
+export { NAV_IDS } from '@/app/lib/nav';
 
 export type NavItem = { id: string; label: string };
 

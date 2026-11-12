@@ -19,9 +19,9 @@ export default async function AreasAdminPage() {
 
 	return (
 		<main className="flex flex-col gap-6">
-			<Link href="/admin" className="text-sm text-zinc-400 hover:text-zinc-100">← Dashboard</Link>
+			<Link href="/admin" className="text-sm text-ui-dim hover:text-ui-text">← Dashboard</Link>
 			<h1 className="text-xl font-semibold">Expertise areas</h1>
-			<p className="text-sm text-zinc-500">Assign an area to each project from the project form. Visitors filter projects by area.</p>
+			<p className="text-sm text-ui-faint">Assign an area to each project from the project form. Visitors filter projects by area.</p>
 			{/* remount with fresh data after any server change */}
 			<AreasEditor key={rows.map((r) => `${r.id}:${r.names.en}:${r.projects}`).join('|')} initial={rows} />
 		</main>

@@ -11,9 +11,9 @@ import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 const LANGUAGE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español' };
 const EMPTY: PostTranslation = { title: '', summary: '', body: '' };
 const input =
-	'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 outline-none focus:border-zinc-400 aria-invalid:border-red-500';
+	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 const preview =
-	'min-h-[60vh] overflow-auto rounded border border-zinc-800 p-5 text-sm leading-relaxed [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-600 [&_blockquote]:pl-3 [&_code]:text-emerald-300 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-zinc-900 [&_pre]:p-3 [&_table]:my-3 [&_td]:border [&_td]:border-zinc-700 [&_td]:px-2 [&_th]:border [&_th]:border-zinc-700 [&_th]:px-2 [&_ul]:list-disc';
+	'min-h-[60vh] overflow-auto rounded border border-ui-border p-5 text-sm leading-relaxed [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-ui-border-2 [&_blockquote]:pl-3 [&_code]:text-emerald-300 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-ui-surface [&_pre]:p-3 [&_table]:my-3 [&_td]:border [&_td]:border-ui-border-2 [&_td]:px-2 [&_th]:border [&_th]:border-ui-border-2 [&_th]:px-2 [&_ul]:list-disc';
 
 function Err({ message }: { message?: string }) {
 	return message ? <span className="text-xs text-red-400">{message}</span> : null;
@@ -80,24 +80,24 @@ export function PostEditor({
 
 			<section className="flex flex-wrap items-start gap-4">
 				<label className="flex min-w-64 flex-1 flex-col gap-1">
-					<span className="text-xs text-zinc-500">Slug — shared by both languages; empty = from the title</span>
+					<span className="text-xs text-ui-faint">Slug — shared by both languages; empty = from the title</span>
 					<input name="slug" defaultValue={initial.slug} placeholder="my-post" aria-invalid={Boolean(errors.slug)} className={input} />
 					<Err message={errors.slug} />
 				</label>
 				<label className="flex flex-col gap-1">
-					<span className="text-xs text-zinc-500">Publication date</span>
+					<span className="text-xs text-ui-faint">Publication date</span>
 					<input type="date" name="publishedOn" required defaultValue={initial.publishedOn} aria-invalid={Boolean(errors.publishedOn)} className={input} />
 					<Err message={errors.publishedOn} />
 				</label>
 			</section>
 
 			<fieldset className="flex flex-col gap-2">
-				<legend className="text-xs text-zinc-500">
+				<legend className="text-xs text-ui-faint">
 					Tags {tags.length === 0 && <>— none yet, create them in <Link href="/admin/tags" className="underline">Blog tags</Link></>}
 				</legend>
 				<div className="flex flex-wrap gap-3">
 					{tags.map((tag) => (
-						<label key={tag.id} className="flex items-center gap-2 rounded border border-zinc-800 px-2 py-1 text-sm">
+						<label key={tag.id} className="flex items-center gap-2 rounded border border-ui-border px-2 py-1 text-sm">
 							<input type="checkbox" name="tagIds" value={tag.id} defaultChecked={initial.tagIds.includes(tag.id)} />
 							{tag.name}
 						</label>
@@ -109,32 +109,32 @@ export function PostEditor({
 			{id && media ? (
 				<PostMedia postId={id} coverUrl={media.coverUrl} images={media.images} onInsert={insertIntoBody} />
 			) : (
-				<p className="text-sm text-zinc-500">Cover and images can be added once the post is saved (a draft is enough).</p>
+				<p className="text-sm text-ui-faint">Cover and images can be added once the post is saved (a draft is enough).</p>
 			)}
 			{inserted && <p className="text-sm text-amber-400">Image inserted into the {LANGUAGE_NAMES[active]} body — remember to Save.</p>}
 
-			<div className="flex items-center gap-2 border-b border-zinc-800">
+			<div className="flex items-center gap-2 border-b border-ui-border">
 				{LOCALES.map((locale) => (
 					<button
 						key={locale}
 						type="button"
 						onClick={() => setActive(locale)}
-						className={`px-4 py-2 text-sm ${active === locale ? 'border-b-2 border-zinc-100 text-zinc-100' : 'text-zinc-500'}`}
+						className={`px-4 py-2 text-sm ${active === locale ? 'border-b-2 border-ui-accent text-ui-text' : 'text-ui-faint'}`}
 					>
 						{LANGUAGE_NAMES[locale]}{' '}
-						<span className={hasErrors(locale) ? 'text-red-400' : written(locale) ? 'text-emerald-400' : 'text-zinc-600'}>
+						<span className={hasErrors(locale) ? 'text-red-400' : written(locale) ? 'text-emerald-400' : 'text-ui-faint'}>
 							{hasErrors(locale) ? '●' : written(locale) ? '✓' : '—'}
 						</span>
 					</button>
 				))}
-				<span className="ml-auto text-xs text-zinc-500">Leave a language empty to publish only in the other one.</span>
+				<span className="ml-auto text-xs text-ui-faint">Leave a language empty to publish only in the other one.</span>
 			</div>
 			<Err message={errors.translations} />
 
 			{LOCALES.map((locale) => (
 				<section key={locale} lang={locale} hidden={active !== locale} className="flex flex-col gap-4">
 					<label className="flex flex-col gap-1">
-						<span className="text-xs text-zinc-500">Title</span>
+						<span className="text-xs text-ui-faint">Title</span>
 						<input
 							name={postField('title', locale)}
 							value={texts[locale].title}
@@ -145,7 +145,7 @@ export function PostEditor({
 						<Err message={errors[postField('title', locale)]} />
 					</label>
 					<label className="flex flex-col gap-1">
-						<span className="text-xs text-zinc-500">Summary — shown in listings, optional</span>
+						<span className="text-xs text-ui-faint">Summary — shown in listings, optional</span>
 						<textarea
 							name={postField('summary', locale)}
 							rows={2}
@@ -158,7 +158,7 @@ export function PostEditor({
 					</label>
 					<div className="grid gap-4 lg:grid-cols-2">
 						<label className="flex flex-col gap-1">
-							<span className="text-xs text-zinc-500">
+							<span className="text-xs text-ui-faint">
 								Body — Markdown · ~{readingTime(texts[locale].body)} min read
 							</span>
 							<textarea
@@ -172,10 +172,10 @@ export function PostEditor({
 							<Err message={errors[postField('body', locale)]} />
 						</label>
 						<div className="flex flex-col gap-1">
-							<span className="text-xs text-zinc-500">Preview (code highlighting is applied on the site)</span>
+							<span className="text-xs text-ui-faint">Preview (code highlighting is applied on the site)</span>
 							<div className={preview}>
 								{texts[locale].title && <h1>{texts[locale].title}</h1>}
-								{texts[locale].body.trim() ? <Markdown uploadBaseUrl={uploadBaseUrl}>{texts[locale].body}</Markdown> : <p className="text-zinc-500">Nothing to preview.</p>}
+								{texts[locale].body.trim() ? <Markdown uploadBaseUrl={uploadBaseUrl}>{texts[locale].body}</Markdown> : <p className="text-ui-faint">Nothing to preview.</p>}
 							</div>
 						</div>
 					</div>
@@ -183,14 +183,14 @@ export function PostEditor({
 			))}
 
 			<div className="flex flex-wrap items-center gap-3">
-				<span className={`rounded px-2 py-1 text-xs ${isPublished ? 'bg-emerald-900 text-emerald-200' : 'bg-zinc-800 text-zinc-300'}`}>
+				<span className={`rounded px-2 py-1 text-xs ${isPublished ? 'bg-emerald-900 text-emerald-200' : 'bg-ui-surface-2 text-ui-text'}`}>
 					{isPublished ? 'Published' : 'Draft — not visible on the site'}
 				</span>
 				{/* The clicked button's name/value ("intent") decides draft vs. published. */}
-				<button type="submit" name="intent" value="publish" disabled={pending} className="rounded bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 disabled:opacity-50">
+				<button type="submit" name="intent" value="publish" disabled={pending} className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50">
 					{pending ? 'Saving…' : isPublished ? 'Update' : 'Publish'}
 				</button>
-				<button type="submit" name="intent" value="draft" disabled={pending} className="rounded border border-zinc-600 px-4 py-2 text-sm disabled:opacity-50">
+				<button type="submit" name="intent" value="draft" disabled={pending} className="rounded border border-ui-border-2 px-4 py-2 text-sm disabled:opacity-50">
 					{isPublished ? 'Unpublish (back to draft)' : 'Save draft'}
 				</button>
 				{state.ok && !pending && !inserted && (
