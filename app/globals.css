@@ -1240,6 +1240,16 @@ body {
 .fn-drawer-foot .lang-toggle {
   flex: none;
 }
+/* It is an <a>, so `.fn-links a` (text-link padding/colors) also hits it: with a fixed
+   36px box that padding left 8px for the text and pushed "EN" off center. Match .theme-toggle. */
+.fn-links .lang-toggle {
+  padding: 0;
+  color: var(--text-dim);
+}
+.fn-links .lang-toggle:hover {
+  color: var(--accent);
+  background: none;
+}
 
 /* ---- FLOATING ASK FAB ---- */
 .ask-fab {
