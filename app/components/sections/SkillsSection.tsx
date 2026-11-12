@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { navNumber } from '@/app/lib/nav';
 import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
@@ -20,7 +21,7 @@ export function SkillsSection({ categories }: SkillsSectionProps) {
 	return (
 		<section id="stack" className="section">
 			<div className="sec-head">
-				<h2><span className="num">03</span> {t.sections.stack.title}<span className="ac">.</span></h2>
+				<h2><span className="num">{navNumber('stack')}</span> {t.sections.stack.title}<span className="ac">.</span></h2>
 				<span className="note">{t.sections.stack.note(totalTools)}</span>
 			</div>
 

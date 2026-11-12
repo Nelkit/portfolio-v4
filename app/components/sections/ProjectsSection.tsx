@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { navNumber } from '@/app/lib/nav';
 import { useState } from 'react';
 import { AreaFilter, areaChips } from '@/app/components/AreaFilter';
 import { type Project, type ProjectLink } from '@/app/data/content';
@@ -64,7 +65,7 @@ export function ProjectsSection({ title, projects, areas }: ProjectsSectionProps
 	return (
 		<section id="work" className="section section-work">
 			<div className="sec-head">
-				<h2><span className="num">02</span> {title}<span className="ac">.</span></h2>
+				<h2><span className="num">{navNumber('work')}</span> {title}<span className="ac">.</span></h2>
 				<span className="note">{t.sections.projects.note(count)}</span>
 			</div>
 			<AreaFilter areas={chips} total={count} selected={selectedArea} onSelect={setSelectedArea} />

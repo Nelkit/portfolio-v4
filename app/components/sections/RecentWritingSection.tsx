@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { PostSummary } from '@/app/lib/content/posts/post';
+import { navNumber } from '@/app/lib/nav';
 import { IArrowUR } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
@@ -15,7 +16,7 @@ export function RecentWritingSection({ posts }: { posts: PostSummary[] }) {
 	return (
 		<section id="writing" className="section">
 			<div className="sec-head">
-				<h2><span className="num">06</span> {copy.title}<span className="ac">.</span></h2>
+				<h2><span className="num">{navNumber('writing')}</span> {copy.title}<span className="ac">.</span></h2>
 				<span className="note">{copy.note}</span>
 			</div>
 

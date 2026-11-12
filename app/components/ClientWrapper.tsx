@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { navNumber } from '@/app/lib/nav';
 import { HeroSection } from '@/app/components/sections/HeroSection';
 import { ProjectsSection } from '@/app/components/sections/ProjectsSection';
 import { SkillsSection } from '@/app/components/sections/SkillsSection';
@@ -172,12 +173,12 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 
 	const sub = t.home.navSub;
 	const navItems = [
-		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: '01' },
-		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: '02' },
-		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', career.length),         meta: '03' },
-		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: '04' },
-		{ id: 'writing',   label: t.common.nav.writing,   sub: sub.writing,                                                                          meta: '05' },
-		{ id: 'contact',   label: t.common.nav.contact,   sub: sub.contact,                                                                          meta: '06' },
+		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: navNumber('work') },
+		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: navNumber('stack') },
+		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', career.length),         meta: navNumber('career') },
+		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: navNumber('education') },
+		{ id: 'writing',   label: t.common.nav.writing,   sub: sub.writing,                                                                          meta: navNumber('writing') },
+		{ id: 'contact',   label: t.common.nav.contact,   sub: sub.contact,                                                                          meta: navNumber('contact') },
 	];
 
 	return (
