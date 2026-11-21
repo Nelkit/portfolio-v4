@@ -75,7 +75,11 @@ export function createR2Storage(config: R2Config): FileStorage {
 
 	const send = async (key: string, init: RequestInit) => {
 		assertSafeKey(key);
-		const response = await client.fetch(objectUrl(key), init);
+		// Sign, but send the ORIGINAL body ourselves. client.fetch() passes a Request,
+		// whose body is a stream; Next's patched fetch on Vercel sends it chunked with
+		// no Content-Length, and R2 rejects that with 411 MissingContentLength.
+		const signed = await client.sign(objectUrl(key), init);
+		const response = await fetch(signed.url, { method: signed.method, headers: signed.headers, body: init.body });
 		if (!response.ok && response.status !== 404) {
 			// R2 explains failures in an S3 XML body (<Code>AccessDenied</Code>, SignatureDoesNotMatch…).
 			const code = /<Code>([^<]+)<\/Code>/.exec(await response.text().catch(() => ''))?.[1];
