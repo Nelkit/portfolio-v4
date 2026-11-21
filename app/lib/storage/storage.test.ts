@@ -62,11 +62,24 @@ describe('R2 storage', () => {
 
 		await createR2Storage(config).put('profile/avatar-1.webp', new Uint8Array([1, 2]), 'image/webp');
 
-		const request = fetchMock.mock.calls[0][0] as Request;
-		expect(request.method).toBe('PUT');
-		expect(request.url).toBe('https://acc123.r2.cloudflarestorage.com/portfolio/profile/avatar-1.webp');
-		expect(request.headers.get('authorization')).toMatch(/^AWS4-HMAC-SHA256 Credential=AKID\//);
-		expect(request.headers.get('content-type')).toBe('image/webp');
+		const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+		const headers = new Headers(init.headers);
+		expect(init.method).toBe('PUT');
+		expect(url).toBe('https://acc123.r2.cloudflarestorage.com/portfolio/profile/avatar-1.webp');
+		expect(headers.get('authorization')).toMatch(/^AWS4-HMAC-SHA256 Credential=AKID\//);
+		expect(headers.get('content-type')).toBe('image/webp');
+	});
+
+	it('sends the raw bytes (known length), never a stream — R2 rejects chunked PUTs with 411', async () => {
+		const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+		vi.stubGlobal('fetch', fetchMock);
+		const bytes = new Uint8Array([1, 2, 3]);
+
+		await createR2Storage(config).put('profile/avatar-1.webp', bytes, 'image/webp');
+
+		const [input, init] = fetchMock.mock.calls[0] as [unknown, RequestInit];
+		expect(input).not.toBeInstanceOf(Request);
+		expect(init.body).toBe(bytes);
 	});
 
 	it('throws when R2 rejects the upload, including R2\'s error code', async () => {
@@ -84,8 +97,8 @@ describe('R2 storage', () => {
 		await createR2Storage({ ...config, jurisdiction: 'us' }).put('profile/a-1.png', new Uint8Array(1), 'image/png');
 		await createR2Storage({ ...config, jurisdiction: 'eu' }).put('profile/a-1.png', new Uint8Array(1), 'image/png');
 
-		expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://acc123.us.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
-		expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://acc123.eu.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
+		expect(fetchMock.mock.calls[0][0]).toBe('https://acc123.us.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
+		expect(fetchMock.mock.calls[1][0]).toBe('https://acc123.eu.r2.cloudflarestorage.com/portfolio/profile/a-1.png');
 	});
 
 	it('builds public URLs from the configured public base', () => {
