@@ -5,7 +5,7 @@ import { navNumber } from '@/app/lib/nav';
 import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 import type { ProjectView } from '@/app/lib/content/projects/project';
-import { cardTags } from '@/app/lib/content/projects/project-display';
+import { cardTags, homeCardLayout, type CardSize } from '@/app/lib/content/projects/project-display';
 
 const ILinkIcon = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
@@ -21,8 +21,8 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 	link:     ILinkIcon,
 };
 
-/** The first featured projects get the full-width card; the rest share the 2-column grid. */
-const FULL_WIDTH_CARDS = 2;
+/** Card class per size: `feat` is the existing full-width (horizontal) card. */
+const SIZE_CLASS: Record<CardSize, string> = { full: ' feat', half: ' half', third: '' };
 
 type ProjectsSectionProps = {
 	title: string;
@@ -36,6 +36,7 @@ type ProjectsSectionProps = {
 export function ProjectsSection({ title, projects, total }: ProjectsSectionProps) {
 	const { t, href } = useI18n();
 	if (projects.length === 0) return null;
+	const sizes = homeCardLayout(projects.length);
 
 	return (
 		<section id="work" className="section section-work">
@@ -48,7 +49,7 @@ export function ProjectsSection({ title, projects, total }: ProjectsSectionProps
 					<Link
 						key={p.slug}
 						href={href(`/projects/${p.slug}`)}
-						className={'work-card' + (idx < FULL_WIDTH_CARDS ? ' feat' : '')}
+						className={'work-card' + SIZE_CLASS[sizes[idx]]}
 					>
 						{p.imageUrl ? (
 							<img

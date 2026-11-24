@@ -46,3 +46,22 @@ export function projectSections(project: ProjectView): ProjectSection[] {
 	];
 	return sections.filter((s) => s.body !== '' || (s.key === 'myRole' && project.role.trim() !== ''));
 }
+
+export type CardSize = 'full' | 'half' | 'third';
+
+/** Width of a group of cards that share a row: 1 → full, 2 → halves, 3 → thirds. */
+const rowOf = (count: number): CardSize[] => Array(count).fill(count === 1 ? 'full' : count === 2 ? 'half' : 'third');
+
+/**
+ * Home "Selected work" rows: the first card full width, the next two in halves,
+ * the rest in thirds. A shorter last row widens its cards, so there is never
+ * an empty slot.
+ */
+export function homeCardLayout(count: number): CardSize[] {
+	const sizes: CardSize[] = [];
+	if (count > 0) sizes.push('full');
+	const second = Math.min(2, count - 1);
+	if (second > 0) sizes.push(...rowOf(second));
+	for (let i = 3; i < count; i += 3) sizes.push(...rowOf(Math.min(3, count - i)));
+	return sizes;
+}

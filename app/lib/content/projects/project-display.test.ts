@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	cardTags,
 	featuredProjects,
+	homeCardLayout,
 	MAX_CARD_TAGS,
 	projectMetaLine,
 	projectSections,
@@ -127,5 +128,21 @@ describe('projectSections', () => {
 	it('shows my role when only the short role is set', () => {
 		const p = view('p', { role: 'Frontend Lead' });
 		expect(projectSections(p)).toEqual([{ key: 'myRole', body: '' }]);
+	});
+});
+
+describe('homeCardLayout', () => {
+	it('lays out 6 featured projects as 1 full, 2 halves and 3 thirds', () => {
+		expect(homeCardLayout(6)).toEqual(['full', 'half', 'half', 'third', 'third', 'third']);
+	});
+
+	it('never leaves an empty slot in the last row', () => {
+		expect(homeCardLayout(1)).toEqual(['full']);
+		expect(homeCardLayout(2)).toEqual(['full', 'full']);
+		expect(homeCardLayout(3)).toEqual(['full', 'half', 'half']);
+		expect(homeCardLayout(4)).toEqual(['full', 'half', 'half', 'full']);
+		expect(homeCardLayout(5)).toEqual(['full', 'half', 'half', 'half', 'half']);
+		expect(homeCardLayout(7)).toEqual(['full', 'half', 'half', 'third', 'third', 'third', 'full']);
+		expect(homeCardLayout(0)).toEqual([]);
 	});
 });
