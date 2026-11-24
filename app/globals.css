@@ -1695,15 +1695,6 @@ body {
   gap: 8px;
   flex: none;
 }
-/* Key result: short highlighted line on project cards (optional). */
-.wc-key,
-.proj-list-key {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--accent);
-}
 .wc-links {
   display: flex;
   flex-direction: column;

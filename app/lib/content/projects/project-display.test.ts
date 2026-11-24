@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	cardEyebrow,
 	cardTags,
 	featuredProjects,
 	homeCardLayout,
@@ -96,6 +97,18 @@ describe('cardTags', () => {
 		expect(MAX_CARD_TAGS).toBe(7);
 		expect(cardTags(skills)).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g']);
 		expect(cardTags(['a', 'b'])).toEqual(['a', 'b']);
+	});
+});
+
+describe('cardEyebrow', () => {
+	it('shows the position, the category and the year', () => {
+		expect(cardEyebrow(0, view('p', { area: ai, year: 2026 }))).toBe('01 · AI Products · 2026');
+	});
+
+	it('omits the category or the year when missing', () => {
+		expect(cardEyebrow(9, view('p', { year: 2019 }))).toBe('10 · 2019');
+		expect(cardEyebrow(1, view('p', { area: mobile }))).toBe('02 · Mobile');
+		expect(cardEyebrow(2, view('p'))).toBe('03');
 	});
 });
 
