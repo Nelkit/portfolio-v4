@@ -1,3 +1,5 @@
+import type { ProjectLinkLabel } from '@/app/lib/content/projects/project';
+
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /**
@@ -9,7 +11,7 @@ export const en = {
 		ogLocale: 'en_US',
 		/** BCP 47 tag for dates (Intl). */
 		dateLocale: 'en-US',
-		siteTitle: 'Nelkit Chavez — Software/ML/AI Engineer',
+		siteTitle: 'Nelkit Chavez · AI & ML Engineer',
 		siteDescription:
 			'Seven years shipping production mobile apps. Now building products that think, with ML, LLMs, and the instinct to ship that only comes from doing it for real.',
 		blogTitle: 'Writing',
@@ -92,6 +94,7 @@ export const en = {
 			all: 'All',
 			filterAria: 'Filter projects by area',
 			note: (n: number) => plural(n, 'project', 'projects'),
+			viewAll: (n: number) => `View all ${plural(n, 'project', 'projects')} →`,
 		},
 		stack: {
 			title: 'Tech stack',
@@ -125,7 +128,7 @@ export const en = {
 			minutes: (n: number) => `${n} min`,
 		},
 		contact: {
-			available: 'Available 2026',
+			available: 'Available now',
 			headline: "Let's build something <em>that ships.</em>",
 			description:
 				'Open to senior IC roles in mobile, ML engineering, or anywhere those two intersect. Remote, hybrid, or Sydney in person.',
@@ -154,6 +157,22 @@ export const en = {
 		screenshots: 'Screenshots',
 		moreProjects: 'More projects',
 		openScreenshot: (alt: string) => `Open screenshot: ${alt}`,
+		/** Detail page sections, in display order. */
+		sectionTitles: {
+			overview: 'Overview',
+			howItWorks: 'How it works',
+			results: 'Results',
+			myRole: 'My role',
+		},
+		/** Standard project link labels (PROJECT_LINK_LABELS). */
+		linkLabels: {
+			'live-demo': 'Live demo',
+			code: 'Code',
+			'api-docs': 'API docs',
+			'app-store': 'App Store',
+			website: 'Website',
+			'github-org': 'GitHub org',
+		} satisfies Record<ProjectLinkLabel, string>,
 	},
 };
 

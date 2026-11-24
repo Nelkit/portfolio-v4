@@ -6,7 +6,7 @@ import { parseHeroForm } from '@/app/lib/content/hero/hero';
 import { HERO_TAG, heroRepository } from '@/app/lib/content/hero/hero-service';
 import type { Locale } from '@/app/lib/i18n/locales';
 
-export type SaveHeroState = { ok?: boolean; errors?: Partial<Record<Locale, string>> };
+export type SaveHeroState = { ok?: boolean; error?: string; errors?: Partial<Record<Locale, string>> };
 
 export async function saveHero(_prev: SaveHeroState, formData: FormData): Promise<SaveHeroState> {
 	await requireAdmin();

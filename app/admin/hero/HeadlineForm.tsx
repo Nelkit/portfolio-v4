@@ -4,14 +4,19 @@ import { useActionState } from 'react';
 import { saveHero, type SaveHeroState } from './actions';
 import { HEADLINE_MAX_LENGTH, headlineField } from '@/app/lib/content/hero/hero';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 const LANGUAGE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español' };
 
 export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
-	const [state, formAction, pending] = useActionState<SaveHeroState, FormData>(saveHero, {});
+	const [state, formAction, pending] = useActionState<SaveHeroState, FormData>(safeAction(saveHero), {});
+	const { formRef, dirty, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, 'Saved, live on the site.', markSaved);
 
 	return (
-		<form action={formAction} className="flex flex-col gap-5">
+		<form ref={formRef} action={formAction} className="flex flex-col gap-5">
 			<p className="text-sm text-ui-dim">
 				Wrap the accent words in <code>&lt;em&gt;…&lt;/em&gt;</code>. Both languages are required.
 			</p>
@@ -41,14 +46,8 @@ export function HeadlineForm({ initial }: { initial: Record<Locale, string> }) {
 			})}
 
 			<div className="flex items-center gap-4">
-				<button
-					type="submit"
-					disabled={pending}
-					className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
-				>
-					{pending ? 'Saving…' : 'Save'}
-				</button>
-				{state.ok && !pending && <span className="text-sm text-emerald-400">Saved — live on the site.</span>}
+				<Button type="submit" variant="primary" loading={pending} loadingLabel="Saving…">Save</Button>
+				{dirty && !pending && <span className="text-sm text-ui-faint">Unsaved changes</span>}
 			</div>
 		</form>
 	);

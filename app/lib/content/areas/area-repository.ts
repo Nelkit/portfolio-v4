@@ -8,7 +8,7 @@ export interface AreaRepository {
 	/** Appends the area at the end; returns its id. */
 	createArea(input: AreaInput): Promise<number>;
 	updateArea(id: number, input: AreaInput): Promise<void>;
-	/** Deletes the area; its projects keep existing, without area. */
-	deleteArea(id: number): Promise<void>;
+	/** Deletes the area only if no project uses it (a project always has one). */
+	deleteArea(id: number): Promise<{ deleted: boolean; projects: number }>;
 	reorderAreas(ids: number[]): Promise<void>;
 }

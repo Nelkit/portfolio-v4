@@ -56,11 +56,18 @@ export const socialLinks = sqliteTable('social_links', {
 export const projects = sqliteTable('projects', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	slug: text('slug').notNull().unique(),
-	company: text('company').notNull().default(''),
+	/** Who the project was for or with (e.g. "UTS"). Column kept as `company` from v1. */
+	organisation: text('company').notNull().default(''),
+	year: integer('year'),
 	/** Storage key of the main image (cover), not a URL. */
 	imageKey: text('image_key'),
-	/** Expertise area (one per project, optional). */
-	areaId: integer('area_id').references(() => expertiseAreas.id, { onDelete: 'set null' }),
+	/** Category (expertise area). Required; areas in use cannot be deleted. */
+	areaId: integer('area_id')
+		.notNull()
+		.references(() => expertiseAreas.id),
+	/** Shown on the home page, sorted by featured_order. */
+	featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+	featuredOrder: integer('featured_order').notNull().default(0),
 	position: integer('position').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),
@@ -74,7 +81,15 @@ export const projectTranslations = sqliteTable(
 		locale: text('locale').notNull(),
 		title: text('title').notNull(),
 		summary: text('summary').notNull(),
+		/** The Overview section. */
 		description: text('description').notNull().default(''),
+		/** Short highlighted line on the card. */
+		keyResult: text('key_result').notNull().default(''),
+		/** Short role title (e.g. "Frontend Lead"). */
+		role: text('role').notNull().default(''),
+		howItWorks: text('how_it_works').notNull().default(''),
+		results: text('results').notNull().default(''),
+		myRole: text('my_role').notNull().default(''),
 	},
 	(table) => [primaryKey({ columns: [table.projectId, table.locale] })],
 );

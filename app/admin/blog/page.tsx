@@ -3,7 +3,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { postRepository } from '@/app/lib/content/posts/post-service';
 import { LOCALES } from '@/app/lib/i18n/locales';
 import { deletePost } from './actions';
-import { DeletePostButton } from './DeletePostButton';
+import { DeleteButton } from '@/app/admin/components/ui/DeleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,10 +44,12 @@ export default async function BlogAdminPage() {
 										</span>
 									))}
 								</span>
-								<form action={deletePost}>
-									<input type="hidden" name="id" value={post.id} />
-									<DeletePostButton title={title} />
-								</form>
+								<DeleteButton
+									action={deletePost}
+									id={post.id}
+									confirmMessage={`Delete “${title}”? This cannot be undone.`}
+									success={`Deleted “${title}”`}
+								/>
 							</li>
 						);
 					})}

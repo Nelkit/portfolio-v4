@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { deletePostImage, removePostCover, uploadPostCover, uploadPostImage, type PostMediaResult } from './media-actions';
 import { PROJECT_IMAGE_MAX_BYTES } from '@/app/lib/storage/file-validation';
+import { Spinner } from '@/app/admin/components/ui/Spinner';
+import { errorMessage } from '@/app/admin/components/ui/feedback';
+import { useToast } from '@/app/admin/components/ui/Toaster';
 
 export type PostMediaProps = {
 	postId: number;
@@ -25,19 +28,33 @@ const fileForm = (postId: number, file: File) => {
  */
 export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps & { onInsert: (markdown: string) => void }) {
 	const router = useRouter();
+	const toast = useToast();
 	const [busy, startBusy] = useTransition();
 	const [status, setStatus] = useState('');
 	const [errors, setErrors] = useState<string[]>([]);
 
-	const run = (label: string, steps: (() => Promise<PostMediaResult>)[], after?: (results: PostMediaResult[]) => void) =>
+	/** Runs media actions one after another (progress as "n/total") and reports the outcome as a toast. */
+	const run = (
+		label: string,
+		steps: (() => Promise<PostMediaResult>)[],
+		success: string,
+		after?: (results: PostMediaResult[]) => void,
+	) =>
 		startBusy(async () => {
 			const results: PostMediaResult[] = [];
 			for (const [i, step] of steps.entries()) {
 				setStatus(steps.length > 1 ? `${label} ${i + 1}/${steps.length}…` : `${label}…`);
-				results.push(await step());
+				try {
+					results.push(await step());
+				} catch (error) {
+					results.push({ error: errorMessage(error) });
+				}
 			}
-			setErrors(results.flatMap((r) => (r.error ? [r.error] : [])));
+			const failed = results.flatMap((r) => (r.error ? [r.error] : []));
+			setErrors(failed);
 			setStatus('');
+			if (failed.length === 0) toast.success(success);
+			else toast.error(failed.length === 1 ? failed[0] : `${failed.length} of ${steps.length} failed. See the details below.`);
 			after?.(results);
 			router.refresh();
 		});
@@ -67,11 +84,11 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 						onChange={(e) => {
 							const file = e.target.files?.[0];
 							e.target.value = '';
-							if (file) run('Uploading cover', [() => uploadPostCover(fileForm(postId, file))]);
+							if (file) run('Uploading cover', [() => uploadPostCover(fileForm(postId, file))], 'Cover uploaded');
 						}}
 					/>
 					{coverUrl && (
-						<button type="button" disabled={busy} onClick={() => confirm('Remove the cover?') && run('Removing', [() => removePostCover(postId)])} className="self-start text-sm text-red-400 disabled:opacity-50">
+						<button type="button" disabled={busy} onClick={() => confirm('Remove the cover?') && run('Removing', [() => removePostCover(postId)], 'Cover removed')} className="self-start text-sm text-red-400 disabled:opacity-50">
 							Remove cover
 						</button>
 					)}
@@ -93,6 +110,7 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 						run(
 							'Uploading',
 							files.map((file) => () => uploadPostImage(fileForm(postId, file))),
+							files.length === 1 ? 'Image uploaded and inserted (remember to Save)' : `${files.length} images uploaded and inserted (remember to Save)`,
 							(results) => {
 								const markdown = results.flatMap((r) => (r.markdown ? [r.markdown] : [])).join('\n\n');
 								if (markdown) onInsert(markdown);
@@ -113,7 +131,7 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 									<button
 										type="button"
 										disabled={busy}
-										onClick={() => confirm('Delete this image?') && run('Deleting', [() => deletePostImage(postId, image.id)])}
+										onClick={() => confirm('Delete this image?') && run('Deleting', [() => deletePostImage(postId, image.id)], 'Image deleted')}
 										className="text-red-400 disabled:opacity-50"
 									>
 										Delete
@@ -125,7 +143,11 @@ export function PostMedia({ postId, coverUrl, images, onInsert }: PostMediaProps
 				)}
 			</div>
 
-			{status && <p className="text-sm text-ui-dim">{status}</p>}
+			{status && (
+				<p className="flex items-center gap-2 text-sm text-ui-dim" role="status">
+					<Spinner /> {status}
+				</p>
+			)}
 			{errors.map((error) => <p key={error} className="text-sm text-red-400">{error}</p>)}
 		</section>
 	);

@@ -6,7 +6,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseAreaForm } from '@/app/lib/content/areas/area';
 import { AREAS_TAG, areaRepository } from '@/app/lib/content/areas/area-service';
 
-export type AreaFormState = { ok?: boolean; errors?: Record<string, string> };
+export type AreaFormState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 const id = z.coerce.number().int().positive();
 
@@ -25,11 +25,15 @@ export async function saveArea(_prev: AreaFormState, formData: FormData): Promis
 	return { ok: true };
 }
 
-/** Deleting an area keeps its projects (they end up without area). */
-export async function deleteArea(formData: FormData): Promise<void> {
+/** Every project needs a category: an area that still has projects is not deleted. */
+export async function deleteArea(formData: FormData): Promise<{ error?: string }> {
 	await requireAdmin();
-	await areaRepository().deleteArea(id.parse(formData.get('id')));
+	const result = await areaRepository().deleteArea(id.parse(formData.get('id')));
+	if (!result.deleted) {
+		return { error: `This category still has ${result.projects} project(s). Move them to another category first.` };
+	}
 	updateTag(AREAS_TAG);
+	return {};
 }
 
 export async function reorderAreas(ids: number[]): Promise<void> {

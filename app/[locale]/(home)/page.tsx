@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getPublishedHero } from '@/app/lib/content/hero/hero-service';
 import { getPublishedProfile } from '@/app/lib/content/profile/profile-service';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
-import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
+import { featuredProjects } from '@/app/lib/content/projects/project-display';
 import { getPublishedSkillCategories } from '@/app/lib/content/skills/skill-service';
 import { getPublishedCareer } from '@/app/lib/content/career/career-service';
 import { careerYears } from '@/app/lib/content/career/career';
@@ -21,13 +21,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     const { locale } = await params;
     if (!isLocale(locale)) notFound();
 
-    const [posts, hero, profile, projects, areas, skillCategories, career, education] = await Promise.all([
+    const [posts, hero, profile, projects, skillCategories, career, education] = await Promise.all([
         getPublishedPosts(locale),
         // No row for this locale yet → the hero shows the dictionary fallback headline.
         getPublishedHero(locale),
         getPublishedProfile(locale),
         getPublishedProjects(locale),
-        getPublishedAreas(locale),
         getPublishedSkillCategories(locale),
         getPublishedCareer(locale),
         getPublishedEducation(locale),
@@ -38,8 +37,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             recentPosts={posts.slice(0, RECENT_POSTS).map(toPostSummary)}
             headline={hero?.headline}
             profile={profile}
-            projects={projects}
-            areas={areas}
+            featuredProjects={featuredProjects(projects)}
+            projectCount={projects.length}
             skillCategories={skillCategories}
             career={career.entries}
             // Depends on today's date: computed at render (page revalidates weekly).

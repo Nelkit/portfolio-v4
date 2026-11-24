@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { saveProfile, type SaveProfileState } from './actions';
 import { LinksEditor } from '@/app/admin/components/LinksEditor';
 import {
@@ -11,6 +11,9 @@ import {
 } from '@/app/lib/content/profile/profile';
 import { MAX_BYTES } from '@/app/lib/storage/file-validation';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 type TextTranslation = Omit<ProfileTranslation, 'cvKey'> & { cvUrl: string | null };
 
@@ -40,11 +43,17 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
-	const [state, formAction, pending] = useActionState<SaveProfileState, FormData>(saveProfile, {});
+	const [state, formAction, pending] = useActionState<SaveProfileState, FormData>(safeAction(saveProfile), {});
 	const errors = state.errors ?? {};
+	const { formRef, dirty, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, 'Saved, live on the site.', markSaved);
+	// The save also uploads the chosen avatar/CV files: say so while it runs.
+	const [hasFiles, setHasFiles] = useState(false);
+	const updateHasFiles = () =>
+		setHasFiles(Array.from(formRef.current?.querySelectorAll<HTMLInputElement>('input[type=file]') ?? []).some((i) => (i.files?.length ?? 0) > 0));
 
 	return (
-		<form action={formAction} className="flex flex-col gap-8">
+		<form ref={formRef} action={formAction} onChange={updateHasFiles} className="flex flex-col gap-8">
 			{/* ---- Language-independent ---- */}
 			<section className="flex flex-col gap-4">
 				<h2 className="text-sm font-semibold uppercase tracking-wide text-ui-dim">General</h2>
@@ -134,14 +143,10 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
 			</section>
 
 			<div className="flex items-center gap-4">
-				<button
-					type="submit"
-					disabled={pending}
-					className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
-				>
-					{pending ? 'Saving…' : 'Save'}
-				</button>
-				{state.ok && !pending && <span className="text-sm text-emerald-400">Saved — live on the site.</span>}
+				<Button type="submit" variant="primary" loading={pending} loadingLabel={hasFiles ? 'Uploading and saving…' : 'Saving…'}>
+					Save
+				</Button>
+				{dirty && !pending && <span className="text-sm text-ui-faint">Unsaved changes</span>}
 				{Object.keys(errors).length > 0 && (
 					<span className="text-sm text-red-400">{errors.form ?? 'Fix the highlighted fields.'}</span>
 				)}

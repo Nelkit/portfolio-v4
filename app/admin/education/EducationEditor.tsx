@@ -4,6 +4,10 @@ import { useActionState, useState } from 'react';
 import { deleteEducationEntry, saveEducationEntry, type EducationFormState } from './actions';
 import { EDUCATION_KEYS, educationField, type EducationTranslation } from '@/app/lib/content/education/education';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { DeleteButton } from '@/app/admin/components/ui/DeleteButton';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 export type EducationRow = {
 	id: number;
@@ -26,15 +30,16 @@ function Err({ message }: { message?: string }) {
 }
 
 function EducationForm({ entry, onSaved }: { entry?: EducationRow; onSaved?: () => void }) {
-	const [state, action, pending] = useActionState<EducationFormState, FormData>(async (prev, data) => {
-		const result = await saveEducationEntry(prev, data);
-		if (result.ok) onSaved?.();
-		return result;
-	}, {});
+	const [state, action, pending] = useActionState<EducationFormState, FormData>(safeAction(saveEducationEntry), {});
 	const errors = state.errors ?? {};
+	const { formRef, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, entry ? 'Saved, live on the site.' : 'Entry added', () => {
+		markSaved();
+		onSaved?.();
+	});
 
 	return (
-		<form action={action} className="flex flex-col gap-3">
+		<form ref={formRef} action={action} className="flex flex-col gap-3">
 			{entry && <input type="hidden" name="id" value={entry.id} />}
 			<div className="flex flex-wrap items-start gap-3">
 				<label className="flex flex-col gap-1">
@@ -75,10 +80,9 @@ function EducationForm({ entry, onSaved }: { entry?: EducationRow; onSaved?: () 
 				))}
 			</div>
 			<div className="flex items-center gap-3">
-				<button type="submit" disabled={pending} className="rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
-					{pending ? 'Saving…' : entry ? 'Save' : '+ Add entry'}
-				</button>
-				{state.ok && !pending && entry && <span className="text-xs text-emerald-400">Saved — live on the site.</span>}
+				<Button type="submit" loading={pending} loadingLabel="Saving…">
+					{entry ? 'Save' : '+ Add entry'}
+				</Button>
 			</div>
 		</form>
 	);
@@ -94,13 +98,13 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
 				{initial.map((entry) => (
 					<li key={entry.id} className="flex flex-col gap-3 rounded border border-ui-border p-4">
 						<EducationForm entry={entry} />
-						<form
+						<DeleteButton
 							action={deleteEducationEntry}
-							onSubmit={(e) => { if (!confirm(`Delete “${entry.texts.en.degree}”?`)) e.preventDefault(); }}
-						>
-							<input type="hidden" name="id" value={entry.id} />
-							<button type="submit" className="text-sm text-red-400">Delete</button>
-						</form>
+							id={entry.id}
+							className="self-start px-0"
+							confirmMessage={`Delete “${entry.texts.en.degree}”?`}
+							success={`Deleted “${entry.texts.en.degree}”`}
+						/>
 					</li>
 				))}
 			</ul>

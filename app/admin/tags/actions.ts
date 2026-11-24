@@ -6,7 +6,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseTagForm } from '@/app/lib/content/tags/tag';
 import { TAGS_TAG, tagRepository } from '@/app/lib/content/tags/tag-service';
 
-export type TagFormState = { ok?: boolean; errors?: Record<string, string> };
+export type TagFormState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 const id = z.coerce.number().int().positive();
 

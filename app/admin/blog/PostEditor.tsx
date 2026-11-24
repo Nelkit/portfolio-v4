@@ -1,12 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useActionState, useRef, useState } from 'react';
 import { savePost, type SavePostState } from './actions';
 import { PostMedia, type PostMediaProps } from './PostMedia';
 import { Markdown } from '@/app/components/Markdown';
 import { postField, readingTime, type PostInput, type PostTranslation } from '@/app/lib/content/posts/post';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 const LANGUAGE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español' };
 const EMPTY: PostTranslation = { title: '', summary: '', body: '' };
@@ -40,18 +44,29 @@ export function PostEditor({
 	/** Where upload: references point, for the live preview. */
 	uploadBaseUrl: string;
 }) {
+	const router = useRouter();
 	const [inserted, setInserted] = useState(false);
 	// Status of the post as last saved (updated from each save's intent).
 	const [isPublished, setIsPublished] = useState(initial.status === 'published');
-	const [state, formAction, pending] = useActionState<SavePostState, FormData>(async (prev, data) => {
-		const result = await savePost(prev, data);
-		if (result.ok) {
-			setInserted(false);
-			setIsPublished(data.get('intent') === 'publish');
-		}
-		return result;
-	}, {});
+	// Which submit button was clicked: it shows the spinner.
+	const [intent, setIntent] = useState<'publish' | 'draft'>('publish');
+	const [state, formAction, pending] = useActionState<SavePostState, FormData>(
+		safeAction(async (prev, data) => {
+			const result = await savePost(prev, data);
+			if (result.ok) {
+				setInserted(false);
+				setIsPublished(data.get('intent') === 'publish');
+			}
+			return result;
+		}),
+		{},
+	);
 	const errors = state.errors ?? {};
+	const { formRef, dirty, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, intent === 'publish' ? 'Saved, live on the site.' : 'Draft saved', () => {
+		markSaved();
+		if (state.redirectTo) router.push(state.redirectTo);
+	});
 	const [active, setActive] = useState<Locale>(LOCALES.find((l) => initial.translations[l]) ?? 'en');
 	const [texts, setTexts] = useState<Record<Locale, PostTranslation>>(
 		() => Object.fromEntries(LOCALES.map((l) => [l, initial.translations[l] ?? EMPTY])) as Record<Locale, PostTranslation>,
@@ -75,7 +90,7 @@ export function PostEditor({
 	const hasErrors = (locale: Locale) => Object.keys(errors).some((k) => k.endsWith(`_${locale}`));
 
 	return (
-		<form action={formAction} className="flex flex-col gap-6">
+		<form ref={formRef} action={formAction} className="flex flex-col gap-6">
 			{id && <input type="hidden" name="id" value={id} />}
 
 			<section className="flex flex-wrap items-start gap-4">
@@ -187,15 +202,31 @@ export function PostEditor({
 					{isPublished ? 'Published' : 'Draft — not visible on the site'}
 				</span>
 				{/* The clicked button's name/value ("intent") decides draft vs. published. */}
-				<button type="submit" name="intent" value="publish" disabled={pending} className="rounded bg-ui-accent px-4 py-2 font-semibold text-ui-accent-ink disabled:opacity-50">
-					{pending ? 'Saving…' : isPublished ? 'Update' : 'Publish'}
-				</button>
-				<button type="submit" name="intent" value="draft" disabled={pending} className="rounded border border-ui-border-2 px-4 py-2 text-sm disabled:opacity-50">
+				<Button
+					type="submit"
+					name="intent"
+					value="publish"
+					variant="primary"
+					onClick={() => setIntent('publish')}
+					disabled={pending}
+					loading={pending && intent === 'publish'}
+					loadingLabel={isPublished ? 'Updating…' : 'Publishing…'}
+				>
+					{isPublished ? 'Update' : 'Publish'}
+				</Button>
+				<Button
+					type="submit"
+					name="intent"
+					value="draft"
+					className="px-4"
+					onClick={() => setIntent('draft')}
+					disabled={pending}
+					loading={pending && intent === 'draft'}
+					loadingLabel="Saving draft…"
+				>
 					{isPublished ? 'Unpublish (back to draft)' : 'Save draft'}
-				</button>
-				{state.ok && !pending && !inserted && (
-					<span className="text-sm text-emerald-400">{isPublished ? 'Saved — live on the site.' : 'Draft saved.'}</span>
-				)}
+				</Button>
+				{dirty && !pending && <span className="text-sm text-ui-faint">Unsaved changes</span>}
 				{Object.keys(errors).length > 0 && <span className="text-sm text-red-400">Fix the highlighted fields.</span>}
 			</div>
 		</form>

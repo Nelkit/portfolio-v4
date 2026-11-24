@@ -40,16 +40,18 @@ function extractText(block: BlockObjectResponse): string {
 		'bulleted_list_item', 'numbered_list_item', 'quote', 'callout',
 	] as const;
 
+	// Every type above stores its text as { rich_text: [{ plain_text }] } under its own key.
+	const fields = block as unknown as Record<string, { rich_text?: { plain_text: string }[] } | undefined>;
 	for (const type of richTextTypes) {
-		const b = block as any;
-		if (b.type === type && b[type]?.rich_text) {
+		const richText = fields[type]?.rich_text;
+		if (block.type === type && richText) {
 			const prefix = type === 'heading_1' ? '# '
 				: type === 'heading_2' ? '## '
 				: type === 'heading_3' ? '### '
 				: type === 'bulleted_list_item' ? '- '
 				: type === 'numbered_list_item' ? '1. '
 				: '';
-			return prefix + b[type].rich_text.map((r: any) => r.plain_text).join('');
+			return prefix + richText.map((r) => r.plain_text).join('');
 		}
 	}
 	return '';

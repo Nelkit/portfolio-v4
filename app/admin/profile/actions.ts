@@ -8,7 +8,7 @@ import { LOCALES } from '@/app/lib/i18n/locales';
 import { validateUpload, type UploadKind } from '@/app/lib/storage/file-validation';
 import { buildKey, getStorage, type FileStorage } from '@/app/lib/storage/storage';
 
-export type SaveProfileState = { ok?: boolean; errors?: Record<string, string> };
+export type SaveProfileState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 type PendingUpload = { field: string; key: string; bytes: Uint8Array; contentType: string };
 

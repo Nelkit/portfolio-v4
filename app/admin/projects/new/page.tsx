@@ -1,19 +1,19 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { ProjectForm } from '../ProjectForm';
-import type { ProjectInput } from '@/app/lib/content/projects/project';
+import { EMPTY_TRANSLATION, type ProjectFormValues } from '@/app/lib/content/projects/project';
 import { loadAreaViews } from '@/app/lib/content/areas/area-service';
 import { skillCategoryRepository } from '@/app/lib/content/skills/skill-service';
 
-const EMPTY: ProjectInput = {
+const EMPTY: ProjectFormValues = {
 	slug: '',
-	company: '',
+	organisation: '',
+	year: null,
 	areaId: null,
+	featured: false,
+	featuredOrder: 0,
 	skills: [],
-	translations: {
-		en: { title: '', summary: '', description: '' },
-		es: { title: '', summary: '', description: '' },
-	},
+	translations: { en: EMPTY_TRANSLATION, es: EMPTY_TRANSLATION },
 	links: [],
 };
 
