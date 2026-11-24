@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, convertToModelMessages, UIMessage } from 'ai';
 import { Client } from '@notionhq/client';
 import type { BlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { chatModels, modelLabel } from '@/app/lib/chat/models';
 
 export const maxDuration = 30;
 
@@ -87,14 +88,7 @@ ${knowledgeBase}
 ---`;
 }
 
-const PRIMARY_MODEL = process.env.OPENROUTER_MODEL ?? 'openai/gpt-oss-120b';
-const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL ?? 'openai/gpt-oss-120b:free';
-
-// Turn a raw OpenRouter slug into a clean UI label.
-// e.g. "openai/gpt-oss-120b:free" -> "gpt-oss-120b"
-function modelLabel(slug: string): string {
-	return slug.split('/').pop()!.replace(/:.*$/, '');
-}
+const { primary: PRIMARY_MODEL, fallback: FALLBACK_MODEL } = chatModels();
 
 async function runStream(model: string, system: string, messages: Awaited<ReturnType<typeof convertToModelMessages>>) {
 	return streamText({

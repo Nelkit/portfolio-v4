@@ -126,7 +126,7 @@ function Sidebar({ onNav, socialNetworkLinks, theme, onToggleTheme, navItems, re
 }
 
 /* ---- Chat Main ---- */
-function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, onReset, onInputFocusChange }: {
+function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, onReset, onInputFocusChange, chatModel }: {
 	onNav: (id: string) => void;
 	title?: string;
 	subtitle?: string;
@@ -135,6 +135,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	avatarImage?: { url: string; alternativeText: string };
 	onReset: () => void;
 	onInputFocusChange?: (focused: boolean) => void;
+	chatModel: string;
 }) {
 	const { t } = useI18n();
 	const threadRef = useRef<HTMLDivElement>(null);
@@ -149,12 +150,12 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	const started = messages.length > 0;
 
 	// The backend attaches the REAL model used (primary or fallback) as message
-	// metadata. Read it from the latest assistant message; fall back to the
-	// default label before the first response lands.
+	// metadata. Read it from the latest assistant message; before the first
+	// response, show the configured model (OPENROUTER_MODEL).
 	const lastModel = [...messages].reverse()
 		.find((m) => m.role === 'assistant' && (m.metadata as { model?: string })?.model)
 		?.metadata as { model?: string } | undefined;
-	const modelName = lastModel?.model ?? 'gpt-oss-120b';
+	const modelName = lastModel?.model ?? chatModel;
 
 	useEffect(() => {
 		const el = threadRef.current;
@@ -328,6 +329,8 @@ type HeroSectionProps = {
 	resumeUrl?: string;
 	onOpenMenu: () => void;
 	onChatInputFocusChange?: (focused: boolean) => void;
+	/** Label of the configured chat model (OPENROUTER_MODEL), shown before the first answer. */
+	chatModel: string;
 };
 
 const SCROLL_DISTANCE = 320;
@@ -336,7 +339,7 @@ const PAD_END   = 15;   // px — minimum margin, never goes below this
 const RADIUS_START = 26;
 const RADIUS_END   = 14; // px — keeps a subtle radius at full expansion
 
-export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu, onChatInputFocusChange }: HeroSectionProps) {
+export function HeroSection({ heroRef, onNav, title, subtitle, description, headline, socialNetworkLinks, avatarImage, theme, onToggleTheme, navItems, resumeUrl, onOpenMenu, onChatInputFocusChange, chatModel }: HeroSectionProps) {
 	const outerRef = useRef<HTMLDivElement>(null);
 	const shellRef = useRef<HTMLDivElement>(null);
 	const [chatKey, setChatKey] = useState(0);
@@ -399,7 +402,7 @@ export function HeroSection({ heroRef, onNav, title, subtitle, description, head
 			>
 				<div ref={shellRef} className="app-shell">
 					<Sidebar onNav={onNav} socialNetworkLinks={socialNetworkLinks} theme={theme} onToggleTheme={onToggleTheme} navItems={navItems} resumeUrl={resumeUrl} onOpenMenu={onOpenMenu} />
-					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} onInputFocusChange={onChatInputFocusChange} />
+					<ChatMain key={chatKey} onNav={onNav} title={title} description={description} subtitle={subtitle} headline={headline} avatarImage={avatarImage} onReset={() => setChatKey((k) => k + 1)} onInputFocusChange={onChatInputFocusChange} chatModel={chatModel} />
 				</div>
 
 				<div className={'scroll-hint' + (hintVisible ? '' : ' scroll-hint-hidden')} onClick={() => onNav('work')}>

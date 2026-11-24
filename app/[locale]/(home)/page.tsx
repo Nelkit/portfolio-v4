@@ -11,6 +11,7 @@ import { getPublishedEducation } from '@/app/lib/content/education/education-ser
 import { getPublishedPosts } from '@/app/lib/content/posts/post-service';
 import { toPostSummary } from '@/app/lib/content/posts/post';
 import { isLocale } from '@/app/lib/i18n/routing';
+import { chatModels, modelLabel } from '@/app/lib/chat/models';
 
 export const revalidate = 604800;
 
@@ -39,6 +40,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             profile={profile}
             featuredProjects={featuredProjects(projects)}
             projectCount={projects.length}
+            // Read on the server; the page re-renders on deploy, when env vars change.
+            chatModel={modelLabel(chatModels().primary)}
             skillCategories={skillCategories}
             career={career.entries}
             // Depends on today's date: computed at render (page revalidates weekly).
