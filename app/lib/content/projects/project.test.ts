@@ -123,7 +123,7 @@ describe('parseProjectForm', () => {
 	});
 
 	it('only accepts the standard link labels', () => {
-		expect(PROJECT_LINK_LABELS).toEqual(['live-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org']);
+		expect(PROJECT_LINK_LABELS).toEqual(['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org']);
 		const links = JSON.stringify([{ type: 'github', label: 'Code (frontend)', url: 'https://github.com/a/b' }]);
 		const result = parseProjectForm({ ...validFields, links });
 		expect(result.ok).toBe(false);

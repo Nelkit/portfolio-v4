@@ -21,7 +21,7 @@ export type ProjectTranslation = {
 };
 
 /** The only labels a project link can have; each page translates them. */
-export const PROJECT_LINK_LABELS = ['live-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org'] as const;
+export const PROJECT_LINK_LABELS = ['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org'] as const;
 export type ProjectLinkLabel = (typeof PROJECT_LINK_LABELS)[number];
 
 /** A project link: `type` picks the icon, `label` is a standard label key. */

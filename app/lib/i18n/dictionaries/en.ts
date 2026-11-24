@@ -167,6 +167,7 @@ export const en = {
 		/** Standard project link labels (PROJECT_LINK_LABELS). */
 		linkLabels: {
 			'live-demo': 'Live demo',
+			'video-demo': 'Video demo',
 			code: 'Code',
 			'api-docs': 'API docs',
 			'app-store': 'App Store',

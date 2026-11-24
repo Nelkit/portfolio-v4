@@ -5,7 +5,7 @@ import { navNumber } from '@/app/lib/nav';
 import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 import type { ProjectView } from '@/app/lib/content/projects/project';
-import { cardTags, homeCardLayout, type CardSize } from '@/app/lib/content/projects/project-display';
+import { cardEyebrow, cardTags, homeCardLayout, type CardSize } from '@/app/lib/content/projects/project-display';
 
 const ILinkIcon = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
@@ -62,10 +62,9 @@ export function ProjectsSection({ title, projects, total }: ProjectsSectionProps
 							<span className="work-shot-placeholder" aria-hidden="true" />
 						)}
 						<div className="wc-body">
-							<span className="idx">{String(idx + 1).padStart(2, '0')}{p.area && ` · ${p.area.name}`}</span>
+							<span className="idx">{cardEyebrow(idx, p)}</span>
 							<h3>{p.title}</h3>
 							<p className="desc">{p.summary || p.description}</p>
-							{p.keyResult && <p className="wc-key">{p.keyResult}</p>}
 							{p.links.length > 0 && (
 								<div className="wc-links">
 									{p.links.map((l) => {

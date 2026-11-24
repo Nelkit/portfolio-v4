@@ -159,6 +159,7 @@ export const es: Dictionary = {
 		},
 		linkLabels: {
 			'live-demo': 'Demo en vivo',
+			'video-demo': 'Video demo',
 			code: 'Código',
 			'api-docs': 'Docs de la API',
 			'app-store': 'App Store',

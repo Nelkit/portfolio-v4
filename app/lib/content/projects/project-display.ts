@@ -10,6 +10,11 @@ export function cardTags(skills: string[]): string[] {
 	return skills.slice(0, MAX_CARD_TAGS);
 }
 
+/** Home card eyebrow: "01 · CATEGORY · YEAR", omitting whichever part is missing. */
+export function cardEyebrow(index: number, { area, year }: Pick<ProjectView, 'area' | 'year'>): string {
+	return [String(index + 1).padStart(2, '0'), area?.name ?? '', year ? String(year) : ''].filter(Boolean).join(' · ');
+}
+
 /** "YEAR · ORGANISATION", omitting whichever part is missing. */
 export function projectMetaLine({ year, organisation }: Pick<ProjectView, 'year' | 'organisation'>): string {
 	return [year ? String(year) : '', organisation.trim()].filter(Boolean).join(' · ');
