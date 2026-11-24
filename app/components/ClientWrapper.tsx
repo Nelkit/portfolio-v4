@@ -30,6 +30,8 @@ type ClientWrapperProps = {
 	featuredProjects: ProjectView[];
 	/** Number of published projects (link to /projects and nav count). */
 	projectCount: number;
+	/** Label of the configured chat model, for the hero before the first answer. */
+	chatModel: string;
 	/** Tech-stack categories from the admin (Turso). */
 	skillCategories: CategoryView[];
 	/** Career timeline from the admin (Turso), current roles first. */
@@ -52,7 +54,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ recentPosts, headline, profile, featuredProjects, projectCount, skillCategories, career, careerYears, education }: ClientWrapperProps) {
+export function ClientWrapper({ recentPosts, headline, profile, featuredProjects, projectCount, chatModel, skillCategories, career, careerYears, education }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -187,6 +189,7 @@ export function ClientWrapper({ recentPosts, headline, profile, featuredProjects
 				resumeUrl={resumeUrl}
 				onOpenMenu={() => setDrawerOpen(true)}
 				onChatInputFocusChange={setChatInputFocused}
+				chatModel={chatModel}
 			/>
 
 			<div className="wrap">
