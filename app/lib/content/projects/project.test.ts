@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { parseProjectForm, slugify, toProjectView, type ProjectRecord } from './project';
+import { parseProjectForm, PROJECT_LINK_LABELS, slugify, toProjectView, type ProjectRecord, type ProjectTranslation } from './project';
 
 const validFields = {
 	slug: '',
-	company: ' Acme ',
+	organisation: ' Acme ',
+	year: '2024',
+	areaId: '1',
 	title_en: 'Mobile Banking App',
 	title_es: 'App de Banca Móvil',
 	summary_en: 'A banking app.',
 	summary_es: 'Una app bancaria.',
 	description_en: '## Overview\n\nBuilt with **Swift**.',
 	description_es: '## Resumen\n\nHecha con **Swift**.',
-	links: JSON.stringify([{ type: 'github', label: 'Code', url: 'https://github.com/acme/app' }]),
+	links: JSON.stringify([{ type: 'github', label: 'code', url: 'https://github.com/acme/app' }]),
 	skills: JSON.stringify(['Swift', ' CoreML ', 'swift']),
 };
 
@@ -28,7 +30,8 @@ describe('parseProjectForm', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.value.slug).toBe('banking');
-		expect(result.value.company).toBe('Acme');
+		expect(result.value.organisation).toBe('Acme');
+		expect(result.value.year).toBe(2024);
 		expect(result.value.translations.es.title).toBe('App de Banca Móvil');
 		expect(result.value.links).toHaveLength(1);
 	});
@@ -51,23 +54,56 @@ describe('parseProjectForm', () => {
 		if (!result.ok) expect(Object.keys(result.errors).sort()).toEqual(['summary_en', 'title_es']);
 	});
 
-	it('allows an empty description and an empty company', () => {
-		const result = parseProjectForm({ ...validFields, description_en: '', company: '' });
+	it('allows an empty description, organisation and year', () => {
+		const result = parseProjectForm({ ...validFields, description_en: '', organisation: '', year: '' });
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.translations.en.description).toBe('');
-			expect(result.value.company).toBe('');
+			expect(result.value.organisation).toBe('');
+			expect(result.value.year).toBeNull();
 		}
 	});
 
-	it('parses the area: empty → none, a positive id → that id', () => {
-		const none = parseProjectForm({ ...validFields, areaId: '' });
+	it('rejects a year that is not a plausible 4-digit year', () => {
+		for (const year of ['20', '3000', 'abc', '2024.5']) {
+			const result = parseProjectForm({ ...validFields, year });
+			expect(result.ok).toBe(false);
+			if (!result.ok) expect(result.errors.year).toBeDefined();
+		}
+	});
+
+	it('requires a category (area): a missing or invalid id is an error', () => {
 		const some = parseProjectForm({ ...validFields, areaId: '3' });
-		expect(none.ok && none.value.areaId).toBeNull();
 		expect(some.ok && some.value.areaId).toBe(3);
-		const bad = parseProjectForm({ ...validFields, areaId: 'abc' });
+		for (const areaId of ['', 'abc', undefined]) {
+			const result = parseProjectForm({ ...validFields, areaId });
+			expect(result.ok).toBe(false);
+			if (!result.ok) expect(result.errors.areaId).toBeDefined();
+		}
+	});
+
+	it('parses featured (checkbox) and its order', () => {
+		const off = parseProjectForm(validFields);
+		expect(off.ok && off.value).toMatchObject({ featured: false, featuredOrder: 0 });
+		const on = parseProjectForm({ ...validFields, featured: 'on', featuredOrder: '2' });
+		expect(on.ok && on.value).toMatchObject({ featured: true, featuredOrder: 2 });
+		const bad = parseProjectForm({ ...validFields, featuredOrder: '-1' });
 		expect(bad.ok).toBe(false);
-		if (!bad.ok) expect(bad.errors.areaId).toBeDefined();
+		if (!bad.ok) expect(bad.errors.featuredOrder).toBeDefined();
+	});
+
+	it('parses the optional per-language card and detail fields', () => {
+		const result = parseProjectForm({
+			...validFields,
+			keyResult_en: ' 40% faster ',
+			role_es: 'Líder de frontend',
+			howItWorks_en: 'Pipeline',
+			results_es: 'Resultados',
+			myRole_en: 'I led the UI.',
+		});
+		if (!result.ok) throw new Error('expected ok');
+		expect(result.value.translations.en).toMatchObject({ keyResult: '40% faster', role: '', howItWorks: 'Pipeline', myRole: 'I led the UI.' });
+		expect(result.value.translations.es).toMatchObject({ keyResult: '', role: 'Líder de frontend', results: 'Resultados' });
 	});
 
 	it('parses the ordered skills, trimmed and without case-insensitive duplicates', () => {
@@ -80,7 +116,15 @@ describe('parseProjectForm', () => {
 	});
 
 	it('validates project links like profile links', () => {
-		const links = JSON.stringify([{ type: 'link', label: 'Demo', url: 'ftp://nope' }]);
+		const links = JSON.stringify([{ type: 'link', label: 'live-demo', url: 'ftp://nope' }]);
+		const result = parseProjectForm({ ...validFields, links });
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.errors.links).toBeDefined();
+	});
+
+	it('only accepts the standard link labels', () => {
+		expect(PROJECT_LINK_LABELS).toEqual(['live-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org']);
+		const links = JSON.stringify([{ type: 'github', label: 'Code (frontend)', url: 'https://github.com/a/b' }]);
 		const result = parseProjectForm({ ...validFields, links });
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.errors.links).toBeDefined();
@@ -89,29 +133,39 @@ describe('parseProjectForm', () => {
 
 describe('toProjectView', () => {
 	const url = (key: string) => `https://cdn.test/${key}`;
+	const translation = (title: string, suffix: string): ProjectTranslation => ({
+		title,
+		summary: `S-${suffix}`,
+		description: `D-${suffix}`,
+		keyResult: `K-${suffix}`,
+		role: `R-${suffix}`,
+		howItWorks: '',
+		results: '',
+		myRole: '',
+	});
 	const record: ProjectRecord = {
 		id: 7,
 		slug: 'banking',
-		company: 'Acme',
+		organisation: 'Acme',
+		year: 2024,
 		areaId: 2,
+		featured: true,
+		featuredOrder: 3,
 		skills: ['Swift', 'CoreML'],
 		imageKey: 'projects/7/cover-a.webp',
 		screenshots: [
 			{ id: 1, key: 'projects/7/shot-1.png' },
 			{ id: 2, key: 'projects/7/shot-2.png' },
 		],
-		translations: {
-			en: { title: 'Banking', summary: 'S-en', description: 'D-en' },
-			es: { title: 'Banca', summary: 'S-es', description: 'D-es' },
-		},
+		translations: { en: translation('Banking', 'en'), es: translation('Banca', 'es') },
 		links: [
-			{ type: 'github', label: 'Code', url: 'https://github.com/acme/app' },
-			{ type: 'email', label: 'Mail', url: 'mailto:a@b.co' },
+			{ type: 'github', label: 'code', url: 'https://github.com/acme/app' },
+			{ type: 'link', label: 'live-demo', url: 'https://acme.app' },
 		],
 	};
 
-	it('picks the requested language', () => {
-		expect(toProjectView(record, 'es', url)).toMatchObject({ slug: 'banking', title: 'Banca', summary: 'S-es', description: 'D-es' });
+	it('picks the requested language, including the card fields', () => {
+		expect(toProjectView(record, 'es', url)).toMatchObject({ slug: 'banking', title: 'Banca', summary: 'S-es', description: 'D-es', keyResult: 'K-es', role: 'R-es' });
 	});
 
 	it('falls back to the other language when one is missing', () => {
@@ -119,9 +173,13 @@ describe('toProjectView', () => {
 		expect(toProjectView(onlyEn, 'es', url)?.title).toBe('Banking');
 	});
 
-	it('marks email links as internal and the rest as external', () => {
+	it('exposes year, organisation and the featured flags', () => {
+		expect(toProjectView(record, 'en', url)).toMatchObject({ year: 2024, organisation: 'Acme', featured: true, featuredOrder: 3 });
+	});
+
+	it('keeps the link label keys (translated by the page) and marks links as external', () => {
 		const view = toProjectView(record, 'en', url);
-		expect(view?.links.map((l) => l.isExternal)).toEqual([true, false]);
+		expect(view?.links.map((l) => [l.label, l.isExternal])).toEqual([['code', true], ['live-demo', true]]);
 	});
 
 	it('resolves the main image and screenshots (in order) to public URLs', () => {
@@ -130,10 +188,9 @@ describe('toProjectView', () => {
 		expect(view?.screenshots).toEqual(['https://cdn.test/projects/7/shot-1.png', 'https://cdn.test/projects/7/shot-2.png']);
 	});
 
-	it('shows the name of its area, or none when it has no (known) area', () => {
+	it('shows the name of its area, or none when the area is unknown', () => {
 		const areas = [{ id: 2, name: 'Móvil' }];
 		expect(toProjectView(record, 'es', url, areas)?.area).toEqual({ id: 2, name: 'Móvil' });
-		expect(toProjectView({ ...record, areaId: null }, 'es', url, areas)?.area).toBeNull();
 		expect(toProjectView(record, 'es', url, [])?.area).toBeNull();
 	});
 

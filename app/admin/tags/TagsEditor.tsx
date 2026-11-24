@@ -4,6 +4,10 @@ import { useActionState, useState } from 'react';
 import { deleteTag, saveTag, type TagFormState } from './actions';
 import { tagField } from '@/app/lib/content/tags/tag';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { DeleteButton } from '@/app/admin/components/ui/DeleteButton';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 export type TagRow = { id: number; slug: string; names: Record<Locale, string>; posts: number };
 
@@ -11,15 +15,16 @@ const input =
 	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 function TagForm({ tag, onSaved }: { tag?: TagRow; onSaved?: () => void }) {
-	const [state, action, pending] = useActionState<TagFormState, FormData>(async (prev, data) => {
-		const result = await saveTag(prev, data);
-		if (result.ok) onSaved?.();
-		return result;
-	}, {});
+	const [state, action, pending] = useActionState<TagFormState, FormData>(safeAction(saveTag), {});
 	const errors = state.errors ?? {};
+	const { formRef, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, tag ? 'Tag saved' : 'Tag added', () => {
+		markSaved();
+		onSaved?.();
+	});
 
 	return (
-		<form action={action} className="flex flex-wrap items-start gap-2">
+		<form ref={formRef} action={action} className="flex flex-wrap items-start gap-2">
 			{tag && <input type="hidden" name="id" value={tag.id} />}
 			{LOCALES.map((locale) => (
 				<label key={locale} className="flex min-w-40 flex-1 flex-col gap-1">
@@ -33,10 +38,9 @@ function TagForm({ tag, onSaved }: { tag?: TagRow; onSaved?: () => void }) {
 				<input name="slug" defaultValue={tag?.slug ?? ''} placeholder="from English name" aria-invalid={Boolean(errors.slug)} className={input} />
 				{errors.slug && <span className="text-xs text-red-400">{errors.slug}</span>}
 			</label>
-			<button type="submit" disabled={pending} className="mt-5 rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
-				{pending ? 'Saving…' : tag ? 'Save' : '+ Add tag'}
-			</button>
-			{state.ok && !pending && tag && <span className="mt-7 text-xs text-emerald-400">Saved</span>}
+			<Button type="submit" className="mt-5" loading={pending} loadingLabel="Saving…">
+				{tag ? 'Save' : '+ Add tag'}
+			</Button>
 		</form>
 	);
 }
@@ -52,16 +56,13 @@ export function TagsEditor({ initial }: { initial: TagRow[] }) {
 						<TagForm tag={tag} />
 						<div className="flex items-center gap-3 text-sm">
 							<span className="text-ui-faint">{tag.posts} post{tag.posts === 1 ? '' : 's'}</span>
-							<form
+							<DeleteButton
 								action={deleteTag}
-								onSubmit={(e) => {
-									const note = tag.posts ? ` It will be removed from ${tag.posts} post(s).` : '';
-									if (!confirm(`Delete “${tag.names.en}”?${note}`)) e.preventDefault();
-								}}
-							>
-								<input type="hidden" name="id" value={tag.id} />
-								<button type="submit" className="text-red-400">Delete</button>
-							</form>
+								id={tag.id}
+								className="px-0"
+								confirmMessage={`Delete “${tag.names.en}”?${tag.posts ? ` It will be removed from ${tag.posts} post(s).` : ''}`}
+								success={`Deleted “${tag.names.en}”`}
+							/>
 						</div>
 					</li>
 				))}

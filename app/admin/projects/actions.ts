@@ -1,7 +1,6 @@
 'use server';
 
 import { updateTag } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseProjectForm } from '@/app/lib/content/projects/project';
@@ -9,7 +8,8 @@ import { PROJECTS_TAG, projectRepository } from '@/app/lib/content/projects/proj
 import { areaRepository } from '@/app/lib/content/areas/area-service';
 import { deleteStoredFiles } from '@/app/lib/storage/cleanup';
 
-export type SaveProjectState = { ok?: boolean; errors?: Record<string, string> };
+/** `redirectTo` is set after creating, so the form can show the toast before navigating. */
+export type SaveProjectState = { ok?: boolean; error?: string; errors?: Record<string, string>; redirectTo?: string };
 
 const idSchema = z.coerce.number().int().positive();
 
@@ -24,8 +24,8 @@ export async function saveProject(_prev: SaveProjectState, formData: FormData): 
 	const id = rawId ? idSchema.parse(rawId) : null;
 	const repo = projectRepository();
 
-	if (parsed.value.areaId !== null && !(await areaRepository().getArea(parsed.value.areaId))) {
-		return { errors: { areaId: 'That area no longer exists.' } };
+	if (!(await areaRepository().getArea(parsed.value.areaId))) {
+		return { errors: { areaId: 'That category no longer exists.' } };
 	}
 
 	// Friendly error instead of a unique-constraint crash.
@@ -42,7 +42,7 @@ export async function saveProject(_prev: SaveProjectState, formData: FormData): 
 
 	await repo.createProject(parsed.value);
 	updateTag(PROJECTS_TAG);
-	redirect('/admin/projects');
+	return { ok: true, redirectTo: '/admin/projects' };
 }
 
 export async function deleteProject(formData: FormData): Promise<void> {

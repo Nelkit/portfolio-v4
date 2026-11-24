@@ -43,7 +43,10 @@ export async function generateMetadata({ params }: Omit<LayoutProps, 'children'>
     metadataBase: new URL(SITE_URL),
     title: { default: t.siteTitle, template: '%s · Nelkit Chavez' },
     description: t.siteDescription,
-    keywords: ['ML Engineer', 'AI Engineer', 'Mobile Engineer', 'Swift', 'Flutter', 'React Native', 'Python', 'CoreML', 'LLM', 'Sydney'],
+    keywords: [
+      'AI Engineer', 'ML Engineer', 'AI Product Engineer', 'LLM', 'RAG', 'Computer Vision',
+      'Full-Stack', 'Next.js', 'Python', 'FastAPI', 'Swift', 'Sydney',
+    ],
     authors: [{ name: 'Nelkit Chavez', url: SITE_URL }],
     creator: 'Nelkit Chavez',
     openGraph: {

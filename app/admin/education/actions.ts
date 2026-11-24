@@ -6,7 +6,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseEducationForm } from '@/app/lib/content/education/education';
 import { EDUCATION_TAG, educationRepository } from '@/app/lib/content/education/education-service';
 
-export type EducationFormState = { ok?: boolean; errors?: Record<string, string> };
+export type EducationFormState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 const id = z.coerce.number().int().positive();
 

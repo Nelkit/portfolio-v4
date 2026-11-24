@@ -3,11 +3,24 @@
 import { useState } from 'react';
 import { LINK_TYPES, MAX_LINKS, type Link } from '@/app/lib/content/links';
 
+export type LabelOption = { value: string; label: string };
+
 /**
  * Ordered list editor for links. Submits the list as JSON in a hidden input
- * named `name`; the server validates it with parseLinks().
+ * named `name`; the server validates it with parseLinks(). With `labelOptions`
+ * the label is picked from a fixed list instead of typed.
  */
-export function LinksEditor({ name = 'links', initial, error }: { name?: string; initial: Link[]; error?: string }) {
+export function LinksEditor({
+	name = 'links',
+	initial,
+	error,
+	labelOptions,
+}: {
+	name?: string;
+	initial: Link[];
+	error?: string;
+	labelOptions?: readonly LabelOption[];
+}) {
 	const [links, setLinks] = useState<Link[]>(initial);
 
 	const update = (index: number, patch: Partial<Link>) =>
@@ -34,13 +47,24 @@ export function LinksEditor({ name = 'links', initial, error }: { name?: string;
 					>
 						{LINK_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
 					</select>
-					<input
-						value={link.label}
-						onChange={(e) => update(index, { label: e.target.value })}
-						placeholder="Label"
-						aria-label="Link label"
-						className="w-32 rounded border border-ui-border-2 bg-ui-surface px-3 py-2"
-					/>
+					{labelOptions ? (
+						<select
+							value={link.label}
+							onChange={(e) => update(index, { label: e.target.value })}
+							aria-label="Link label"
+							className="rounded border border-ui-border-2 bg-ui-surface px-2 py-2"
+						>
+							{labelOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+						</select>
+					) : (
+						<input
+							value={link.label}
+							onChange={(e) => update(index, { label: e.target.value })}
+							placeholder="Label"
+							aria-label="Link label"
+							className="w-32 rounded border border-ui-border-2 bg-ui-surface px-3 py-2"
+						/>
+					)}
 					<input
 						value={link.url}
 						onChange={(e) => update(index, { url: e.target.value })}
@@ -57,7 +81,7 @@ export function LinksEditor({ name = 'links', initial, error }: { name?: string;
 				<button
 					type="button"
 					disabled={links.length >= MAX_LINKS}
-					onClick={() => setLinks((c) => [...c, { type: 'link', label: '', url: '' }])}
+					onClick={() => setLinks((c) => [...c, { type: 'link', label: labelOptions?.[0]?.value ?? '', url: '' }])}
 					className="rounded border border-ui-border-2 px-3 py-1 text-sm disabled:opacity-30"
 				>
 					+ Add link

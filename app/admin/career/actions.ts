@@ -6,7 +6,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseCareerForm } from '@/app/lib/content/career/career';
 import { CAREER_TAG, careerRepository } from '@/app/lib/content/career/career-service';
 
-export type CareerFormState = { ok?: boolean; errors?: Record<string, string> };
+export type CareerFormState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 const id = z.coerce.number().int().positive();
 

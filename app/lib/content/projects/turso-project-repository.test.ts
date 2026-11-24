@@ -1,32 +1,53 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createClient } from '@libsql/client';
+import { sql } from 'drizzle-orm';
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 import { createTursoProjectRepository } from './turso-project-repository';
 import type { ProjectRepository } from './project-repository';
-import type { ProjectInput } from './project';
+import type { ProjectInput, ProjectTranslation } from './project';
 import { createTursoAreaRepository } from '../areas/turso-area-repository';
 import { createTursoSkillCategoryRepository } from '../skills/turso-skill-category-repository';
 
+/** Every project needs a category: tests use area 1, created by freshDb(). */
+const AREA = 1;
+
+const translation = (title: string, patch: Partial<ProjectTranslation> = {}): ProjectTranslation => ({
+	title,
+	summary: 'sum',
+	description: 'desc',
+	keyResult: '',
+	role: '',
+	howItWorks: '',
+	results: '',
+	myRole: '',
+	...patch,
+});
+
 const project = (slug: string, links: ProjectInput['links'] = []): ProjectInput => ({
 	slug,
-	company: 'Acme',
-	areaId: null,
+	organisation: 'Acme',
+	year: null,
+	areaId: AREA,
+	featured: false,
+	featuredOrder: 0,
 	skills: [],
-	translations: {
-		en: { title: `${slug} en`, summary: 'sum en', description: 'desc en' },
-		es: { title: `${slug} es`, summary: 'sum es', description: 'desc es' },
-	},
+	translations: { en: translation(`${slug} en`), es: translation(`${slug} es`) },
 	links,
 });
+
+async function freshDb(): Promise<LibSQLDatabase> {
+	const db = drizzle(createClient({ url: ':memory:' }));
+	await migrate(db, { migrationsFolder: './drizzle' });
+	await db.run(sql`INSERT INTO expertise_areas (id, position) VALUES (${AREA}, 0)`);
+	return db;
+}
 
 describe('TursoProjectRepository', () => {
 	let repo: ProjectRepository;
 
 	beforeEach(async () => {
-		const db = drizzle(createClient({ url: ':memory:' }));
-		await migrate(db, { migrationsFolder: './drizzle' });
-		repo = createTursoProjectRepository(db);
+		repo = createTursoProjectRepository(await freshDb());
 	});
 
 	it('starts empty', async () => {
@@ -34,7 +55,7 @@ describe('TursoProjectRepository', () => {
 	});
 
 	it('creates a project and reads it back by id and by slug', async () => {
-		const links = [{ type: 'github' as const, label: 'Code', url: 'https://github.com/a/b' }];
+		const links = [{ type: 'github' as const, label: 'code' as const, url: 'https://github.com/a/b' }];
 		const id = await repo.createProject(project('alpha', links));
 		const byId = await repo.getProject(id);
 		expect(byId).toEqual({ id, ...project('alpha', links), imageKey: null, screenshots: [] });
@@ -49,19 +70,25 @@ describe('TursoProjectRepository', () => {
 	});
 
 	it('updates fields, translations and replaces links', async () => {
-		const id = await repo.createProject(project('alpha', [{ type: 'link', label: 'A', url: 'https://a.co' }]));
+		const id = await repo.createProject(project('alpha', [{ type: 'link', label: 'website', url: 'https://a.co' }]));
 		const changed: ProjectInput = {
 			...project('alpha-2'),
-			company: 'Other',
-			translations: { ...project('x').translations, es: { title: 'Nuevo', summary: 's', description: '' } },
-			links: [{ type: 'github', label: 'B', url: 'https://b.co' }, { type: 'link', label: 'C', url: 'https://c.co' }],
+			organisation: 'UTS',
+			year: 2026,
+			featured: true,
+			featuredOrder: 2,
+			translations: {
+				...project('x').translations,
+				es: translation('Nuevo', { keyResult: 'Clave', role: 'Líder', howItWorks: 'Así', results: 'Bien', myRole: 'Yo' }),
+			},
+			links: [{ type: 'github', label: 'code', url: 'https://b.co' }, { type: 'link', label: 'live-demo', url: 'https://c.co' }],
 		};
 		await repo.updateProject(id, changed);
 		expect(await repo.getProject(id)).toEqual({ id, ...changed, imageKey: null, screenshots: [] });
 	});
 
 	it('deletes a project with its translations and links', async () => {
-		const id = await repo.createProject(project('alpha', [{ type: 'link', label: 'A', url: 'https://a.co' }]));
+		const id = await repo.createProject(project('alpha', [{ type: 'link', label: 'website', url: 'https://a.co' }]));
 		await repo.deleteProject(id);
 		expect(await repo.getProject(id)).toBeNull();
 		expect(await repo.listProjects()).toEqual([]);
@@ -131,16 +158,15 @@ describe('TursoProjectRepository', () => {
 	});
 
 	it('stores and changes the area of a project', async () => {
-		const db = drizzle(createClient({ url: ':memory:' }));
-		await migrate(db, { migrationsFolder: './drizzle' });
+		const db = await freshDb();
 		const areas = createTursoAreaRepository(db);
 		const projects = createTursoProjectRepository(db);
 		const ml = await areas.createArea({ translations: { en: { name: 'ML' }, es: { name: 'ML' } } });
 
 		const id = await projects.createProject({ ...project('alpha'), areaId: ml });
 		expect((await projects.getProject(id))?.areaId).toBe(ml);
-		await projects.updateProject(id, { ...project('alpha'), areaId: null });
-		expect((await projects.getProject(id))?.areaId).toBeNull();
+		await projects.updateProject(id, { ...project('alpha'), areaId: AREA });
+		expect((await projects.getProject(id))?.areaId).toBe(AREA);
 	});
 
 	describe('skills', () => {
@@ -151,8 +177,7 @@ describe('TursoProjectRepository', () => {
 		const stack = (skills: string[]) => ({ translations: { en: { name: 'ML' }, es: { name: 'ML' } }, skills });
 
 		beforeEach(async () => {
-			db = drizzle(createClient({ url: ':memory:' }));
-			await migrate(db, { migrationsFolder: './drizzle' });
+			db = await freshDb();
 			projects = createTursoProjectRepository(db);
 			categories = createTursoSkillCategoryRepository(db);
 		});

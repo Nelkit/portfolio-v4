@@ -6,7 +6,7 @@ import { requireAdmin } from '@/app/lib/auth/admin';
 import { parseCategoryForm } from '@/app/lib/content/skills/skill-category';
 import { SKILLS_TAG, skillCategoryRepository } from '@/app/lib/content/skills/skill-service';
 
-export type CategoryFormState = { ok?: boolean; errors?: Record<string, string> };
+export type CategoryFormState = { ok?: boolean; error?: string; errors?: Record<string, string> };
 
 const id = z.coerce.number().int().positive();
 

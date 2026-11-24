@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import '../globals.css';
+import { ToastProvider } from './components/ui/Toaster';
 
 // Same fonts as the public site.
 const spaceGrotesk = Space_Grotesk({ variable: '--font-space-grotesk', subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -18,7 +19,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 		<html lang="en" data-theme="plum">
 			<body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
 				<div className="min-h-screen text-ui-text font-mono">
-					<div className="mx-auto max-w-6xl px-4 py-10">{children}</div>
+					<ToastProvider>
+						<div className="mx-auto max-w-6xl px-4 py-10">{children}</div>
+					</ToastProvider>
 				</div>
 			</body>
 		</html>

@@ -1,10 +1,14 @@
 'use client';
 
-import { useActionState, useState, useTransition } from 'react';
+import { useActionState, useState } from 'react';
 import { deleteCategory, reorderCategories, saveCategory, type CategoryFormState } from './actions';
 import { TagsInput } from '@/app/admin/components/TagsInput';
 import { categoryField } from '@/app/lib/content/skills/skill-category';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
+import { Button } from '@/app/admin/components/ui/Button';
+import { DeleteButton } from '@/app/admin/components/ui/DeleteButton';
+import { safeAction } from '@/app/admin/components/ui/feedback';
+import { useActionFeedback, useAsyncAction, useLeaveWarning, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 
 export type CategoryRow = { id: number; names: Record<Locale, string>; skills: string[] };
 
@@ -12,15 +16,16 @@ const input =
 	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; catalog: string[]; onSaved?: () => void }) {
-	const [state, action, pending] = useActionState<CategoryFormState, FormData>(async (prev, data) => {
-		const result = await saveCategory(prev, data);
-		if (result.ok) onSaved?.();
-		return result;
-	}, {});
+	const [state, action, pending] = useActionState<CategoryFormState, FormData>(safeAction(saveCategory), {});
 	const errors = state.errors ?? {};
+	const { formRef, markSaved } = useUnsavedChanges();
+	useActionFeedback(state, category ? 'Saved, live on the site.' : 'Category added', () => {
+		markSaved();
+		onSaved?.();
+	});
 
 	return (
-		<form action={action} className="flex flex-col gap-3">
+		<form ref={formRef} action={action} className="flex flex-col gap-3">
 			{category && <input type="hidden" name="id" value={category.id} />}
 			<div className="flex flex-wrap gap-2">
 				{LOCALES.map((locale) => (
@@ -44,10 +49,9 @@ function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; 
 				<TagsInput name="skills" initial={category?.skills ?? []} suggestions={catalog} placeholder="Swift, Kotlin… (Enter or comma)" error={errors.skills} />
 			</div>
 			<div className="flex items-center gap-3">
-				<button type="submit" disabled={pending} className="rounded border border-ui-border-2 px-3 py-2 text-sm disabled:opacity-50">
-					{pending ? 'Saving…' : category ? 'Save' : '+ Add category'}
-				</button>
-				{state.ok && !pending && category && <span className="text-xs text-emerald-400">Saved — live on the site.</span>}
+				<Button type="submit" loading={pending} loadingLabel="Saving…" className="self-start">
+					{category ? 'Save' : '+ Add category'}
+				</Button>
 			</div>
 		</form>
 	);
@@ -56,8 +60,9 @@ function CategoryForm({ category, catalog, onSaved }: { category?: CategoryRow; 
 export function SkillsEditor({ initial, catalog }: { initial: CategoryRow[]; catalog: string[] }) {
 	const [rows, setRows] = useState(initial);
 	const [dirty, setDirty] = useState(false);
-	const [saving, startSaving] = useTransition();
+	const order = useAsyncAction();
 	const [newFormKey, setNewFormKey] = useState(0);
+	useLeaveWarning(dirty);
 
 	const move = (index: number, delta: -1 | 1) => {
 		const target = index + delta;
@@ -79,27 +84,29 @@ export function SkillsEditor({ initial, catalog }: { initial: CategoryRow[]; cat
 							<span className="text-ui-faint">Tab {index + 1}</span>
 							<button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move up">↑</button>
 							<button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} className="px-1 text-ui-dim disabled:opacity-30" aria-label="Move down">↓</button>
-							<form
+							<DeleteButton
 								action={deleteCategory}
-								onSubmit={(e) => { if (!confirm(`Delete “${row.names.en}”?`)) e.preventDefault(); }}
-							>
-								<input type="hidden" name="id" value={row.id} />
-								<button type="submit" className="text-red-400">Delete</button>
-							</form>
+								id={row.id}
+								className="px-0"
+								confirmMessage={`Delete “${row.names.en}”?`}
+								success={`Deleted “${row.names.en}”`}
+								onDeleted={() => setRows((current) => current.filter((r) => r.id !== row.id))}
+							/>
 						</div>
 					</li>
 				))}
 			</ul>
 
 			{dirty && (
-				<button
-					type="button"
-					disabled={saving}
-					onClick={() => startSaving(async () => { await reorderCategories(rows.map((r) => r.id)); setDirty(false); })}
-					className="self-start rounded bg-ui-accent px-4 py-2 text-sm font-semibold text-ui-accent-ink disabled:opacity-50"
+				<Button
+					variant="primary"
+					className="self-start text-sm"
+					loading={order.pending}
+					loadingLabel="Saving order…"
+					onClick={() => order.run(() => reorderCategories(rows.map((r) => r.id)), { success: 'Order saved', onDone: () => setDirty(false) })}
 				>
-					{saving ? 'Saving order…' : 'Save order'}
-				</button>
+					Save order
+				</Button>
 			)}
 
 			<section className="flex flex-col gap-2 rounded border border-dashed border-ui-border-2 p-4">

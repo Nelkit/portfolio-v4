@@ -42,7 +42,10 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
 - [x] **14.** Como administrador, quiero guardar un post como borrador y publicarlo cuando esté listo, para escribir en varias sesiones sin que los visitantes vean artículos a medias. Requiere: #11
   _Commit `c7a4e32`._
 
-Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
+- [x] **15.** Como visitante, quiero ver una selección curada de proyectos de IA con categorías, año y organización consistentes, para entender rápido el perfil de AI Product Engineer. Como administrador, quiero ver el progreso y el resultado de cada acción del panel. Requiere: #4, #6, #8
+  _Commit pendiente (rama `feat/ai-product-positioning`)._
+
+Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
 ---
 
@@ -195,6 +198,19 @@ Todo el contenido administrable (#3 a #14) se edita en español y en inglés.
 - [x] **#4 a #10:** el home ya no consulta la página de inicio de Strapi; solo quedan los posts recientes del blog (#11 a #14).
 - [x] **#8:** las tarjetas y el detalle de proyectos ya muestran imagen (#5), área (#6) y tecnologías (#8).
 - [x] **#8 ⚠️:** resuelto: la resolución de nombres y la limpieza de huérfanos viven en `skill-catalog.ts` y conservan los skills usados por cualquier categoría **o** proyecto (con tests de regresión).
+
+### Historia 15: Reposicionamiento AI Product Engineer
+
+- [ ] Publicar en este orden: `pnpm db:migrate` (migración `0013`) → `pnpm tsx scripts/data/ai-positioning.ts --confirm` → deploy. Si se despliega antes del script, la caché del deploy nuevo guarda los datos viejos hasta el siguiente guardado en el admin.
+- [ ] Mientras tanto no usar el admin del deploy anterior: la `0013` hace obligatoria la categoría y ese código todavía puede crear proyectos sin ella.
+- [ ] La migración `0013` está editada a mano: drizzle-kit generó un `INSERT … SELECT` que leía columnas nuevas de la tabla vieja. Un proyecto sin categoría recibe la primera por posición (cubierto por `app/lib/db/migrations.test.ts`).
+- [ ] Cargar `keyResult` y `role` (EN y ES) de cada proyecto desde `/admin/projects` (quedaron vacíos a propósito).
+- [ ] NKAlert nunca tuvo el tag "SwiftUI" (solo Ryte 2.0); no había nada que quitar.
+- [ ] El link "CocoaPods Pod" de NKAlert pasó a "Website" (no hay label "CocoaPods" en la lista cerrada).
+- [ ] Las subidas muestran "n/total" y un spinner, no un porcentaje: los server actions no exponen progreso (haría falta un endpoint con XHR).
+- [ ] El aviso de cambios sin guardar cubre cerrar o recargar la pestaña y los links internos, no el botón "atrás" del navegador.
+- [ ] Borrar `scripts/import-strapi/data/` de tu disco cuando ya no lo necesites (datos personales fuera de git; el script de import se eliminó) y quitar su línea del `.gitignore`.
+- [x] Corregidos de paso los errores de lint previos: `any` en `app/api/chat/route.ts` y `ClientWrapper.tsx`, `setState` dentro de un efecto en `useTheme.ts` (ahora `useSyncExternalStore`).
 
 ### Generales
 

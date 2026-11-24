@@ -1,7 +1,6 @@
 'use server';
 
 import { updateTag } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { parsePostForm } from '@/app/lib/content/posts/post';
@@ -9,7 +8,8 @@ import { POSTS_TAG, postRepository } from '@/app/lib/content/posts/post-service'
 import { deleteStoredFiles } from '@/app/lib/storage/cleanup';
 import { tagRepository } from '@/app/lib/content/tags/tag-service';
 
-export type SavePostState = { ok?: boolean; errors?: Record<string, string> };
+/** `redirectTo` is set after creating, so the editor can show the toast before navigating. */
+export type SavePostState = { ok?: boolean; error?: string; errors?: Record<string, string>; redirectTo?: string };
 
 const idSchema = z.coerce.number().int().positive();
 
@@ -42,7 +42,7 @@ export async function savePost(_prev: SavePostState, formData: FormData): Promis
 
 	const newId = await repo.createPost(parsed.value);
 	updateTag(POSTS_TAG);
-	redirect(`/admin/blog/${newId}`);
+	return { ok: true, redirectTo: `/admin/blog/${newId}` };
 }
 
 export async function deletePost(formData: FormData): Promise<void> {

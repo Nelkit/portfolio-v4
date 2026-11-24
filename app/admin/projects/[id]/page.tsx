@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { projectRepository } from '@/app/lib/content/projects/project-service';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
-import type { ProjectInput, ProjectTranslation } from '@/app/lib/content/projects/project';
+import { EMPTY_TRANSLATION, type ProjectFormValues, type ProjectTranslation } from '@/app/lib/content/projects/project';
 import { ProjectForm } from '../ProjectForm';
 import { ProjectMedia } from '../ProjectMedia';
 import { publicUrlFor } from '@/app/lib/storage/storage';
@@ -25,15 +25,17 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 	]);
 	if (!project) notFound();
 
-	const blank: ProjectTranslation = { title: '', summary: '', description: '' };
-	const initial: ProjectInput = {
+	const initial: ProjectFormValues = {
 		slug: project.slug,
-		company: project.company,
+		organisation: project.organisation,
+		year: project.year,
 		areaId: project.areaId,
+		featured: project.featured,
+		featuredOrder: project.featuredOrder,
 		skills: project.skills,
 		links: project.links,
 		translations: Object.fromEntries(
-			LOCALES.map((locale) => [locale, project.translations[locale] ?? blank]),
+			LOCALES.map((locale) => [locale, project.translations[locale] ?? EMPTY_TRANSLATION]),
 		) as Record<Locale, ProjectTranslation>,
 	};
 

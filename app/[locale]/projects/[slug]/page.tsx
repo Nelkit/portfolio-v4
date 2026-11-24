@@ -12,7 +12,7 @@ import {
 	getPublishedProjects,
 	projectRepository,
 } from '@/app/lib/content/projects/project-service';
-import type { ProjectView } from '@/app/lib/content/projects/project';
+import { projectMetaLine, projectSections, relatedProjects } from '@/app/lib/content/projects/project-display';
 
 const ILink = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
@@ -69,16 +69,6 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	};
 }
 
-/** Up to 3 other projects, shuffled (Fisher-Yates). */
-function pickOthers(all: ProjectView[], currentSlug: string): ProjectView[] {
-	const others = all.filter((p) => p.slug !== currentSlug);
-	for (let i = others.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[others[i], others[j]] = [others[j], others[i]];
-	}
-	return others.slice(0, 3);
-}
-
 export default async function ProjectPage({ params }: Params) {
 	const { locale, t, href } = await resolveLocale(params);
 	const copy = t.projects;
@@ -89,7 +79,8 @@ export default async function ProjectPage({ params }: Params) {
 	]);
 
 	if (!project) notFound();
-	const others = pickOthers(all, slug);
+	const others = relatedProjects(all, project);
+	const meta = projectMetaLine(project);
 
 	return (
 		<div className="proj-detail-root">
@@ -111,7 +102,7 @@ export default async function ProjectPage({ params }: Params) {
 						<header className="proj-header">
 							<div className="proj-meta">
 								{project.area && <span className="proj-area">{project.area.name}</span>}
-								{project.company && <span className="proj-company">{project.company}</span>}
+								{meta && <span className="proj-company">{meta}</span>}
 							</div>
 							<h1 className="proj-title">{project.title}</h1>
 							{project.summary && <p className="proj-summary">{project.summary}</p>}
@@ -141,18 +132,24 @@ export default async function ProjectPage({ params }: Params) {
 											rel={l.isExternal ? 'noopener noreferrer' : undefined}
 											className="proj-link"
 										>
-											<Icon /> {l.label}
+											<Icon /> {copy.linkLabels[l.label]}
 										</a>
 									);
 								})}
 							</div>
 						)}
 
-						{project.description.trim() && (
-							<div className="proj-desc proj-desc-body">
-								<Markdown>{project.description}</Markdown>
-							</div>
-						)}
+						{projectSections(project).map((section) => (
+							<section key={section.key} className="proj-section">
+								<h2 className="proj-section-title">{copy.sectionTitles[section.key]}</h2>
+								{section.key === 'myRole' && project.role && <p className="proj-role">{project.role}</p>}
+								{section.body && (
+									<div className="proj-desc proj-desc-body">
+										<Markdown>{section.body}</Markdown>
+									</div>
+								)}
+							</section>
+						))}
 
 						{project.skills.length > 0 && (
 							<div className="proj-section proj-section-stack">
@@ -175,7 +172,7 @@ export default async function ProjectPage({ params }: Params) {
 
 					{others.length > 0 && (
 						<aside className="proj-aside">
-							<p className="proj-aside-label">{copy.moreProjects}</p>
+							<h2 className="proj-aside-label">{copy.moreProjects}</h2>
 							<div className="proj-aside-list">
 								{others.map((p) => (
 									<Link key={p.slug} href={href(`/projects/${p.slug}`)} className="proj-aside-card">
@@ -186,7 +183,9 @@ export default async function ProjectPage({ params }: Params) {
 											<span className="proj-aside-thumb proj-aside-thumb-empty" />
 										)}
 										<div className="proj-aside-body">
-											{(p.area?.name || p.company) && <span className="proj-aside-area">{p.area?.name ?? p.company}</span>}
+											{(p.area?.name || projectMetaLine(p)) && (
+											<span className="proj-aside-area">{p.area?.name ?? projectMetaLine(p)}</span>
+										)}
 											<span className="proj-aside-title">{p.title}</span>
 										</div>
 										<span className="proj-aside-go"><IArrowUR /></span>

@@ -201,7 +201,6 @@ All five `R2_*` values must be set together; in production, uploads fail loudly 
 
 | Variable | Description |
 | --- | --- |
-| `STRAPI_URL` | Only for the one-off Strapi import script (default `http://localhost:1337`). |
 | `VERCEL_DEPLOYMENT_ID`, `VERCEL_GIT_COMMIT_SHA` | Set by Vercel; used to isolate the data cache per deployment. |
 
 ---
@@ -253,19 +252,16 @@ pnpm db:migrate      # apply pending migrations to TURSO_DATABASE_URL
 
 Migrations are manual: run them against production **before** deploying code that needs them.
 
-### One-off Strapi import (`scripts/import-strapi/`)
+### One-off data updates (`scripts/data/`)
 
-Used once to move the old Strapi content into Turso and R2. Kept for reference; it needs a running Strapi instance and runs with `tsx` (a dev dependency).
+Content changes that must ship together with a release live here as idempotent scripts. They print every change by default and only write with `--confirm`, and they stop without writing if the database has something the plan does not know.
 
 ```bash
-# Strapi → scripts/import-strapi/data/strapi.json + content-en.json (read-only on Strapi)
-pnpm tsx scripts/import-strapi/extract.ts http://localhost:1337
-# translate content-en.json into content-es.json, then:
-pnpm tsx scripts/import-strapi/import.ts            # dry run: prints the plan
-pnpm tsx scripts/import-strapi/import.ts --confirm  # WIPES the content tables and imports
+pnpm tsx scripts/data/ai-positioning.ts            # dry run: prints every change
+pnpm tsx scripts/data/ai-positioning.ts --confirm  # applies them
 ```
 
-`scripts/import-strapi/data/` is git-ignored (it holds personal data).
+`ai-positioning.ts` sets the featured projects, categories, years and organisations, normalises tag names, standardises link labels and splits the Horus description into its detail sections. The values live in `ai-positioning-plan.ts`, which has unit tests. Release order: `pnpm db:migrate` → the script with `--confirm` → deploy, so the new deployment starts with a fresh cache.
 
 ---
 

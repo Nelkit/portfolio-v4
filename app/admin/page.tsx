@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/app/lib/auth/admin';
 import { logout } from '@/app/admin/actions';
+import { SubmitButton } from '@/app/admin/components/ui/Button';
 
 export default async function AdminHome() {
 	await requireAdmin();
@@ -10,9 +11,7 @@ export default async function AdminHome() {
 			<header className="flex items-center justify-between">
 				<h1 className="text-xl font-semibold">Dashboard</h1>
 				<form action={logout}>
-					<button type="submit" className="text-sm text-ui-dim hover:text-ui-text">
-						Log out
-					</button>
+					<SubmitButton variant="link" loadingLabel="Signing out…">Log out</SubmitButton>
 				</form>
 			</header>
 

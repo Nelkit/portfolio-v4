@@ -6,7 +6,7 @@ export const es: Dictionary = {
 	meta: {
 		ogLocale: 'es_ES',
 		dateLocale: 'es-ES',
-		siteTitle: 'Nelkit Chavez — Ingeniero de Software/ML/IA',
+		siteTitle: 'Nelkit Chavez · Ingeniero de IA y ML',
 		siteDescription:
 			'Siete años publicando apps móviles en producción. Ahora construyo productos que piensan, con ML, LLMs y el instinto de lanzar que solo da hacerlo de verdad.',
 		blogTitle: 'Escritos',
@@ -89,6 +89,7 @@ export const es: Dictionary = {
 			all: 'Todos',
 			filterAria: 'Filtrar proyectos por área',
 			note: (n: number) => plural(n, 'proyecto', 'proyectos'),
+			viewAll: (n: number) => (n === 1 ? 'Ver el proyecto →' : `Ver los ${n} proyectos →`),
 		},
 		stack: {
 			title: 'Stack tecnológico',
@@ -121,7 +122,7 @@ export const es: Dictionary = {
 			minutes: (n: number) => `${n} min`,
 		},
 		contact: {
-			available: 'Disponible 2026',
+			available: 'Disponible ahora',
 			headline: 'Construyamos algo <em>que se lance.</em>',
 			description:
 				'Abierto a roles senior de contribuidor individual en móvil, ingeniería de ML o donde ambos se cruzan. Remoto, híbrido o presencial en Sídney.',
@@ -150,5 +151,19 @@ export const es: Dictionary = {
 		screenshots: 'Capturas',
 		moreProjects: 'Más proyectos',
 		openScreenshot: (alt: string) => `Abrir captura: ${alt}`,
+		sectionTitles: {
+			overview: 'Resumen',
+			howItWorks: 'Cómo funciona',
+			results: 'Resultados',
+			myRole: 'Mi rol',
+		},
+		linkLabels: {
+			'live-demo': 'Demo en vivo',
+			code: 'Código',
+			'api-docs': 'Docs de la API',
+			'app-store': 'App Store',
+			website: 'Sitio web',
+			'github-org': 'Organización en GitHub',
+		},
 	},
 };

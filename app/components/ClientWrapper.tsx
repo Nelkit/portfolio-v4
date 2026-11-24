@@ -15,7 +15,6 @@ import type { ProjectView } from '@/app/lib/content/projects/project';
 import { countUniqueSkills, type CategoryView } from '@/app/lib/content/skills/skill-category';
 import type { CareerView } from '@/app/lib/content/career/career';
 import type { EducationView } from '@/app/lib/content/education/education';
-import { type Project, getIcon } from '@/app/data/content';
 import type { PostSummary } from '@/app/lib/content/posts/post';
 
 import { IHelp } from '@/app/components/icons';
@@ -27,10 +26,10 @@ type ClientWrapperProps = {
 	headline?: string;
 	/** Name, avatar, role, intro, CV, links and contact copy from the admin (Turso). */
 	profile: PublicProfile | null;
-	/** Projects from the admin (Turso), in display order. */
-	projects: ProjectView[];
-	/** Expertise areas from the admin (Turso), for the project filter. */
-	areas: { id: number; name: string }[];
+	/** Featured projects from the admin (Turso), in featuredOrder. */
+	featuredProjects: ProjectView[];
+	/** Number of published projects (link to /projects and nav count). */
+	projectCount: number;
 	/** Tech-stack categories from the admin (Turso). */
 	skillCategories: CategoryView[];
 	/** Career timeline from the admin (Turso), current roles first. */
@@ -40,25 +39,6 @@ type ClientWrapperProps = {
 	/** Education entries from the admin (Turso), in-progress first. */
 	education: EducationView[];
 };
-
-/** Adapts admin projects to the card shape the section renders. */
-function toProjectCards(projects: ProjectView[]): Project[] {
-	return projects.map((p) => ({
-		slug: p.slug,
-		title: p.title,
-		summary: p.summary,
-		description: p.description,
-		company: p.company,
-		tech: p.skills,
-		color: '',
-		icon: getIcon(''),
-		expertise_area: p.area?.name ?? '',
-		areaId: p.area?.id ?? null,
-		image: p.imageUrl ?? '',
-		screenshots: p.screenshots,
-		links: p.links,
-	}));
-}
 
 /** Adapts admin links to the shape the existing sections render. */
 function toSectionLinks(profile: PublicProfile | null) {
@@ -72,7 +52,7 @@ function toSectionLinks(profile: PublicProfile | null) {
 
 const THEME_CYCLE: ('plum' | 'light')[] = ['plum', 'light'];
 
-export function ClientWrapper({ recentPosts, headline, profile, projects: projectViews, areas, skillCategories, career, careerYears, education }: ClientWrapperProps) {
+export function ClientWrapper({ recentPosts, headline, profile, featuredProjects, projectCount, skillCategories, career, careerYears, education }: ClientWrapperProps) {
 	const [theme, setTheme] = useState<'plum' | 'light'>('plum');
 	const [navShow, setNavShow] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
@@ -99,7 +79,6 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 
 	// Section titles are fixed UI copy (dictionary), not editable content.
 	const projectSectionTitle = t.sections.projects.title;
-	const projects = toProjectCards(projectViews);
 
 	const careerSectionTitle = t.sections.career.title;
 
@@ -165,7 +144,7 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 
 	const askAgent = (q: string, key: string) => {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
-		if ((window as any).__askAgent) (window as any).__askAgent(q, key);
+		(window as Window & { __askAgent?: (q: string, key: string) => void }).__askAgent?.(q, key);
 	};
 
 	const totalTools = countUniqueSkills(skillCategories);
@@ -173,7 +152,7 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 
 	const sub = t.home.navSub;
 	const navItems = [
-		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projects.length),                                                             meta: navNumber('work') },
+		{ id: 'work',      label: t.common.nav.work,      sub: sub.work(projectCount),                                                             meta: navNumber('work') },
 		{ id: 'stack',     label: t.common.nav.stack,     sub: sub.stack(String(totalTools || '—'), String(totalDomains || '—')),                    meta: navNumber('stack') },
 		{ id: 'career',    label: t.common.nav.career,    sub: sub.career(careerYears ? sub.years(careerYears) : '—', career.length),         meta: navNumber('career') },
 		{ id: 'education', label: t.common.nav.education, sub: sub.education(education.length),                                                      meta: navNumber('education') },
@@ -213,9 +192,8 @@ export function ClientWrapper({ recentPosts, headline, profile, projects: projec
 			<div className="wrap">
 				<ProjectsSection
 					title={projectSectionTitle}
-					projects={projects}
-					areas={areas}
-					onNav={navTo}
+					projects={featuredProjects}
+					total={projectCount}
 				/>
 
 				<SkillsSection

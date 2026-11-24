@@ -12,6 +12,7 @@ export default async function ProjectsAdminPage() {
 		id: p.id,
 		slug: p.slug,
 		title: p.translations.en?.title ?? p.translations.es?.title ?? p.slug,
+		featured: p.featured,
 	}));
 
 	return (

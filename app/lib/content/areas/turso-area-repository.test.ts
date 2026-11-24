@@ -21,15 +21,16 @@ describe('TursoAreaRepository', () => {
 		projects = createTursoProjectRepository(db);
 	});
 
-	const project = (slug: string, areaId: number | null) => ({
+	const translation = (title: string) => ({ title, summary: 's', description: '', keyResult: '', role: '', howItWorks: '', results: '', myRole: '' });
+	const project = (slug: string, areaId: number) => ({
 		slug,
-		company: '',
+		organisation: '',
+		year: null,
 		areaId,
+		featured: false,
+		featuredOrder: 0,
 		skills: [],
-		translations: {
-			en: { title: slug, summary: 's', description: '' },
-			es: { title: slug, summary: 's', description: '' },
-		},
+		translations: { en: translation(slug), es: translation(slug) },
 		links: [],
 	});
 
@@ -58,16 +59,19 @@ describe('TursoAreaRepository', () => {
 		expect((await areas.listAreas()).map((x) => x.id)).toEqual([c, a, b]);
 	});
 
-	it('deleting an area leaves its projects without area (they are not deleted)', async () => {
+	it('refuses to delete an area that still has projects (every project needs one)', async () => {
 		const ml = await areas.createArea(area('ML'));
-		const keep = await areas.createArea(area('Mobile'));
 		const p1 = await projects.createProject(project('p1', ml));
-		const p2 = await projects.createProject(project('p2', keep));
 
-		await areas.deleteArea(ml);
+		expect(await areas.deleteArea(ml)).toEqual({ deleted: false, projects: 1 });
 
-		expect(await areas.getArea(ml)).toBeNull();
-		expect((await projects.getProject(p1))?.areaId).toBeNull();
-		expect((await projects.getProject(p2))?.areaId).toBe(keep);
+		expect(await areas.getArea(ml)).not.toBeNull();
+		expect((await projects.getProject(p1))?.areaId).toBe(ml);
+	});
+
+	it('deletes an area without projects', async () => {
+		const empty = await areas.createArea(area('Empty'));
+		expect(await areas.deleteArea(empty)).toEqual({ deleted: true, projects: 0 });
+		expect(await areas.getArea(empty)).toBeNull();
 	});
 });

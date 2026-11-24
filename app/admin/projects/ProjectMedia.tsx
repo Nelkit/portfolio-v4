@@ -11,6 +11,10 @@ import {
 	type MediaResult,
 } from './media-actions';
 import { MAX_SCREENSHOTS } from '@/app/lib/content/projects/project';
+import { Button } from '@/app/admin/components/ui/Button';
+import { Spinner } from '@/app/admin/components/ui/Spinner';
+import { errorMessage } from '@/app/admin/components/ui/feedback';
+import { useToast } from '@/app/admin/components/ui/Toaster';
 import { PROJECT_IMAGE_MAX_BYTES } from '@/app/lib/storage/file-validation';
 
 type Shot = { id: number; url: string };
@@ -27,24 +31,34 @@ const fileForm = (projectId: number, file: File) => {
 
 export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: number; imageUrl: string | null; screenshots: Shot[] }) {
 	const router = useRouter();
+	const toast = useToast();
 	const [busy, startBusy] = useTransition();
 	const [status, setStatus] = useState('');
 	const [errors, setErrors] = useState<string[]>([]);
 	const [order, setOrder] = useState<Shot[]>(screenshots);
 	const [orderDirty, setOrderDirty] = useState(false);
 
-	/** Runs media actions one after another and refreshes the page data at the end. */
-	const run = (label: string, steps: (() => Promise<MediaResult>)[]) =>
+	/**
+	 * Runs media actions one after another (progress as "n/total"), reports the
+	 * outcome as a toast and refreshes the page data at the end.
+	 */
+	const run = (label: string, steps: (() => Promise<MediaResult>)[], success: string) =>
 		startBusy(async () => {
 			const failed: string[] = [];
 			for (const [i, step] of steps.entries()) {
 				setStatus(steps.length > 1 ? `${label} ${i + 1}/${steps.length}…` : `${label}…`);
-				const result = await step();
-				if (result.error) failed.push(result.error);
+				try {
+					const result = await step();
+					if (result.error) failed.push(result.error);
+				} catch (error) {
+					failed.push(errorMessage(error));
+				}
 			}
 			setErrors(failed);
 			setStatus('');
 			setOrderDirty(false);
+			if (failed.length === 0) toast.success(success);
+			else toast.error(failed.length === 1 ? failed[0] : `${failed.length} of ${steps.length} failed. See the details below.`);
 			router.refresh();
 		});
 
@@ -83,7 +97,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 						onChange={(e) => {
 							const file = e.target.files?.[0];
 							e.target.value = '';
-							if (file) run('Uploading main image', [() => uploadProjectImage(fileForm(projectId, file))]);
+							if (file) run('Uploading main image', [() => uploadProjectImage(fileForm(projectId, file))], 'Main image uploaded');
 						}}
 					/>
 					{imageUrl && (
@@ -91,7 +105,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 							type="button"
 							disabled={busy}
 							className="self-start text-sm text-red-400 disabled:opacity-50"
-							onClick={() => confirm('Remove the main image?') && run('Removing', [() => removeProjectImage(projectId)])}
+							onClick={() => confirm('Remove the main image?') && run('Removing', [() => removeProjectImage(projectId)], 'Main image removed')}
 						>
 							Remove main image
 						</button>
@@ -116,7 +130,7 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 										<button
 											type="button"
 											disabled={busy}
-											onClick={() => confirm('Remove this screenshot?') && run('Removing', [() => removeProjectScreenshot(projectId, shot.id)])}
+											onClick={() => confirm('Remove this screenshot?') && run('Removing', [() => removeProjectScreenshot(projectId, shot.id)], 'Screenshot removed')}
 											className="px-1 text-red-400 disabled:opacity-30"
 											aria-label="Remove screenshot"
 										>
@@ -129,14 +143,16 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 					</ul>
 				)}
 				{orderDirty && (
-					<button
-						type="button"
+					<Button
+						variant="primary"
+						loading={busy && status.startsWith('Saving order')}
 						disabled={busy}
-						onClick={() => run('Saving order', [() => reorderProjectScreenshots(projectId, order.map((s) => s.id))])}
-						className="self-start rounded bg-ui-accent px-3 py-1 text-sm font-semibold text-ui-accent-ink disabled:opacity-50"
+						loadingLabel="Saving order…"
+						onClick={() => run('Saving order', [() => reorderProjectScreenshots(projectId, order.map((s) => s.id))], 'Screenshot order saved')}
+						className="self-start px-3 py-1 text-sm"
 					>
 						Save screenshot order
-					</button>
+					</Button>
 				)}
 				{remaining > 0 && (
 					<input
@@ -149,13 +165,23 @@ export function ProjectMedia({ projectId, imageUrl, screenshots }: { projectId: 
 							const files = Array.from(e.target.files ?? []).slice(0, remaining);
 							e.target.value = '';
 							// One request per file: each stays under the Server Action body limit.
-							if (files.length) run('Uploading', files.map((file) => () => addProjectScreenshot(fileForm(projectId, file))));
+							if (files.length) {
+								run(
+									'Uploading',
+									files.map((file) => () => addProjectScreenshot(fileForm(projectId, file))),
+									files.length === 1 ? 'Screenshot uploaded' : `${files.length} screenshots uploaded`,
+								);
+							}
 						}}
 					/>
 				)}
 			</div>
 
-			{status && <p className="text-sm text-ui-dim">{status}</p>}
+			{status && (
+				<p className="flex items-center gap-2 text-sm text-ui-dim" role="status">
+					<Spinner /> {status}
+				</p>
+			)}
 			{errors.map((error) => <p key={error} className="text-sm text-red-400">{error}</p>)}
 		</section>
 	);

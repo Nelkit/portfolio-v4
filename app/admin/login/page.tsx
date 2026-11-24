@@ -2,9 +2,11 @@
 
 import { useActionState } from 'react';
 import { login, type LoginState } from '@/app/admin/actions';
+import { Button } from '@/app/admin/components/ui/Button';
+import { safeAction } from '@/app/admin/components/ui/feedback';
 
 export default function LoginPage() {
-	const [state, formAction, pending] = useActionState<LoginState, FormData>(login, {});
+	const [state, formAction, pending] = useActionState<LoginState, FormData>(safeAction(login), {});
 
 	return (
 		<form action={formAction} className="mx-auto mt-24 flex max-w-sm flex-col gap-4">
@@ -18,14 +20,10 @@ export default function LoginPage() {
 				placeholder="Password"
 				className="rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent"
 			/>
-			{state.error && <p className="text-sm text-red-400">{state.error}</p>}
-			<button
-				type="submit"
-				disabled={pending}
-				className="rounded bg-ui-accent px-3 py-2 font-semibold text-ui-accent-ink disabled:opacity-50"
-			>
-				{pending ? 'Signing in…' : 'Sign in'}
-			</button>
+			{state.error && <p role="alert" className="text-sm text-red-400">{state.error}</p>}
+			<Button type="submit" variant="primary" loading={pending} loadingLabel="Signing in…">
+				Sign in
+			</Button>
 		</form>
 	);
 }

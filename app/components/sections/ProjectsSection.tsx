@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { navNumber } from '@/app/lib/nav';
-import { useState } from 'react';
-import { AreaFilter, areaChips } from '@/app/components/AreaFilter';
-import { type Project, type ProjectLink } from '@/app/data/content';
 import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
+import type { ProjectView } from '@/app/lib/content/projects/project';
+import { cardTags } from '@/app/lib/content/projects/project-display';
 
 const ILinkIcon = () => (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
@@ -22,77 +21,53 @@ const LINK_ICONS: Record<string, () => React.ReactElement> = {
 	link:     ILinkIcon,
 };
 
+/** The first featured projects get the full-width card; the rest share the 2-column grid. */
+const FULL_WIDTH_CARDS = 2;
+
 type ProjectsSectionProps = {
 	title: string;
-	projects: Project[];
-	areas: { id: number; name: string }[];
-	onNav: (id: string) => void;
+	/** Featured projects, already in featuredOrder. */
+	projects: ProjectView[];
+	/** Number of published projects, for the link to /projects. */
+	total: number;
 };
 
-type CardItem = {
-	slug: string;
-	i: string;
-	k: string;
-	t: string;
-	d: string;
-	tags: string;
-	image: string;
-	links: ProjectLink[];
-};
-
-export function ProjectsSection({ title, projects, areas }: ProjectsSectionProps) {
+/** Home "Selected work": a curated selection, no filters, and a link to every project. */
+export function ProjectsSection({ title, projects, total }: ProjectsSectionProps) {
 	const { t, href } = useI18n();
-	const [selectedArea, setSelectedArea] = useState<number | null>(null);
-	const withArea = projects.map((p) => ({ ...p, areaId: p.areaId ?? null }));
-	const chips = areaChips(areas, withArea);
-	const visible = selectedArea === null ? withArea : withArea.filter((p) => p.areaId === selectedArea);
-
-	const items: CardItem[] = visible.map((p, idx) => ({
-		slug: p.slug,
-		i: String(idx + 1).padStart(2, '0'),
-		k: p.expertise_area || '',
-		t: p.title,
-		d: p.summary || p.description,
-		tags: p.tech.join(' · '),
-		image: p.image,
-		links: p.links || [],
-	}));
-
 	if (projects.length === 0) return null;
-
-	const count = projects.length;
 
 	return (
 		<section id="work" className="section section-work">
 			<div className="sec-head">
 				<h2><span className="num">{navNumber('work')}</span> {title}<span className="ac">.</span></h2>
-				<span className="note">{t.sections.projects.note(count)}</span>
+				<span className="note">{t.sections.projects.note(projects.length)}</span>
 			</div>
-			<AreaFilter areas={chips} total={count} selected={selectedArea} onSelect={setSelectedArea} />
 			<div className="work-grid">
-				{items.map((w, idx) => (
+				{projects.map((p, idx) => (
 					<Link
-						key={w.i}
-						href={href(`/projects/${w.slug}`)}
-						className={'work-card' + (idx === 0 ? ' feat' : '')}
+						key={p.slug}
+						href={href(`/projects/${p.slug}`)}
+						className={'work-card' + (idx < FULL_WIDTH_CARDS ? ' feat' : '')}
 					>
-						{w.image ? (
+						{p.imageUrl ? (
 							<img
 								className="work-shot"
-								src={w.image}
-								alt={w.t}
-								style={{ viewTransitionName: `project-image-${w.slug}` }}
+								src={p.imageUrl}
+								alt={p.title}
+								style={{ viewTransitionName: `project-image-${p.slug}` }}
 							/>
 						) : (
 							<span className="work-shot-placeholder" aria-hidden="true" />
 						)}
 						<div className="wc-body">
-							<span className="idx">{w.i}{w.k && ` · ${w.k}`}</span>
-							<h3>{w.t}</h3>
-							<p className="desc">{w.d}</p>
-							{w.links.length > 0 && (
+							<span className="idx">{String(idx + 1).padStart(2, '0')}{p.area && ` · ${p.area.name}`}</span>
+							<h3>{p.title}</h3>
+							<p className="desc">{p.summary || p.description}</p>
+							{p.keyResult && <p className="wc-key">{p.keyResult}</p>}
+							{p.links.length > 0 && (
 								<div className="wc-links">
-									{w.links.map((l) => {
+									{p.links.map((l) => {
 										const Icon = LINK_ICONS[l.type] || ILinkIcon;
 										return (
 											<button
@@ -104,19 +79,24 @@ export function ProjectsSection({ title, projects, areas }: ProjectsSectionProps
 													window.open(l.url, l.isExternal ? '_blank' : '_self');
 												}}
 											>
-												<Icon /> {l.label}
+												<Icon /> {t.projects.linkLabels[l.label]}
 											</button>
 										);
 									})}
 								</div>
 							)}
 							<div className="wc-foot">
-								<span className="tags">{w.tags}</span>
+								<span className="tags">{cardTags(p.skills).join(' · ')}</span>
 								<span className="go"><IArrowUR /></span>
 							</div>
 						</div>
 					</Link>
 				))}
+			</div>
+			<div className="write-foot">
+				<Link href={href('/projects')} className="btn btn-outline write-all">
+					{t.sections.projects.viewAll(total)}
+				</Link>
 			</div>
 		</section>
 	);

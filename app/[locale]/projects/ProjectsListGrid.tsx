@@ -7,6 +7,7 @@ import { AreaFilter, areaChips } from '@/app/components/AreaFilter';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 import type { ProjectView } from '@/app/lib/content/projects/project';
 import type { AreaView } from '@/app/lib/content/areas/area';
+import { cardTags, projectMetaLine } from '@/app/lib/content/projects/project-display';
 
 /** Projects grid with the area filter (client-side, so the page stays static). */
 export function ProjectsListGrid({ projects, areas }: { projects: ProjectView[]; areas: AreaView[] }) {
@@ -21,6 +22,7 @@ export function ProjectsListGrid({ projects, areas }: { projects: ProjectView[];
 			<div className="proj-list-grid">
 				{visible.map((p, idx) => {
 					const featured = idx === 0;
+					const meta = projectMetaLine(p);
 					return (
 						<Link key={p.slug} href={href(`/projects/${p.slug}`)}
 							className={'proj-list-card' + (featured ? ' proj-list-card-feat' : '')}>
@@ -37,13 +39,14 @@ export function ProjectsListGrid({ projects, areas }: { projects: ProjectView[];
 							<div className="proj-list-body">
 								<div className="proj-list-meta">
 									{p.area && <span className="proj-area">{p.area.name}</span>}
-									{p.company && <span className="proj-company">{p.company}</span>}
+									{meta && <span className="proj-company">{meta}</span>}
 								</div>
 								<h2 className={'proj-list-title' + (featured ? ' proj-list-title-feat' : '')}>{p.title}</h2>
 								{p.summary && <p className="proj-list-summary">{p.summary}</p>}
+								{p.keyResult && <p className="proj-list-key">{p.keyResult}</p>}
 								{p.skills.length > 0 && (
 									<div className="proj-list-tags">
-										{p.skills.map((s) => <span key={s} className="proj-tag">{s}</span>)}
+										{cardTags(p.skills).map((s) => <span key={s} className="proj-tag">{s}</span>)}
 									</div>
 								)}
 							</div>

@@ -3,12 +3,23 @@ import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { projectLinks, projects, projectScreenshots, projectSkills, projectTranslations, skills } from '@/app/lib/db/schema';
 import { deleteOrphanSkills, resolveSkillIds, type Tx } from '@/app/lib/content/skills/skill-catalog';
 import type { LinkType } from '@/app/lib/content/links';
+import { isProjectLinkLabel } from './project';
 import type { Locale } from '@/app/lib/i18n/locales';
 import { isLocale } from '@/app/lib/i18n/routing';
 import type { ProjectRepository } from './project-repository';
 import type { ProjectInput, ProjectRecord, ProjectTranslation } from './project';
 
 type ProjectRow = typeof projects.$inferSelect;
+
+/** Columns of `projects` written from the admin input (children and images are separate). */
+const projectColumns = (input: ProjectInput) => ({
+	slug: input.slug,
+	organisation: input.organisation,
+	year: input.year,
+	areaId: input.areaId,
+	featured: input.featured,
+	featuredOrder: input.featuredOrder,
+});
 
 /** (Re)writes translations, links and skills of a project inside a transaction (images untouched). */
 async function writeChildren(tx: Tx, id: number, input: ProjectInput) {
@@ -54,19 +65,32 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 			const translations: Partial<Record<Locale, ProjectTranslation>> = {};
 			for (const t of translationRows) {
 				if (t.projectId !== row.id || !isLocale(t.locale)) continue;
-				translations[t.locale] = { title: t.title, summary: t.summary, description: t.description };
+				translations[t.locale] = {
+					title: t.title,
+					summary: t.summary,
+					description: t.description,
+					keyResult: t.keyResult,
+					role: t.role,
+					howItWorks: t.howItWorks,
+					results: t.results,
+					myRole: t.myRole,
+				};
 			}
 			return {
 				id: row.id,
 				slug: row.slug,
-				company: row.company,
+				organisation: row.organisation,
+				year: row.year,
 				areaId: row.areaId,
+				featured: row.featured,
+				featuredOrder: row.featuredOrder,
 				skills: skillRows.filter((s) => s.projectId === row.id).map((s) => s.name),
 				imageKey: row.imageKey,
 				translations,
 				links: linkRows
 					.filter((l) => l.projectId === row.id)
-					.map((l) => ({ type: l.type as LinkType, label: l.label, url: l.url })),
+					// Labels outside the standard set (legacy rows) are shown as a generic website link.
+					.map((l) => ({ type: l.type as LinkType, label: isProjectLinkLabel(l.label) ? l.label : 'website', url: l.url })),
 				screenshots: screenshotRows
 					.filter((s) => s.projectId === row.id)
 					.map((s) => ({ id: s.id, key: s.key })),
@@ -95,7 +119,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 					.from(projects);
 				const [{ id }] = await tx
 					.insert(projects)
-					.values({ slug: input.slug, company: input.company, areaId: input.areaId, position: first - 1 })
+					.values({ ...projectColumns(input), position: first - 1 })
 					.returning({ id: projects.id });
 				await writeChildren(tx, id, input);
 				return id;
@@ -107,7 +131,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 			await db.transaction(async (tx) => {
 				await tx
 					.update(projects)
-					.set({ slug: input.slug, company: input.company, areaId: input.areaId, updatedAt: sql`(unixepoch())` })
+					.set({ ...projectColumns(input), updatedAt: sql`(unixepoch())` })
 					.where(eq(projects.id, id));
 				await writeChildren(tx, id, input);
 			});

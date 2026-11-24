@@ -58,12 +58,17 @@ export function createTursoAreaRepository(db: LibSQLDatabase): AreaRepository {
 		},
 
 		async deleteArea(id) {
-			// Explicit instead of relying on SQLite's foreign_keys pragma.
-			await db.batch([
-				db.update(projects).set({ areaId: null }).where(eq(projects.areaId, id)),
-				db.delete(expertiseAreaTranslations).where(eq(expertiseAreaTranslations.areaId, id)),
-				db.delete(expertiseAreas).where(eq(expertiseAreas.id, id)),
-			]);
+			// Checked explicitly instead of relying on SQLite's foreign_keys pragma.
+			return db.transaction(async (tx) => {
+				const [{ count }] = await tx
+					.select({ count: sql<number>`count(*)` })
+					.from(projects)
+					.where(eq(projects.areaId, id));
+				if (count > 0) return { deleted: false, projects: count };
+				await tx.delete(expertiseAreaTranslations).where(eq(expertiseAreaTranslations.areaId, id));
+				await tx.delete(expertiseAreas).where(eq(expertiseAreas.id, id));
+				return { deleted: true, projects: 0 };
+			});
 		},
 
 		async reorderAreas(ids) {
