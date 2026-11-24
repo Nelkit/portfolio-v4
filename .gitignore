@@ -85,3 +85,6 @@ local.db*
 # env files without a leading dot (e.g. env.prod) — never commit secrets
 /env.*
 *.env
+
+# Project content to import (scripts/projects/import-projects.ts)
+/scripts/projects/data/
