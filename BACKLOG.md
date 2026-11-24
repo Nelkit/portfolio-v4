@@ -43,7 +43,7 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
   _Commit `c7a4e32`._
 
 - [x] **15.** Como visitante, quiero ver una selección curada de proyectos de IA con categorías, año y organización consistentes, para entender rápido el perfil de AI Product Engineer. Como administrador, quiero ver el progreso y el resultado de cada acción del panel. Requiere: #4, #6, #8
-  _Commit pendiente (rama `feat/ai-product-positioning`)._
+  _Commit `b231d9a`._
 
 Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
