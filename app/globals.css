@@ -1579,10 +1579,12 @@ body {
 
 .work-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* 6 tracks: full = 6, half = 3, third = 2 (see homeCardLayout). */
+  grid-template-columns: repeat(6, 1fr);
   gap: 16px;
 }
 .work-card {
+  grid-column: span 2;
   display: flex;
   flex-direction: column;
   background: var(--bg-2, var(--surface-2));
@@ -1618,6 +1620,9 @@ body {
   aspect-ratio: 16 / 9;
   border-bottom: 1px solid var(--border);
   background: var(--surface-2);
+}
+.work-card.half {
+  grid-column: span 3;
 }
 .work-card.feat {
   grid-column: 1 / -1;
@@ -2812,11 +2817,15 @@ footer {
 .proj-section-stack {
   margin-top: 52px;
 }
+/* Inside a titled section the title already separates it: no extra top gap. */
+.proj-section > .proj-desc-body {
+  margin-top: 0;
+}
 .proj-links-inline {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin: 16px 0 52px;
 }
 .proj-links {
   display: flex;
@@ -3053,6 +3062,10 @@ footer {
   }
   .work-grid {
     grid-template-columns: 1fr;
+  }
+  .work-card,
+  .work-card.half {
+    grid-column: 1 / -1;
   }
   .work-card.feat {
     flex-direction: column;
