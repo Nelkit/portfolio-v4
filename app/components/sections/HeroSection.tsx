@@ -4,7 +4,7 @@ import { useCallback, useState, useRef, useEffect, RefObject } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
-import ReactMarkdown from 'react-markdown';
+import { ChatMarkdown } from '@/app/components/ChatMarkdown';
 import { trackEvent } from '@/app/lib/analytics';
 import { parseChatError } from '@/app/lib/chat/chat-error';
 import { MAX_QUESTION_CHARS, recentTextMessages } from '@/app/lib/chat/chat-request';
@@ -262,7 +262,10 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 									{m.role === 'assistant' && <div className="av"><IBot /></div>}
 									<div className="bubble">
 										{getMessageText(m)
-											? <ReactMarkdown>{getMessageText(m)}</ReactMarkdown>
+											? (m.role === 'assistant'
+												? <ChatMarkdown>{getMessageText(m)}</ChatMarkdown>
+												// What the visitor typed is shown as is.
+												: <p className="chat-plain">{getMessageText(m)}</p>)
 											: (isLoading && m === messages[messages.length - 1]
 												? <div className="typing"><i/><i/><i/></div>
 												: null)}
