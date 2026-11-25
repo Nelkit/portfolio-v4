@@ -39,8 +39,11 @@ export const es: Dictionary = {
 		},
 		notFound: {
 			title: 'Página no encontrada',
-			body: 'La página que buscas no existe.',
+			eyebrow: 'Error · 404',
+			body: 'Esta página no existe o cambió de lugar. Puedes continuar desde aquí.',
 			home: 'Ir al inicio',
+			projects: 'Ver proyectos',
+			blog: 'Leer el blog',
 		},
 	},
 	home: {

@@ -45,8 +45,11 @@ export const en = {
 		},
 		notFound: {
 			title: 'Page not found',
-			body: 'The page you are looking for does not exist.',
+			eyebrow: 'Error · 404',
+			body: 'This page does not exist or has moved. You can pick up from one of these.',
 			home: 'Go home',
+			projects: 'See projects',
+			blog: 'Read the blog',
 		},
 	},
 	home: {
