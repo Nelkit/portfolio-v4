@@ -252,6 +252,16 @@ pnpm db:migrate      # apply pending migrations to TURSO_DATABASE_URL
 
 Migrations are manual: run them against production **before** deploying code that needs them.
 
+### Chat evaluation (`scripts/chat-eval/`)
+
+```bash
+pnpm chat:eval                                        # OPENROUTER_MODEL of .env
+pnpm chat:eval --model google/gemini-2.5-flash-lite   # compare another model
+pnpm chat:eval --only cv                              # only the ids that contain "cv"
+```
+
+Asks the agent real questions and checks key facts in the answers (`cases.ts`). Every question is a paid model call. Facts come from the Notion page, so update a case when its fact changes there.
+
 ### Local backups (`scripts/backup/`)
 
 ```bash
