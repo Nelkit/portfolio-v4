@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /** Shared by the chat field (client) and the API (server). */
 export const MAX_QUESTION_CHARS = 500;
-/** Answers are capped at 400 output tokens, so real ones stay well below this. */
+/** Answers are capped at 1,000 output tokens, about this long. */
 const MAX_ANSWER_CHARS = 4_000;
 const MAX_MESSAGES = 6;
 const MAX_BODY_CHARS = 64_000;
