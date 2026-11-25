@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, RefObject } from 'react';
+import { useCallback, useState, useRef, useEffect, RefObject } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { trackEvent } from '@/app/lib/analytics';
+import { parseChatError } from '@/app/lib/chat/chat-error';
+import { MAX_QUESTION_CHARS, recentTextMessages } from '@/app/lib/chat/chat-request';
 import { useVoiceInput } from '@/app/lib/chat/useVoiceInput';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, IRestart, ISpark,
@@ -40,6 +42,11 @@ const NAV_ICONS: Record<string, () => React.ReactElement> = {
 	writing:   IPen,
 	contact:   IAt,
 };
+
+const chatTransport = new DefaultChatTransport({
+	api: '/api/chat',
+	prepareSendMessagesRequest: ({ messages, body }) => ({ body: { ...body, messages: recentTextMessages(messages) } }),
+});
 
 const SUGGESTION_KEYS = ['stack', 'remote', 'ml'] as const;
 
@@ -142,11 +149,12 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputVal, setInputVal] = useState('');
-	const voice = useVoiceInput(locale, setInputVal);
+	// Dictation bypasses maxLength, so the text is cut here.
+	const setDictated = useCallback((text: string) => setInputVal(text.slice(0, MAX_QUESTION_CHARS)), []);
+	const voice = useVoiceInput(locale, setDictated);
 
-	const { messages, sendMessage, status } = useChat({
-		transport: new DefaultChatTransport({ api: '/api/chat' }),
-	});
+	const { messages, sendMessage, status, error } = useChat({ transport: chatTransport });
+	const chatError = error ? parseChatError(error.message) : null;
 
 	const isLoading = status === 'streaming' || status === 'submitted';
 	const started = messages.length > 0;
@@ -162,7 +170,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	useEffect(() => {
 		const el = threadRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
-	}, [messages]);
+	}, [messages, error]);
 
 	// When the input gets focus on mobile, the virtual keyboard opens and the
 	// browser does its own (unpredictable) auto-scroll. We WAIT for that to finish,
@@ -193,7 +201,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 		if (!text.trim() || isLoading) return;
 		voice.cancel(); // a late transcript must not refill the field
 		// The agent answers in the language the site is in right now.
-		sendMessage({ text }, { body: { locale } });
+		sendMessage({ text: text.slice(0, MAX_QUESTION_CHARS) }, { body: { locale } });
 		setInputVal('');
 		trackEvent('chat_message_sent', { source });
 	};
@@ -267,6 +275,19 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 									<div className="bubble"><div className="typing"><i/><i/><i/></div></div>
 								</div>
 							)}
+							{chatError && (
+								<div className="msg agent" role="alert">
+									<div className="av"><IBot /></div>
+									<div className="bubble">
+										<p>{t.chat.errors[chatError.code](chatError.minutes)}</p>
+										<p>
+											<a href="#contact" onClick={(e) => { e.preventDefault(); onNav('contact'); }}>
+												{t.common.getInTouch}
+											</a>
+										</p>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}
@@ -288,6 +309,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(inputVal); }}>
 					<input
 						ref={inputRef}
+						maxLength={MAX_QUESTION_CHARS}
 						value={inputVal}
 						onChange={(e) => {
 							voice.cancel(); // typing takes over from dictation

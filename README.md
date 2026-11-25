@@ -189,7 +189,7 @@ All five `R2_*` values must be set together; in production, uploads fail loudly 
 | --- | --- | --- |
 | `R2_JURISDICTION` | default endpoint | `us`, `eu` or `fedramp`. Required if the bucket was created with an explicit jurisdiction. |
 | `R2_BACKUP_BUCKET` | backup skipped | **Private** bucket for the daily JSON dump. Must differ from `R2_BUCKET` (backups include drafts). |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | in-memory limiter | Shared login rate limit (5 attempts / 15 min per IP). `KV_REST_API_URL` / `KV_REST_API_TOKEN` from the Vercel integration also work. |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | in-memory limiter | Shared rate limits: login (5 attempts / 15 min per IP) and chat (8 / min and 40 / day per IP, 300 / day in total). If Upstash fails, both use memory. `KV_REST_API_URL` / `KV_REST_API_TOKEN` from the Vercel integration also work. |
 | `OPENROUTER_API_KEY` | empty | Needed for the AI chat. |
 | `OPENROUTER_MODEL` | `openai/gpt-oss-120b` | Primary chat model. |
 | `OPENROUTER_FALLBACK_MODEL` | `openai/gpt-oss-120b:free` | Used when the primary returns 402 or 429. |

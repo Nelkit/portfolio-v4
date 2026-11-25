@@ -82,6 +82,13 @@ export const es: Dictionary = {
 		messageAria: 'Mensaje',
 		modelTitle: 'Modelo que impulsa a este agente',
 		send: 'Enviar',
+		errors: {
+			minute: (minutes: number) => `Estás enviando mensajes muy rápido. Inténtalo de nuevo en ${minutes} min.`,
+			day: () => 'Llegaste al límite de mensajes de hoy. Vuelve mañana o escríbeme directamente.',
+			global: () => 'El agente llegó a su límite diario. Vuelve mañana o escríbeme directamente.',
+			invalid: () => 'No pude procesar ese mensaje. Prueba con una pregunta más corta.',
+			failed: () => 'Algo salió mal. Inténtalo de nuevo o escríbeme directamente.',
+		},
 		voice: {
 			start: 'Dictar tu pregunta',
 			stop: 'Detener el dictado',

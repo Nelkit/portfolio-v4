@@ -87,6 +87,13 @@ export const en = {
 		messageAria: 'Message',
 		modelTitle: 'Model powering this agent',
 		send: 'Send',
+		errors: {
+			minute: (minutes: number) => `You are sending messages very fast. Try again in ${minutes} min.`,
+			day: () => 'You reached today\'s message limit. Come back tomorrow or write to me directly.',
+			global: () => 'The agent reached its daily limit. Come back tomorrow or write to me directly.',
+			invalid: () => 'I could not process that message. Try a shorter question.',
+			failed: () => 'Something went wrong. Try again or write to me directly.',
+		},
 		voice: {
 			start: 'Dictate your question',
 			stop: 'Stop dictation',
