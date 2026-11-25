@@ -3,6 +3,7 @@ import { streamText, convertToModelMessages, UIMessage } from 'ai';
 import { Client } from '@notionhq/client';
 import type { BlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { chatModels, modelLabel } from '@/app/lib/chat/models';
+import { responseLanguageRule } from '@/app/lib/chat/response-language';
 
 export const maxDuration = 30;
 
@@ -58,7 +59,7 @@ function extractText(block: BlockObjectResponse): string {
 	return '';
 }
 
-function buildSystemPrompt(knowledgeBase: string): string {
+function buildSystemPrompt(knowledgeBase: string, languageRule: string): string {
 	return `You are Nelkit's portfolio agent — a smart, concise assistant that answers questions about Nelkit Chavez based ONLY on the knowledge base below.
 
 ## How to read the conversation
@@ -68,7 +69,7 @@ function buildSystemPrompt(knowledgeBase: string): string {
 - If the latest message and a previous answer are unrelated, ignore the previous topic entirely.
 
 ## Answering rules
-- Answer in the same language the user writes in (Spanish or English)
+- ${languageRule}
 - Be direct and specific — no fluff
 - Answer ONLY what was asked. Do not volunteer the project list or a tech-stack dump unless the latest message actually asks for it.
 - If the answer is not in the knowledge base, say so plainly in ONE sentence (e.g. "I don't have that information") and suggest contacting Nelkit directly. Do NOT pad the gap by listing unrelated facts.
@@ -85,7 +86,9 @@ function buildSystemPrompt(knowledgeBase: string): string {
 Knowledge base:
 ---
 ${knowledgeBase}
----`;
+---
+
+Reminder: ${languageRule}`;
 }
 
 const { primary: PRIMARY_MODEL, fallback: FALLBACK_MODEL } = chatModels();
@@ -123,7 +126,7 @@ export async function POST(req: Request) {
 	}
 
 	const modelMessages = await convertToModelMessages(recentMessages);
-	const system = buildSystemPrompt(knowledgeBase);
+	const system = buildSystemPrompt(knowledgeBase, responseLanguageRule(body.locale));
 
 	try {
 		const result = await runStream(PRIMARY_MODEL, system, modelMessages);

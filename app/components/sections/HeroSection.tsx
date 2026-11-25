@@ -192,7 +192,8 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	const ask = (text: string, source: 'input' | 'suggestion' | 'fab' = 'input') => {
 		if (!text.trim() || isLoading) return;
 		voice.cancel(); // a late transcript must not refill the field
-		sendMessage({ text });
+		// The agent answers in the language the site is in right now.
+		sendMessage({ text }, { body: { locale } });
 		setInputVal('');
 		trackEvent('chat_message_sent', { source });
 	};
