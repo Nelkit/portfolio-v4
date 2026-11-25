@@ -78,6 +78,7 @@ export default async function ProjectPage({ params }: Params) {
 		getPublishedProjects(locale),
 	]);
 
+	// A real 404 status needs no loading.tsx above this page (the list keeps its own in (list)/).
 	if (!project) notFound();
 	const others = relatedProjects(all, project);
 	const meta = projectMetaLine(project);
