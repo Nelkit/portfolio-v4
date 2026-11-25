@@ -252,6 +252,17 @@ pnpm db:migrate      # apply pending migrations to TURSO_DATABASE_URL
 
 Migrations are manual: run them against production **before** deploying code that needs them.
 
+### Local backups (`scripts/backup/`)
+
+```bash
+pnpm backup                             # copy the database and its media to backups/<date>/
+pnpm backup:restore                     # list the backups
+pnpm backup:restore latest              # dry run: checks the backup and prints every change
+pnpm backup:restore latest --confirm    # saves the current state, then restores
+```
+
+Both use the database and storage in `.env`. `backups/` is git-ignored: it holds drafts, so keep it private. Each backup has `db.sqlite` (open it with any SQLite viewer), `media/` and `manifest.json` (row counts and checksums). A restore **replaces** every row of the saved tables in one atomic batch; it uploads missing or different media and never deletes files. To restore into a new database, run `pnpm db:migrate` on it first. The deployed site may show cached content until the next deploy.
+
 ### One-off data updates (`scripts/data/`)
 
 Content changes that must ship together with a release live here as idempotent scripts. They print every change by default and only write with `--confirm`, and they stop without writing if the database has something the plan does not know.
