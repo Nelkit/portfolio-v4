@@ -58,17 +58,18 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] Cambios llevados a `feat/site-improvements`, creada desde `origin/main`.
 - [x] Commits y push de `feat/site-improvements`.
-- [ ] Revisar y fusionar el PR.
+- [x] PR #36 fusionado y desplegado en producción (`bf95b49`, 2026-11-25).
+- [ ] Los previews de Vercel fallan (los de los 3 últimos PR; producción despliega bien): revisar el log.
 - [x] Bug del importador (`screenshotsPosition`): resuelto al borrar el importador, que ya no se usa (commit `1afdaf9`).
 - [x] Respaldo y restauración locales: `pnpm backup` y `pnpm backup:restore` (commit `fcf66d2`).
-- [ ] Probar en el navegador: capturas en "top" (escritorio y móvil), dictado con micrófono real y "Restart Chat".
+- [x] Probar en el navegador: capturas en "top" (escritorio y móvil), dictado con micrófono real y "Restart Chat". — **Probado por el propietario, también en iPhone (2026-11-25).**
 
 **Riesgo en producción**
 
-- [ ] Respaldos: confirmar en Vercel `CRON_SECRET` y `R2_BACKUP_BUCKET` (bucket privado), y que el cron diario termina bien. El endpoint rechaza peticiones anónimas (401), pero eso no prueba que el cron funcione.
-- [ ] Rate limiting compartido (login y chat): crear la base de Upstash y confirmar las variables de Upstash en Vercel.
+- [ ] Respaldos automáticos: `CRON_SECRET` ya existe en Vercel (según el propietario); confirmar `R2_BACKUP_BUCKET` (bucket R2 privado, jurisdicción US, accesible con el token) y que el cron deja `backups/AAAA-MM-DD.json` en él.
+- [x] Upstash conectado en producción: el propietario ve las claves `portfolio:ratelimit:chat-*` (2026-11-25).
 - [x] Límite de uso del chat: entrada validada, 8/min y 40/día por IP, 300/día en total (commit `693bf56`).
-- [ ] Poner un tope de crédito a la API key de OpenRouter, sin recarga automática.
+- [x] Guardrail de presupuesto de 5 USD en OpenRouter (según el propietario, 2026-11-25).
 - [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (commit `693bf56`).
 - [ ] Automatizar las migraciones en el deploy.
 
@@ -76,8 +77,8 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [ ] El blog en español no tiene posts (hay 1 en inglés).
 - [ ] El CV enlazado es el mismo archivo (`cv-en-…`) en los dos idiomas.
-- [ ] No existe `sitemap.xml` (404).
-- [ ] Soft 404 confirmado en producción: `/en/projects/nope` y `/en/blog/nope` responden 200.
+- [x] `sitemap.xml` y `robots.txt`; las URLs canónicas usan `www.nelkit.dev` (el dominio sin `www` redirige).
+- [x] Soft 404 corregido: proyectos y posts inexistentes responden 404 (falta confirmarlo en producción).
 
 ---
 
@@ -86,7 +87,7 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 ### Historia 1 — Login y titular
 
 - [x] Rate limiting del login: 5 intentos por IP cada 15 min (se comprueba antes de la contraseña), además de los 800 ms por intento fallido.
-- [ ] Crear una base Redis en Upstash (o la integración de Vercel) y configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` (o `KV_REST_API_URL`/`KV_REST_API_TOKEN`). Sin ellas el límite vive en la memoria de cada instancia y no se comparte en producción.
+- [x] Crear una base Redis en Upstash (o la integración de Vercel) y configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` (o `KV_REST_API_URL`/`KV_REST_API_TOKEN`). Sin ellas el límite vive en la memoria de cada instancia y no se comparte en producción. — **Cerrado 2026-11-25:** conectada en Vercel.
 - [ ] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy.
 - [x] `package-lock.json` borrado; el proyecto declara `packageManager: pnpm@10.14.0` (la versión que generó `pnpm-lock.yaml`).
 
@@ -114,7 +115,7 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran). — **Cerrado 2026-11-25:** 15 proyectos en producción.
 - [ ] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript).
-- [ ] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`.
+- [x] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`. — **Resuelto:** el `loading.tsx` quedó solo en los listados.
 - **Nota:** Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
 - [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
 
