@@ -110,6 +110,19 @@ export function ProjectForm({
 					<input name="featuredOrder" inputMode="numeric" defaultValue={initial.featuredOrder} aria-invalid={Boolean(errors.featuredOrder)} className={input} />
 					<FieldError message={errors.featuredOrder} />
 				</label>
+				<label className="flex flex-col gap-2">
+					<span className="text-sm text-ui-text">Screenshots position <span className="text-ui-faint">· where the project page shows them</span></span>
+					<select
+						name="screenshotsPosition"
+						defaultValue={initial.screenshotsPosition}
+						aria-invalid={Boolean(errors.screenshotsPosition)}
+						className={input}
+					>
+						<option value="top">Top: thumbnails under the main image</option>
+						<option value="bottom">Bottom: grid at the end of the page</option>
+					</select>
+					<FieldError message={errors.screenshotsPosition} />
+				</label>
 			</section>
 
 			<section className="flex flex-col gap-2">

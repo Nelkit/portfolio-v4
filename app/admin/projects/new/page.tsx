@@ -12,6 +12,7 @@ const EMPTY: ProjectFormValues = {
 	areaId: null,
 	featured: false,
 	featuredOrder: 0,
+	screenshotsPosition: 'bottom',
 	skills: [],
 	translations: { en: EMPTY_TRANSLATION, es: EMPTY_TRANSLATION },
 	links: [],

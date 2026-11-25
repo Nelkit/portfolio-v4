@@ -1,0 +1,1 @@
+ALTER TABLE `projects` ADD `screenshots_position` text DEFAULT 'bottom' NOT NULL;

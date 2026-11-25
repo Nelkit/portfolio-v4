@@ -2711,6 +2711,9 @@ footer {
 .proj-header {
   margin-bottom: 40px;
 }
+.proj-header:has(+ .proj-links-inline) {
+  margin-bottom: 24px;
+}
 .proj-meta {
   display: flex;
   align-items: center;
@@ -2816,7 +2819,7 @@ footer {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 16px 0 52px;
+  margin: 0 0 24px;
 }
 .proj-links {
   display: flex;
@@ -2830,7 +2833,7 @@ footer {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--accent);
-  padding: 9px 14px;
+  padding: 5px 14px;
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
   background: color-mix(in oklab, var(--accent) 6%, transparent);
@@ -2876,6 +2879,40 @@ footer {
   width: 100%;
   height: auto;
   transition: transform 0.4s var(--ease);
+}
+/* One row under the main image: thumbnails shrink to fit and never wrap.
+   At least 2 columns, so a single screenshot stays a thumbnail. */
+.proj-screenshots-strip {
+  grid-template-columns: repeat(max(2, var(--shot-count)), minmax(0, 1fr));
+  gap: clamp(3px, 1vw, 10px);
+  margin-bottom: 52px;
+}
+/* Phones: thumbnails keep a tappable width and the row scrolls sideways. */
+@media (max-width: 768px) {
+  .proj-screenshots-strip {
+    grid-template-columns: repeat(max(2, var(--shot-count)), minmax(64px, 1fr));
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    /* Room for the hover lift, which overflow would clip. */
+    padding-block: 4px;
+  }
+}
+/* Keep image and thumbnails together as one block. */
+.proj-image-wrap:has(+ .proj-screenshots-strip) {
+  margin-bottom: 12px;
+}
+.proj-screenshots-strip .proj-screenshot-wrap {
+  aspect-ratio: 16 / 10;
+  border-radius: clamp(4px, 1vw, 10px);
+}
+.proj-screenshots-strip .proj-screenshot {
+  height: 100%;
+  object-fit: cover;
+}
+/* The zoom badge would cover the small thumbnails. */
+.proj-screenshots-strip .proj-screenshot-zoom {
+  display: none;
 }
 .proj-screenshot-wrap:hover .proj-screenshot {
   transform: scale(1.04);
@@ -3021,7 +3058,7 @@ footer {
 /* ≤ 860px — Tablet portrait: project detail aside stacks below main content */
 @media (max-width: 860px) {
   .proj-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .proj-aside {
     position: static;

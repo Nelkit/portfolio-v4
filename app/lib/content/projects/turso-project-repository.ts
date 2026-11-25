@@ -19,6 +19,7 @@ const projectColumns = (input: ProjectInput) => ({
 	areaId: input.areaId,
 	featured: input.featured,
 	featuredOrder: input.featuredOrder,
+	screenshotsPosition: input.screenshotsPosition,
 });
 
 /** (Re)writes translations, links and skills of a project inside a transaction (images untouched). */
@@ -84,6 +85,7 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 				areaId: row.areaId,
 				featured: row.featured,
 				featuredOrder: row.featuredOrder,
+				screenshotsPosition: row.screenshotsPosition,
 				skills: skillRows.filter((s) => s.projectId === row.id).map((s) => s.name),
 				imageKey: row.imageKey,
 				translations,

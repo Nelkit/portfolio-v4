@@ -32,6 +32,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 		areaId: project.areaId,
 		featured: project.featured,
 		featuredOrder: project.featuredOrder,
+		screenshotsPosition: project.screenshotsPosition,
 		skills: project.skills,
 		links: project.links,
 		translations: Object.fromEntries(

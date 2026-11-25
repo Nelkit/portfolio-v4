@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
@@ -8,13 +8,22 @@ import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type Shot = { url: string; alt: string };
 
-export function ScreenshotGallery({ screenshots }: { screenshots: Shot[] }) {
+type Props = {
+	screenshots: Shot[];
+	/** 'grid' wraps; 'strip' keeps every thumbnail in one row, shrinking them to fit. */
+	variant?: 'grid' | 'strip';
+};
+
+export function ScreenshotGallery({ screenshots, variant = 'grid' }: Props) {
 	const [index, setIndex] = useState(-1);
 	const { t } = useI18n();
 
 	return (
 		<>
-			<div className="proj-screenshots">
+			<div
+				className={variant === 'strip' ? 'proj-screenshots proj-screenshots-strip' : 'proj-screenshots'}
+				style={{ '--shot-count': screenshots.length } as CSSProperties}
+			>
 				{screenshots.map((s, i) => (
 					<button
 						key={s.url}

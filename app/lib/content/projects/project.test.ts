@@ -25,6 +25,20 @@ describe('slugify', () => {
 });
 
 describe('parseProjectForm', () => {
+	it('reads the screenshots position and defaults to bottom', () => {
+		for (const [raw, expected] of [['top', 'top'], ['bottom', 'bottom'], [undefined, 'bottom']] as const) {
+			const result = parseProjectForm({ ...validFields, screenshotsPosition: raw });
+			if (!result.ok) throw new Error('expected ok');
+			expect(result.value.screenshotsPosition).toBe(expected);
+		}
+	});
+
+	it('rejects an unknown screenshots position', () => {
+		const result = parseProjectForm({ ...validFields, screenshotsPosition: 'left' });
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.errors.screenshotsPosition).toBeDefined();
+	});
+
 	it('accepts a complete bilingual project and trims values', () => {
 		const result = parseProjectForm({ ...validFields, slug: 'banking' });
 		expect(result.ok).toBe(true);
@@ -151,6 +165,7 @@ describe('toProjectView', () => {
 		areaId: 2,
 		featured: true,
 		featuredOrder: 3,
+		screenshotsPosition: 'top',
 		skills: ['Swift', 'CoreML'],
 		imageKey: 'projects/7/cover-a.webp',
 		screenshots: [

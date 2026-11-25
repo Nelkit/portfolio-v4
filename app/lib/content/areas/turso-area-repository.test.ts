@@ -29,6 +29,7 @@ describe('TursoAreaRepository', () => {
 		areaId,
 		featured: false,
 		featuredOrder: 0,
+		screenshotsPosition: 'bottom' as const,
 		skills: [],
 		translations: { en: translation(slug), es: translation(slug) },
 		links: [],

@@ -27,6 +27,10 @@ export type ProjectLinkLabel = (typeof PROJECT_LINK_LABELS)[number];
 /** A project link: `type` picks the icon, `label` is a standard label key. */
 export type ProjectLink = { type: LinkType; label: ProjectLinkLabel; url: string };
 
+/** Detail page: 'top' = thumbnail row under the main image; 'bottom' = grid at the end. */
+export const SCREENSHOTS_POSITIONS = ['top', 'bottom'] as const;
+export type ScreenshotsPosition = (typeof SCREENSHOTS_POSITIONS)[number];
+
 /** What the admin saves: the slug is shared by every language (keeps the ES/EN switch working). */
 export type ProjectInput = {
 	slug: string;
@@ -38,6 +42,7 @@ export type ProjectInput = {
 	/** Shown on the home page, sorted by featuredOrder. */
 	featured: boolean;
 	featuredOrder: number;
+	screenshotsPosition: ScreenshotsPosition;
 	/** Ordered skill names, resolved against the shared catalog (case-insensitive). */
 	skills: string[];
 	translations: Record<Locale, ProjectTranslation>;
@@ -86,6 +91,7 @@ export type ProjectView = {
 	area: AreaView | null;
 	featured: boolean;
 	featuredOrder: number;
+	screenshotsPosition: ScreenshotsPosition;
 	skills: string[];
 	links: (ProjectLink & { isExternal: boolean })[];
 	imageUrl: string | null;
@@ -181,12 +187,16 @@ export function parseProjectForm(fields: Record<string, unknown>): ProjectFormRe
 	const featuredOrder = rawOrder === '' ? { success: true as const, data: 0 } : ORDER.safeParse(rawOrder);
 	if (!featuredOrder.success) errors.featuredOrder = 'Use a whole number from 0';
 
+	const screenshotsPosition = z.enum(SCREENSHOTS_POSITIONS).safeParse(fields.screenshotsPosition ?? 'bottom');
+	if (!screenshotsPosition.success) errors.screenshotsPosition = 'Choose top or bottom';
+
 	const skills = parseSkillNames(fields.skills);
 	if (!skills.ok) errors.skills = skills.error;
 
 	if (
 		Object.keys(errors).length > 0 ||
-		!organisation.success || !year.success || !links.ok || !area.success || !featuredOrder.success || !skills.ok
+		!organisation.success || !year.success || !links.ok || !area.success || !featuredOrder.success ||
+		!screenshotsPosition.success || !skills.ok
 	) {
 		return { ok: false, errors };
 	}
@@ -199,6 +209,7 @@ export function parseProjectForm(fields: Record<string, unknown>): ProjectFormRe
 			areaId: area.data,
 			featured,
 			featuredOrder: featuredOrder.data,
+			screenshotsPosition: screenshotsPosition.data,
 			skills: skills.skills,
 			translations,
 			links: links.links,
@@ -238,6 +249,7 @@ export function toProjectView(
 		area: areas.find((a) => a.id === record.areaId) ?? null,
 		featured: record.featured,
 		featuredOrder: record.featuredOrder,
+		screenshotsPosition: record.screenshotsPosition,
 		skills: record.skills,
 		links: record.links.map((l) => ({ ...l, isExternal: l.type !== 'email' })),
 		imageUrl: record.imageKey ? publicUrl(record.imageKey) : null,
