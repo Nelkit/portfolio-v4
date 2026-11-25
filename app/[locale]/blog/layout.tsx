@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { SiteChrome } from '@/app/components/SiteChrome';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { SITE_URL } from '@/app/lib/seo/site';
 
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Omit<Props, 'children'>): Promise<Metadata> {
 	const { locale, t } = await resolveLocale(params);
-	const url = `https://nelkit.dev/${locale}/blog`;
+	const url = `${SITE_URL}/${locale}/blog`;
 	return {
 		title: t.meta.blogTitle,
 		description: t.meta.blogDescription,

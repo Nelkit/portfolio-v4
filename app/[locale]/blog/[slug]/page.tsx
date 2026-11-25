@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { IArrowLeft } from '@/app/components/icons';
 import { Markdown } from '@/app/components/Markdown';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { SITE_URL } from '@/app/lib/seo/site';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { localizePath } from '@/app/lib/i18n/routing';
 import type { Dictionary } from '@/app/lib/i18n/dictionaries';
@@ -28,15 +29,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	const { post } = await getPublishedPost(locale, slug);
 	if (!post) return {};
 
-	const url = `https://nelkit.dev/${locale}/blog/${slug}`;
+	const url = `${SITE_URL}/${locale}/blog/${slug}`;
 	// Relative URLs (local uploads) are resolved against metadataBase.
-	const ogImage = post.coverUrl ?? 'https://nelkit.dev/img/og-image.jpg';
+	const ogImage = post.coverUrl ?? `${SITE_URL}/img/og-image.jpg`;
 	return {
 		title: post.title,
 		description: post.summary,
 		alternates: {
 			canonical: url,
-			languages: Object.fromEntries(post.locales.map((l) => [l, `https://nelkit.dev/${l}/blog/${slug}`])),
+			languages: Object.fromEntries(post.locales.map((l) => [l, `${SITE_URL}/${l}/blog/${slug}`])),
 		},
 		openGraph: {
 			type: 'article',

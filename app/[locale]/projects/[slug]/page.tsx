@@ -6,6 +6,7 @@ import { TrackProjectView } from '@/app/components/TrackProjectView';
 import { Markdown } from '@/app/components/Markdown';
 import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { SITE_URL } from '@/app/lib/seo/site';
 import { LOCALES } from '@/app/lib/i18n/locales';
 import {
 	getPublishedProject,
@@ -45,9 +46,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	const project = await getPublishedProject(locale, slug);
 	if (!project) return {};
 
-	const url = `https://nelkit.dev/${locale}/projects/${slug}`;
+	const url = `${SITE_URL}/${locale}/projects/${slug}`;
 	// Relative URLs (local uploads) are resolved against metadataBase.
-	const ogImage = project.imageUrl ?? 'https://nelkit.dev/img/og-image.jpg';
+	const ogImage = project.imageUrl ?? `${SITE_URL}/img/og-image.jpg`;
 
 	return {
 		title: project.title,

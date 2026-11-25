@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { SITE_URL } from '@/app/lib/seo/site';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
 import { getPublishedAreas } from '@/app/lib/content/areas/area-service';
 import { ProjectsListGrid } from './ProjectsListGrid';
@@ -11,7 +12,7 @@ type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale, t } = await resolveLocale(params);
-	const url = `https://nelkit.dev/${locale}/projects`;
+	const url = `${SITE_URL}/${locale}/projects`;
 	return {
 		title: t.meta.projectsTitle,
 		description: t.meta.projectsDescription,
@@ -21,14 +22,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 			url,
 			title: `${t.meta.projectsTitle} · Nelkit Chavez`,
 			description: t.meta.projectsDescription,
-			images: [{ url: 'https://nelkit.dev/img/og-image.jpg', width: 1200, height: 630 }],
+			images: [{ url: `${SITE_URL}/img/og-image.jpg`, width: 1200, height: 630 }],
 		},
 		// Same description everywhere (otherwise Twitter inherits the home one from the layout).
 		twitter: {
 			card: 'summary_large_image',
 			title: `${t.meta.projectsTitle} · Nelkit Chavez`,
 			description: t.meta.projectsDescription,
-			images: ['https://nelkit.dev/img/og-image.jpg'],
+			images: [`${SITE_URL}/img/og-image.jpg`],
 		},
 	};
 }
