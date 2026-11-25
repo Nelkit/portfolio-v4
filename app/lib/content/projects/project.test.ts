@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseProjectForm, PROJECT_LINK_LABELS, slugify, toProjectView, type ProjectRecord, type ProjectTranslation } from './project';
+import { parseProjectForm, PROJECT_LABELS_BY_TYPE, PROJECT_LINK_LABELS, slugify, toProjectView, type ProjectRecord, type ProjectTranslation } from './project';
 
 const validFields = {
 	slug: '',
@@ -136,8 +136,26 @@ describe('parseProjectForm', () => {
 		if (!result.ok) expect(result.errors.links).toBeDefined();
 	});
 
+	it.each([
+		['github', 'code', true],
+		['github', 'github-org', true],
+		['github', 'website', false],
+		['link', 'python-package', true],
+		['link', 'jupyter-notebook', true],
+		['link', 'code', false],
+		['link', 'github-org', false],
+		['linkedin', 'website', false],
+	])('link type %s with label %s → valid: %s', (type, label, valid) => {
+		const links = JSON.stringify([{ type, label, url: 'https://a.co' }]);
+		expect(parseProjectForm({ ...validFields, links }).ok).toBe(valid);
+	});
+
+	it('offers every label under exactly one link type', () => {
+		expect(Object.values(PROJECT_LABELS_BY_TYPE).flat().sort()).toEqual([...PROJECT_LINK_LABELS].sort());
+	});
+
 	it('only accepts the standard link labels', () => {
-		expect(PROJECT_LINK_LABELS).toEqual(['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org']);
+		expect(PROJECT_LINK_LABELS).toEqual(['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org', 'python-package', 'jupyter-notebook']);
 		const links = JSON.stringify([{ type: 'github', label: 'Code (frontend)', url: 'https://github.com/a/b' }]);
 		const result = parseProjectForm({ ...validFields, links });
 		expect(result.ok).toBe(false);

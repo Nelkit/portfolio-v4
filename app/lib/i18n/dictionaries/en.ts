@@ -173,6 +173,8 @@ export const en = {
 			'app-store': 'App Store',
 			website: 'Website',
 			'github-org': 'GitHub org',
+			'python-package': 'Python Package',
+			'jupyter-notebook': 'Jupyter Notebook',
 		} satisfies Record<ProjectLinkLabel, string>,
 	},
 };

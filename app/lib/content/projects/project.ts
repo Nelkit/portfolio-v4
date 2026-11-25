@@ -21,8 +21,14 @@ export type ProjectTranslation = {
 };
 
 /** The only labels a project link can have; each page translates them. */
-export const PROJECT_LINK_LABELS = ['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org'] as const;
+export const PROJECT_LINK_LABELS = ['live-demo', 'video-demo', 'code', 'api-docs', 'app-store', 'website', 'github-org', 'python-package', 'jupyter-notebook'] as const;
 export type ProjectLinkLabel = (typeof PROJECT_LINK_LABELS)[number];
+
+/** Labels each link type can have. Types missing here are not available for projects. */
+export const PROJECT_LABELS_BY_TYPE = {
+	github: ['code', 'github-org'],
+	link: ['live-demo', 'video-demo', 'api-docs', 'app-store', 'website', 'python-package', 'jupyter-notebook'],
+} as const satisfies Partial<Record<LinkType, readonly ProjectLinkLabel[]>>;
 
 /** A project link: `type` picks the icon, `label` is a standard label key. */
 export type ProjectLink = { type: LinkType; label: ProjectLinkLabel; url: string };
@@ -223,7 +229,14 @@ export function parseProjectLinks(raw: unknown): { ok: true; links: ProjectLink[
 	if (!parsed.ok) return parsed;
 	const invalid = parsed.links.find((l) => !isProjectLinkLabel(l.label));
 	if (invalid) return { ok: false, error: `Unknown link label: ${invalid.label}` };
+	const mismatch = parsed.links.find((l) => !labelsForType(l.type).some((label) => label === l.label));
+	if (mismatch) return { ok: false, error: `“${mismatch.label}” is not available for ${mismatch.type} links` };
 	return { ok: true, links: parsed.links as ProjectLink[] };
+}
+
+/** Labels allowed for a link type; empty when projects cannot use that type. */
+function labelsForType(type: LinkType): readonly ProjectLinkLabel[] {
+	return type in PROJECT_LABELS_BY_TYPE ? PROJECT_LABELS_BY_TYPE[type as keyof typeof PROJECT_LABELS_BY_TYPE] : [];
 }
 
 export function isProjectLinkLabel(label: string): label is ProjectLinkLabel {

@@ -11,9 +11,10 @@ import { Button } from '@/app/admin/components/ui/Button';
 import { safeAction } from '@/app/admin/components/ui/feedback';
 import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 import {
-	PROJECT_LINK_LABELS,
+	PROJECT_LABELS_BY_TYPE,
 	projectField,
 	type ProjectFormValues,
+	type ProjectLinkLabel,
 	type ProjectTranslation,
 } from '@/app/lib/content/projects/project';
 import { en } from '@/app/lib/i18n/dictionaries/en';
@@ -24,7 +25,12 @@ const input =
 	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 /** Standard link labels, shown in English in the admin (the site translates them). */
-const LINK_LABEL_OPTIONS = PROJECT_LINK_LABELS.map((value) => ({ value, label: en.projects.linkLabels[value] }));
+const labelOptions = (labels: readonly ProjectLinkLabel[]) =>
+	labels.map((value) => ({ value, label: en.projects.linkLabels[value] }));
+const LINK_LABEL_OPTIONS = {
+	link: labelOptions(PROJECT_LABELS_BY_TYPE.link),
+	github: labelOptions(PROJECT_LABELS_BY_TYPE.github),
+};
 
 /** Detail page sections after the Overview (the description), in display order. */
 const DETAIL_SECTIONS = [

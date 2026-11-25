@@ -91,8 +91,8 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 				translations,
 				links: linkRows
 					.filter((l) => l.projectId === row.id)
-					// Labels outside the standard set (legacy rows) are shown as a generic website link.
-					.map((l) => ({ type: l.type as LinkType, label: isProjectLinkLabel(l.label) ? l.label : 'website', url: l.url })),
+					// Labels outside the standard set (legacy rows) get the generic label of their type.
+					.map((l) => ({ type: l.type as LinkType, label: isProjectLinkLabel(l.label) ? l.label : l.type === 'github' ? 'code' : 'website', url: l.url })),
 				screenshots: screenshotRows
 					.filter((s) => s.projectId === row.id)
 					.map((s) => ({ id: s.id, key: s.key })),

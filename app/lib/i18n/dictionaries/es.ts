@@ -165,6 +165,8 @@ export const es: Dictionary = {
 			'app-store': 'App Store',
 			website: 'Sitio web',
 			'github-org': 'Organización en GitHub',
+			'python-package': 'Paquete de Python',
+			'jupyter-notebook': 'Jupyter Notebook',
 		},
 	},
 };
