@@ -6,6 +6,7 @@ import { LOCALES } from "@/app/lib/i18n/locales";
 import { isLocale } from "@/app/lib/i18n/routing";
 import { getDictionary } from "@/app/lib/i18n/dictionaries";
 import { I18nProvider } from "@/app/lib/i18n/I18nProvider";
+import { SITE_URL } from "@/app/lib/seo/site";
 import "../globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -20,7 +21,6 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "700"],
 });
 
-const SITE_URL = 'https://nelkit.dev';
 const OG_IMAGE = `${SITE_URL}/img/og-image.jpg`;
 
 type LayoutProps = {

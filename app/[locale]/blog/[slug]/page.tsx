@@ -1,15 +1,15 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { IArrowLeft } from '@/app/components/icons';
 import { Markdown } from '@/app/components/Markdown';
 import { resolveLocale } from '@/app/lib/i18n/server';
+import { SITE_URL } from '@/app/lib/seo/site';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { localizePath } from '@/app/lib/i18n/routing';
 import type { Dictionary } from '@/app/lib/i18n/dictionaries';
 import { getPublishedPost, getPublishedPosts, postRepository } from '@/app/lib/content/posts/post-service';
-import { publishedOnly, relatedPosts } from '@/app/lib/content/posts/post';
+import { publishedOnly, relatedPosts, type PostView } from '@/app/lib/content/posts/post';
 import { highlightMarkdownCode } from '@/app/lib/content/posts/highlight-post';
 import { uploadBaseUrl } from '@/app/lib/storage/storage';
 
@@ -29,15 +29,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 	const { post } = await getPublishedPost(locale, slug);
 	if (!post) return {};
 
-	const url = `https://nelkit.dev/${locale}/blog/${slug}`;
+	const url = `${SITE_URL}/${locale}/blog/${slug}`;
 	// Relative URLs (local uploads) are resolved against metadataBase.
-	const ogImage = post.coverUrl ?? 'https://nelkit.dev/img/og-image.jpg';
+	const ogImage = post.coverUrl ?? `${SITE_URL}/img/og-image.jpg`;
 	return {
 		title: post.title,
 		description: post.summary,
 		alternates: {
 			canonical: url,
-			languages: Object.fromEntries(post.locales.map((l) => [l, `https://nelkit.dev/${l}/blog/${slug}`])),
+			languages: Object.fromEntries(post.locales.map((l) => [l, `${SITE_URL}/${l}/blog/${slug}`])),
 		},
 		openGraph: {
 			type: 'article',
@@ -60,6 +60,13 @@ export default async function BlogPostPage({ params }: Params) {
 	const { locale, t, href } = await resolveLocale(params);
 	const { slug } = await params;
 
+	// Outside any Suspense boundary (and there is no loading.tsx above): the
+	// status is still unsent, so these answer with a real 404 / redirect.
+	const { post, exists } = await getPublishedPost(locale, slug);
+	// Written only in the other language (e.g. after the ES/EN switch) → this language's list.
+	if (!post && exists) redirect(localizePath(locale, '/blog'));
+	if (!post) notFound();
+
 	return (
 		<div className="proj-detail-root">
 			<div className="bg-fx" aria-hidden="true">
@@ -72,9 +79,7 @@ export default async function BlogPostPage({ params }: Params) {
 					<IArrowLeft /> {t.blog.allWriting}
 				</Link>
 
-				<Suspense fallback={<PostSkeleton />}>
-					<PostContent slug={slug} locale={locale} t={t} />
-				</Suspense>
+				<PostContent post={post} locale={locale} t={t} />
 			</div>
 		</div>
 	);
@@ -82,12 +87,8 @@ export default async function BlogPostPage({ params }: Params) {
 
 const RELATED_POSTS = 3;
 
-async function PostContent({ slug, locale, t }: { slug: string; locale: Locale; t: Dictionary }) {
-	const [{ post, exists }, all] = await Promise.all([getPublishedPost(locale, slug), getPublishedPosts(locale)]);
-	// Written only in the other language (e.g. after the ES/EN switch) → this language's list.
-	if (!post && exists) redirect(localizePath(locale, '/blog'));
-	if (!post) notFound();
-
+async function PostContent({ post, locale, t }: { post: PostView; locale: Locale; t: Dictionary }) {
+	const all = await getPublishedPosts(locale);
 	const highlighted = await highlightMarkdownCode(post.body);
 	const related = relatedPosts(post, all, RELATED_POSTS);
 	const href = (path: string) => localizePath(locale, path);
@@ -135,22 +136,6 @@ async function PostContent({ slug, locale, t }: { slug: string; locale: Locale; 
 					</div>
 				</aside>
 			)}
-		</article>
-	);
-}
-
-// Inline skeleton shown while PostContent streams in.
-function PostSkeleton() {
-	return (
-		<article className="post-article">
-			<header className="post-header">
-				<div className="skeleton skel-title" />
-				<div className="skeleton skel-line" style={{ width: '70%' }} />
-			</header>
-			<div className="skeleton skel-line" />
-			<div className="skeleton skel-line" />
-			<div className="skeleton skel-line" style={{ width: '92%' }} />
-			<div className="skeleton skel-line" style={{ width: '50%' }} />
 		</article>
 	);
 }
