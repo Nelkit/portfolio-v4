@@ -66,19 +66,21 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 **Riesgo en producción**
 
-- [ ] Respaldos automáticos: `CRON_SECRET` ya existe en Vercel (según el propietario); confirmar `R2_BACKUP_BUCKET` (bucket R2 privado, jurisdicción US, accesible con el token) y que el cron deja `backups/AAAA-MM-DD.json` en él.
+- [x] Respaldos automáticos: `CRON_SECRET` ya existe en Vercel (según el propietario); confirmar `R2_BACKUP_BUCKET` (bucket R2 privado, jurisdicción US, accesible con el token) y que el cron deja `backups/AAAA-MM-DD.json` en él. — **Cerrado 2026-11-25:** el propietario ejecutó el endpoint y el JSON quedó en el bucket.
 - [x] Upstash conectado en producción: el propietario ve las claves `portfolio:ratelimit:chat-*` (2026-11-25).
 - [x] Límite de uso del chat: entrada validada, 8/min y 40/día por IP, 300/día en total (commit `693bf56`).
 - [x] Guardrail de presupuesto de 5 USD en OpenRouter (según el propietario, 2026-11-25).
 - [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (commit `693bf56`).
+- [x] El chat solo leía los primeros 100 bloques de Notion (35 % de la página): ahora lee todo, con tablas y URLs; prompt ajustado y evaluación `pnpm chat:eval`; links y Markdown en las respuestas.
+- [ ] Elegir el modelo del chat con `pnpm chat:eval` y usar el mismo en local y producción: `gemini-2.5-flash-lite` (producción) dio 429 de su proveedor en las pruebas.
 - [ ] Automatizar las migraciones en el deploy.
 
 **Contenido y SEO**
 
 - [ ] El blog en español no tiene posts (hay 1 en inglés).
 - [ ] El CV enlazado es el mismo archivo (`cv-en-…`) en los dos idiomas.
-- [x] `sitemap.xml` y `robots.txt`; las URLs canónicas usan `www.nelkit.dev` (el dominio sin `www` redirige).
-- [x] Soft 404 corregido: proyectos y posts inexistentes responden 404 (falta confirmarlo en producción).
+- [x] `sitemap.xml` y `robots.txt`; las URLs canónicas usan `www.nelkit.dev` (el dominio sin `www` redirige). _Commit `5deb25b`, verificado en producción._
+- [x] Soft 404 corregido: proyectos y posts inexistentes responden 404 (confirmado en producción, `34d148a`).
 
 ---
 
@@ -262,7 +264,7 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 ### Generales
 
 - [x] R2 respondía `NoSuchBucket`/`AccessDenied` con credenciales correctas: el bucket tiene jurisdicción **US explícita** y vive en `<account>.us.r2.cloudflarestorage.com`, pero el código usaba siempre el endpoint por defecto. Ahora se configura con `R2_JURISDICTION` (`us` | `eu` | `fedramp`; vacío = por defecto).
-- [ ] Agregar `R2_JURISDICTION=us` en Vercel (además de las otras `R2_*`).
+- [x] Agregar `R2_JURISDICTION=us` en Vercel (además de las otras `R2_*`). — **Cerrado 2026-11-25:** producción escribe en R2.
 - [ ] Borrar en Cloudflare los tokens de R2 de prueba que ya no se usan.
 
 - [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
@@ -271,8 +273,8 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Primer deploy de preview y verificación de punta a punta. — **Cerrado 2026-11-25:** el sitio está en producción (`www.nelkit.dev`).
 - [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
 - [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
-- [ ] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo).
-- [ ] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores.
+- [x] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo). — **Cerrado 2026-11-25:** configurado y probado.
+- [x] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores. — **Cerrado 2026-11-25:** configurado; el respaldo se guardó en él.
 - [ ] (Opcional) Regla de ciclo de vida en el bucket de respaldos para borrar los de más de N días.
 - [x] Strapi retirado en la #11: `strapi.ts`, `constant.ts`, `PostBody`, `inlineMarkdown`, los `transform*` de `content.ts`, `CareerTimeline.tsx`, las dependencias `qs`, `@types/qs` y `@strapi/blocks-react-renderer` y los `remotePatterns` de Strapi.
 - [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa).
