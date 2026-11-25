@@ -26,6 +26,7 @@ const view = (slug: string, patch: Partial<ProjectView> = {}): ProjectView => ({
 	area: null,
 	featured: false,
 	featuredOrder: 0,
+	screenshotsPosition: 'bottom',
 	skills: [],
 	links: [],
 	imageUrl: null,

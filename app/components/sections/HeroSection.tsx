@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect, RefObject } from 'react';
+import { useCallback, useState, useRef, useEffect, RefObject } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { trackEvent } from '@/app/lib/analytics';
+import { parseChatError } from '@/app/lib/chat/chat-error';
+import { MAX_QUESTION_CHARS, recentTextMessages } from '@/app/lib/chat/chat-request';
+import { useVoiceInput } from '@/app/lib/chat/useVoiceInput';
 import {
-	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
+	IMail, IDown, IArrowUp, IPlus, IMic, IRestart, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon, IBot, IUser,
 } from '@/app/components/icons';
 import { LanguageSwitch } from '@/app/components/LanguageSwitch';
@@ -39,6 +42,11 @@ const NAV_ICONS: Record<string, () => React.ReactElement> = {
 	writing:   IPen,
 	contact:   IAt,
 };
+
+const chatTransport = new DefaultChatTransport({
+	api: '/api/chat',
+	prepareSendMessagesRequest: ({ messages, body }) => ({ body: { ...body, messages: recentTextMessages(messages) } }),
+});
 
 const SUGGESTION_KEYS = ['stack', 'remote', 'ml'] as const;
 
@@ -137,14 +145,16 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	onInputFocusChange?: (focused: boolean) => void;
 	chatModel: string;
 }) {
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputVal, setInputVal] = useState('');
+	// Dictation bypasses maxLength, so the text is cut here.
+	const setDictated = useCallback((text: string) => setInputVal(text.slice(0, MAX_QUESTION_CHARS)), []);
+	const voice = useVoiceInput(locale, setDictated);
 
-	const { messages, sendMessage, status } = useChat({
-		transport: new DefaultChatTransport({ api: '/api/chat' }),
-	});
+	const { messages, sendMessage, status, error } = useChat({ transport: chatTransport });
+	const chatError = error ? parseChatError(error.message) : null;
 
 	const isLoading = status === 'streaming' || status === 'submitted';
 	const started = messages.length > 0;
@@ -160,7 +170,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	useEffect(() => {
 		const el = threadRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
-	}, [messages]);
+	}, [messages, error]);
 
 	// When the input gets focus on mobile, the virtual keyboard opens and the
 	// browser does its own (unpredictable) auto-scroll. We WAIT for that to finish,
@@ -189,7 +199,9 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 
 	const ask = (text: string, source: 'input' | 'suggestion' | 'fab' = 'input') => {
 		if (!text.trim() || isLoading) return;
-		sendMessage({ text });
+		voice.cancel(); // a late transcript must not refill the field
+		// The agent answers in the language the site is in right now.
+		sendMessage({ text: text.slice(0, MAX_QUESTION_CHARS) }, { body: { locale } });
 		setInputVal('');
 		trackEvent('chat_message_sent', { source });
 	};
@@ -206,8 +218,13 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	return (
 		<main className="chat">
 			<div className="chat-top">
-				<div className="status-pill">
-					<i className="dot-live" /> {t.chat.status}
+				<div className="chat-status">
+					<div className="status-pill">
+						<i className="dot-live" /> {t.chat.status}
+					</div>
+					{started && (
+						<button type="button" className="new-chat" onClick={onReset}><IRestart /> {t.chat.restartChat}</button>
+					)}
 				</div>
 				<div className="profile">
 					{avatarImage?.url ? (
@@ -223,9 +240,6 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						<b>{title || 'Nelkit Chavez'}</b>
 						<span>{subtitle || t.chat.defaultSubtitle}</span>
 					</div>
-					{started && (
-						<button className="new-chat" onClick={onReset}><ISpark /> {t.chat.newChat}</button>
-					)}
 				</div>
 			</div>
 
@@ -261,6 +275,19 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 									<div className="bubble"><div className="typing"><i/><i/><i/></div></div>
 								</div>
 							)}
+							{chatError && (
+								<div className="msg agent" role="alert">
+									<div className="av"><IBot /></div>
+									<div className="bubble">
+										<p>{t.chat.errors[chatError.code](chatError.minutes)}</p>
+										<p>
+											<a href="#contact" onClick={(e) => { e.preventDefault(); onNav('contact'); }}>
+												{t.common.getInTouch}
+											</a>
+										</p>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}
@@ -282,11 +309,15 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 				<form className="input-box" onSubmit={(e) => { e.preventDefault(); ask(inputVal); }}>
 					<input
 						ref={inputRef}
+						maxLength={MAX_QUESTION_CHARS}
 						value={inputVal}
-						onChange={(e) => setInputVal(e.target.value)}
+						onChange={(e) => {
+							voice.cancel(); // typing takes over from dictation
+							setInputVal(e.target.value);
+						}}
 						onFocus={handleInputFocus}
 						onBlur={handleInputBlur}
-						placeholder={started ? t.chat.placeholderFollowUp : t.chat.placeholder}
+						placeholder={voice.listening ? t.chat.voice.listening : started ? t.chat.placeholderFollowUp : t.chat.placeholder}
 						aria-label={t.chat.messageAria}
 					/>
 					<div className="input-bar">
@@ -295,10 +326,17 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 							{modelName}
 						</span>
 						<div className="input-actions">
-							<button type="button" className="io-mic" aria-label={t.chat.focusInput}
-							        onClick={() => inputRef.current?.focus()}>
-								<IMic />
-							</button>
+							{voice.supported && (
+								<button
+									type="button"
+									className={'io-mic' + (voice.listening ? ' is-listening' : '')}
+									aria-label={voice.listening ? t.chat.voice.stop : t.chat.voice.start}
+									aria-pressed={voice.listening}
+									onClick={() => (voice.listening ? voice.stop() : voice.start(inputVal))}
+								>
+									<IMic />
+								</button>
+							)}
 							<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label={t.chat.send}>
 								<IArrowUp />
 							</button>
@@ -306,7 +344,9 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 					</div>
 				</form>
 				<div className="hint">
-					<span>{t.chat.hint}</span>
+					<span role="status">
+						{voice.error ? t.chat.voice.errors[voice.error] : voice.listening ? t.chat.voice.listening : t.chat.hint}
+					</span>
 				</div>
 			</div>
 		</main>

@@ -19,6 +19,7 @@ const projectColumns = (input: ProjectInput) => ({
 	areaId: input.areaId,
 	featured: input.featured,
 	featuredOrder: input.featuredOrder,
+	screenshotsPosition: input.screenshotsPosition,
 });
 
 /** (Re)writes translations, links and skills of a project inside a transaction (images untouched). */
@@ -84,13 +85,14 @@ export function createTursoProjectRepository(db: LibSQLDatabase): ProjectReposit
 				areaId: row.areaId,
 				featured: row.featured,
 				featuredOrder: row.featuredOrder,
+				screenshotsPosition: row.screenshotsPosition,
 				skills: skillRows.filter((s) => s.projectId === row.id).map((s) => s.name),
 				imageKey: row.imageKey,
 				translations,
 				links: linkRows
 					.filter((l) => l.projectId === row.id)
-					// Labels outside the standard set (legacy rows) are shown as a generic website link.
-					.map((l) => ({ type: l.type as LinkType, label: isProjectLinkLabel(l.label) ? l.label : 'website', url: l.url })),
+					// Labels outside the standard set (legacy rows) get the generic label of their type.
+					.map((l) => ({ type: l.type as LinkType, label: isProjectLinkLabel(l.label) ? l.label : l.type === 'github' ? 'code' : 'website', url: l.url })),
 				screenshots: screenshotRows
 					.filter((s) => s.projectId === row.id)
 					.map((s) => ({ id: s.id, key: s.key })),

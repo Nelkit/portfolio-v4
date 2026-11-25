@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clientIp, createMemoryRateLimiter } from './rate-limit';
+import { clientIp, createMemoryRateLimiter } from './rate-limiter';
 
 describe('createMemoryRateLimiter', () => {
 	it('allows up to the limit within the window, then blocks with a retry time', async () => {

@@ -123,6 +123,7 @@ async function main() {
 			year: plan.year,
 			featured,
 			featuredOrder: plan.featuredOrder ?? 0,
+			screenshotsPosition: record.screenshotsPosition,
 			skills: normaliseSkills(record.skills, plan.addSkills, plan.removeSkills),
 			links,
 		};

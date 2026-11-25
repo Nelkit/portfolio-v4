@@ -79,7 +79,7 @@ export function ProjectsSection({ title, projects, total }: ProjectsSectionProps
 													window.open(l.url, l.isExternal ? '_blank' : '_self');
 												}}
 											>
-												<Icon /> {t.projects.linkLabels[l.label]}
+												<Icon /> {t.projects.linkLabels[l.label]} <IArrowUR />
 											</button>
 										);
 									})}

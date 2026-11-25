@@ -81,6 +81,8 @@ export default async function ProjectPage({ params }: Params) {
 	if (!project) notFound();
 	const others = relatedProjects(all, project);
 	const meta = projectMetaLine(project);
+	const shots = project.screenshots.map((url, i) => ({ url, alt: `${project.title} — ${i + 1}` }));
+	const shotsOnTop = project.screenshotsPosition === 'top';
 
 	return (
 		<div className="proj-detail-root">
@@ -108,18 +110,6 @@ export default async function ProjectPage({ params }: Params) {
 							{project.summary && <p className="proj-summary">{project.summary}</p>}
 						</header>
 
-						{project.imageUrl && (
-							<div className="proj-image-wrap">
-								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img
-									src={project.imageUrl}
-									alt={project.title}
-									className="proj-image"
-									style={{ viewTransitionName: `project-image-${slug}` }}
-								/>
-							</div>
-						)}
-
 						{project.links.length > 0 && (
 							<div className="proj-links-inline">
 								{project.links.map((l) => {
@@ -132,12 +122,26 @@ export default async function ProjectPage({ params }: Params) {
 											rel={l.isExternal ? 'noopener noreferrer' : undefined}
 											className="proj-link"
 										>
-											<Icon /> {copy.linkLabels[l.label]}
+											<Icon /> {copy.linkLabels[l.label]} <IArrowUR />
 										</a>
 									);
 								})}
 							</div>
 						)}
+
+						{project.imageUrl && (
+							<div className="proj-image-wrap">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src={project.imageUrl}
+									alt={project.title}
+									className="proj-image"
+									style={{ viewTransitionName: `project-image-${slug}` }}
+								/>
+							</div>
+						)}
+
+						{shotsOnTop && shots.length > 0 && <ScreenshotGallery screenshots={shots} variant="strip" />}
 
 						{projectSections(project).map((section) => (
 							<section key={section.key} className="proj-section">
@@ -160,12 +164,10 @@ export default async function ProjectPage({ params }: Params) {
 							</div>
 						)}
 
-						{project.screenshots.length > 0 && (
+						{!shotsOnTop && shots.length > 0 && (
 							<div className="proj-section">
 								<h2 className="proj-section-title">{copy.screenshots}</h2>
-								<ScreenshotGallery
-									screenshots={project.screenshots.map((url, i) => ({ url, alt: `${project.title} — ${i + 1}` }))}
-								/>
+								<ScreenshotGallery screenshots={shots} />
 							</div>
 						)}
 					</article>

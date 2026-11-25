@@ -68,6 +68,8 @@ export const projects = sqliteTable('projects', {
 	/** Shown on the home page, sorted by featured_order. */
 	featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
 	featuredOrder: integer('featured_order').notNull().default(0),
+	/** Where the detail page shows the screenshots: 'top' | 'bottom'. */
+	screenshotsPosition: text('screenshots_position', { enum: ['top', 'bottom'] }).notNull().default('bottom'),
 	position: integer('position').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 	updatedAt: updatedAt(),

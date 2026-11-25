@@ -39,8 +39,11 @@ export const es: Dictionary = {
 		},
 		notFound: {
 			title: 'Página no encontrada',
-			body: 'La página que buscas no existe.',
+			eyebrow: 'Error · 404',
+			body: 'Esta página no existe o cambió de lugar. Puedes continuar desde aquí.',
 			home: 'Ir al inicio',
+			projects: 'Ver proyectos',
+			blog: 'Leer el blog',
 		},
 	},
 	home: {
@@ -68,7 +71,7 @@ export const es: Dictionary = {
 		status: 'Agente de IA · pregunta sobre Nelkit',
 		defaultSubtitle: 'Ingeniero de IA/ML',
 		profileAlt: 'Perfil',
-		newChat: 'Nuevo chat',
+		restartChat: 'Reiniciar chat',
 		suggestions: {
 			stack: '¿Qué stack usas?',
 			remote: '¿Estás abierto a trabajo remoto?',
@@ -78,8 +81,25 @@ export const es: Dictionary = {
 		placeholderFollowUp: 'Haz otra pregunta…',
 		messageAria: 'Mensaje',
 		modelTitle: 'Modelo que impulsa a este agente',
-		focusInput: 'Enfocar el campo',
 		send: 'Enviar',
+		errors: {
+			minute: (minutes: number) => `Estás enviando mensajes muy rápido. Inténtalo de nuevo en ${minutes} min.`,
+			day: () => 'Llegaste al límite de mensajes de hoy. Vuelve mañana o escríbeme directamente.',
+			global: () => 'El agente llegó a su límite diario. Vuelve mañana o escríbeme directamente.',
+			invalid: () => 'No pude procesar ese mensaje. Prueba con una pregunta más corta.',
+			failed: () => 'Algo salió mal. Inténtalo de nuevo o escríbeme directamente.',
+		},
+		voice: {
+			start: 'Dictar tu pregunta',
+			stop: 'Detener el dictado',
+			listening: 'Escuchando…',
+			errors: {
+				denied: 'Micrófono bloqueado. Permítelo en los ajustes del navegador.',
+				noMic: 'No se encontró un micrófono.',
+				noSpeech: 'No escuché nada. Inténtalo de nuevo.',
+				failed: 'El dictado falló. Inténtalo de nuevo o escribe tu pregunta.',
+			},
+		},
 		hint: '↩ para enviar · hecho con fines académicos y de aprendizaje · las respuestas pueden no ser exactas',
 		fallbackHeadline: 'Construyo <em>productos de IA</em> que de verdad se lanzan',
 	},
@@ -165,6 +185,8 @@ export const es: Dictionary = {
 			'app-store': 'App Store',
 			website: 'Sitio web',
 			'github-org': 'Organización en GitHub',
+			'python-package': 'Paquete de Python',
+			'jupyter-notebook': 'Jupyter Notebook',
 		},
 	},
 };

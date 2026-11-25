@@ -31,6 +31,7 @@ const project = (slug: string, links: ProjectInput['links'] = []): ProjectInput 
 	areaId: AREA,
 	featured: false,
 	featuredOrder: 0,
+	screenshotsPosition: 'bottom',
 	skills: [],
 	translations: { en: translation(`${slug} en`), es: translation(`${slug} es`) },
 	links,
@@ -77,6 +78,7 @@ describe('TursoProjectRepository', () => {
 			year: 2026,
 			featured: true,
 			featuredOrder: 2,
+			screenshotsPosition: 'top',
 			translations: {
 				...project('x').translations,
 				es: translation('Nuevo', { keyResult: 'Clave', role: 'Líder', howItWorks: 'Así', results: 'Bien', myRole: 'Yo' }),

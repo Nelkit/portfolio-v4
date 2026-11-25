@@ -3,7 +3,8 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyPassword } from '@/app/lib/auth/password';
-import { clientIp, getLoginRateLimiter } from '@/app/lib/auth/rate-limit';
+import { getLoginRateLimiter } from '@/app/lib/auth/rate-limit';
+import { clientIp } from '@/app/lib/rate-limit/rate-limiter';
 import {
 	createSessionToken,
 	SESSION_COOKIE,

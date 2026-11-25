@@ -11,9 +11,10 @@ import { Button } from '@/app/admin/components/ui/Button';
 import { safeAction } from '@/app/admin/components/ui/feedback';
 import { useActionFeedback, useUnsavedChanges } from '@/app/admin/components/ui/hooks';
 import {
-	PROJECT_LINK_LABELS,
+	PROJECT_LABELS_BY_TYPE,
 	projectField,
 	type ProjectFormValues,
+	type ProjectLinkLabel,
 	type ProjectTranslation,
 } from '@/app/lib/content/projects/project';
 import { en } from '@/app/lib/i18n/dictionaries/en';
@@ -24,7 +25,12 @@ const input =
 	'w-full rounded border border-ui-border-2 bg-ui-surface px-3 py-2 outline-none focus:border-ui-accent aria-invalid:border-red-500';
 
 /** Standard link labels, shown in English in the admin (the site translates them). */
-const LINK_LABEL_OPTIONS = PROJECT_LINK_LABELS.map((value) => ({ value, label: en.projects.linkLabels[value] }));
+const labelOptions = (labels: readonly ProjectLinkLabel[]) =>
+	labels.map((value) => ({ value, label: en.projects.linkLabels[value] }));
+const LINK_LABEL_OPTIONS = {
+	link: labelOptions(PROJECT_LABELS_BY_TYPE.link),
+	github: labelOptions(PROJECT_LABELS_BY_TYPE.github),
+};
 
 /** Detail page sections after the Overview (the description), in display order. */
 const DETAIL_SECTIONS = [
@@ -109,6 +115,19 @@ export function ProjectForm({
 					<span className="text-sm text-ui-text">Featured order <span className="text-ui-faint">· lower first; the first two get full-width cards</span></span>
 					<input name="featuredOrder" inputMode="numeric" defaultValue={initial.featuredOrder} aria-invalid={Boolean(errors.featuredOrder)} className={input} />
 					<FieldError message={errors.featuredOrder} />
+				</label>
+				<label className="flex flex-col gap-2">
+					<span className="text-sm text-ui-text">Screenshots position <span className="text-ui-faint">· where the project page shows them</span></span>
+					<select
+						name="screenshotsPosition"
+						defaultValue={initial.screenshotsPosition}
+						aria-invalid={Boolean(errors.screenshotsPosition)}
+						className={input}
+					>
+						<option value="top">Top: thumbnails under the main image</option>
+						<option value="bottom">Bottom: grid at the end of the page</option>
+					</select>
+					<FieldError message={errors.screenshotsPosition} />
 				</label>
 			</section>
 

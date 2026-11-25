@@ -1,8 +1,14 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText, convertToModelMessages, UIMessage } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { Client } from '@notionhq/client';
 import type { BlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { chatModels, modelLabel } from '@/app/lib/chat/models';
+import type { ChatErrorCode } from '@/app/lib/chat/chat-error';
+import { chatClientId, checkChatLimits, getChatLimiters } from '@/app/lib/chat/chat-limits';
+import { parseChatRequest } from '@/app/lib/chat/chat-request';
+import { withModelFallback } from '@/app/lib/chat/fallback-model';
+import { clientIp } from '@/app/lib/rate-limit/rate-limiter';
+import { responseLanguageRule } from '@/app/lib/chat/response-language';
 
 export const maxDuration = 30;
 
@@ -58,7 +64,7 @@ function extractText(block: BlockObjectResponse): string {
 	return '';
 }
 
-function buildSystemPrompt(knowledgeBase: string): string {
+function buildSystemPrompt(knowledgeBase: string, languageRule: string): string {
 	return `You are Nelkit's portfolio agent — a smart, concise assistant that answers questions about Nelkit Chavez based ONLY on the knowledge base below.
 
 ## How to read the conversation
@@ -68,7 +74,7 @@ function buildSystemPrompt(knowledgeBase: string): string {
 - If the latest message and a previous answer are unrelated, ignore the previous topic entirely.
 
 ## Answering rules
-- Answer in the same language the user writes in (Spanish or English)
+- ${languageRule}
 - Be direct and specific — no fluff
 - Answer ONLY what was asked. Do not volunteer the project list or a tech-stack dump unless the latest message actually asks for it.
 - If the answer is not in the knowledge base, say so plainly in ONE sentence (e.g. "I don't have that information") and suggest contacting Nelkit directly. Do NOT pad the gap by listing unrelated facts.
@@ -85,34 +91,26 @@ function buildSystemPrompt(knowledgeBase: string): string {
 Knowledge base:
 ---
 ${knowledgeBase}
----`;
+---
+
+Reminder: ${languageRule}`;
 }
 
 const { primary: PRIMARY_MODEL, fallback: FALLBACK_MODEL } = chatModels();
 
-async function runStream(model: string, system: string, messages: Awaited<ReturnType<typeof convertToModelMessages>>) {
-	return streamText({
-		model: openrouter(model),
-		system,
-		messages,
-		maxOutputTokens: 400,
-	});
-}
-
-// Attach the model that produced the response as message metadata, so the
-// client can show the REAL model used (including the fallback if it kicks in).
-function streamResponse(result: Awaited<ReturnType<typeof runStream>>, model: string) {
-	return result.toUIMessageStreamResponse({
-		messageMetadata: () => ({ model: modelLabel(model) }),
-	});
+function chatError(status: number, body: { code: ChatErrorCode; retryAfterSeconds?: number }) {
+	const headers = body.retryAfterSeconds ? { 'Retry-After': String(body.retryAfterSeconds) } : undefined;
+	return Response.json(body, { status, headers });
 }
 
 export async function POST(req: Request) {
-	const body = await req.json();
-	const messages: UIMessage[] = body.messages ?? [];
+	// Cheapest checks first: an invalid request never reaches Redis or the model.
+	const request = parseChatRequest(await req.text());
+	if (!request) return chatError(400, { code: 'invalid' });
 
-	// Keep only the last 6 messages to stay within free-tier context limits
-	const recentMessages = messages.slice(-6);
+	const clientId = chatClientId(clientIp(req.headers), process.env.AUTH_SECRET ?? 'chat');
+	const limit = await checkChatLimits(clientId, getChatLimiters());
+	if (limit) return chatError(429, limit);
 
 	let knowledgeBase = '';
 	try {
@@ -122,21 +120,22 @@ export async function POST(req: Request) {
 		knowledgeBase = 'Knowledge base temporarily unavailable.';
 	}
 
-	const modelMessages = await convertToModelMessages(recentMessages);
-	const system = buildSystemPrompt(knowledgeBase);
+	let usedModel = PRIMARY_MODEL;
+	const model = withModelFallback(openrouter(PRIMARY_MODEL), openrouter(FALLBACK_MODEL), (status) => {
+		console.warn(`Primary model failed (${status}), falling back to ${FALLBACK_MODEL}`);
+		usedModel = FALLBACK_MODEL;
+	});
 
-	try {
-		const result = await runStream(PRIMARY_MODEL, system, modelMessages);
-		return streamResponse(result, PRIMARY_MODEL);
-	} catch (err) {
-		// 402 = payment required / credits exhausted; 429 = rate limit
-		const e = err as { statusCode?: number; status?: number };
-		const status = e?.statusCode ?? e?.status ?? 0;
-		if (status === 402 || status === 429) {
-			console.warn(`Primary model failed (${status}), falling back to ${FALLBACK_MODEL}`);
-			const result = await runStream(FALLBACK_MODEL, system, modelMessages);
-			return streamResponse(result, FALLBACK_MODEL);
-		}
-		throw err;
-	}
+	const result = streamText({
+		model,
+		system: buildSystemPrompt(knowledgeBase, responseLanguageRule(request.locale)),
+		messages: await convertToModelMessages(request.messages),
+		maxOutputTokens: 400,
+		maxRetries: 1, // every retry is another paid call
+	});
+
+	// Sent when the answer ends: only then is it known which model produced it.
+	return result.toUIMessageStreamResponse({
+		messageMetadata: ({ part }) => (part.type === 'finish' ? { model: modelLabel(usedModel) } : undefined),
+	});
 }

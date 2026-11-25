@@ -45,8 +45,11 @@ export const en = {
 		},
 		notFound: {
 			title: 'Page not found',
-			body: 'The page you are looking for does not exist.',
+			eyebrow: 'Error · 404',
+			body: 'This page does not exist or has moved. You can pick up from one of these.',
 			home: 'Go home',
+			projects: 'See projects',
+			blog: 'Read the blog',
 		},
 	},
 	home: {
@@ -73,7 +76,7 @@ export const en = {
 		status: 'AI agent · ask about Nelkit',
 		defaultSubtitle: 'AI/ML Engineer',
 		profileAlt: 'Profile',
-		newChat: 'New chat',
+		restartChat: 'Restart Chat',
 		suggestions: {
 			stack: 'What stack do you use?',
 			remote: 'Are you open to remote roles?',
@@ -83,8 +86,25 @@ export const en = {
 		placeholderFollowUp: 'Ask a follow-up…',
 		messageAria: 'Message',
 		modelTitle: 'Model powering this agent',
-		focusInput: 'Focus input',
 		send: 'Send',
+		errors: {
+			minute: (minutes: number) => `You are sending messages very fast. Try again in ${minutes} min.`,
+			day: () => 'You reached today\'s message limit. Come back tomorrow or write to me directly.',
+			global: () => 'The agent reached its daily limit. Come back tomorrow or write to me directly.',
+			invalid: () => 'I could not process that message. Try a shorter question.',
+			failed: () => 'Something went wrong. Try again or write to me directly.',
+		},
+		voice: {
+			start: 'Dictate your question',
+			stop: 'Stop dictation',
+			listening: 'Listening…',
+			errors: {
+				denied: 'Microphone blocked. Allow it in your browser settings.',
+				noMic: 'No microphone found.',
+				noSpeech: 'I did not hear anything. Try again.',
+				failed: 'Dictation failed. Try again or type your question.',
+			},
+		},
 		hint: '↩ to send · built for academic & learning purposes · responses may not be accurate',
 		fallbackHeadline: 'Building <em>AI products</em> that actually ship',
 	},
@@ -173,6 +193,8 @@ export const en = {
 			'app-store': 'App Store',
 			website: 'Website',
 			'github-org': 'GitHub org',
+			'python-package': 'Python Package',
+			'jupyter-notebook': 'Jupyter Notebook',
 		} satisfies Record<ProjectLinkLabel, string>,
 	},
 };
