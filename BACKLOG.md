@@ -57,18 +57,19 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 **Antes de publicar los cambios locales**
 
 - [x] Cambios llevados a `feat/site-improvements`, creada desde `origin/main`.
-- [ ] Hacer commit, push y PR. No incluir `scripts/projects/data/` ni `backups/` (ambos ignorados).
-- [x] Bug del importador (`screenshotsPosition`): resuelto al borrar el importador, que ya no se usa (sin commit).
-- [x] Respaldo y restauración locales: `pnpm backup` y `pnpm backup:restore` (sin commit).
+- [x] Commits y push de `feat/site-improvements`.
+- [ ] Revisar y fusionar el PR.
+- [x] Bug del importador (`screenshotsPosition`): resuelto al borrar el importador, que ya no se usa (commit `1afdaf9`).
+- [x] Respaldo y restauración locales: `pnpm backup` y `pnpm backup:restore` (commit `fcf66d2`).
 - [ ] Probar en el navegador: capturas en "top" (escritorio y móvil), dictado con micrófono real y "Restart Chat".
 
 **Riesgo en producción**
 
 - [ ] Respaldos: confirmar en Vercel `CRON_SECRET` y `R2_BACKUP_BUCKET` (bucket privado), y que el cron diario termina bien. El endpoint rechaza peticiones anónimas (401), pero eso no prueba que el cron funcione.
 - [ ] Rate limiting compartido (login y chat): crear la base de Upstash y confirmar las variables de Upstash en Vercel.
-- [x] Límite de uso del chat: entrada validada, 8/min y 40/día por IP, 300/día en total (sin commit).
+- [x] Límite de uso del chat: entrada validada, 8/min y 40/día por IP, 300/día en total (commit `693bf56`).
 - [ ] Poner un tope de crédito a la API key de OpenRouter, sin recarga automática.
-- [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (sin commit).
+- [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (commit `693bf56`).
 - [ ] Automatizar las migraciones en el deploy.
 
 **Contenido y SEO**
@@ -245,16 +246,16 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 ### Posición de capturas en el detalle de proyecto
 
-- [x] Selector top/bottom en el admin; "top" muestra las miniaturas en una sola fila bajo la imagen destacada.
+- [x] Selector top/bottom en el admin; "top" muestra las miniaturas en una sola fila bajo la imagen destacada. _Commit `4571cf8`._
 - [x] Migración `0014` aplicada en la base configurada en `.env`.
 - [x] Si producción usa otra base, correr ahí `pnpm db:migrate` **antes** del deploy. — **Cerrado 2026-11-25:** producción y local muestran los mismos 15 proyectos con las mismas claves de imagen: es casi seguro la misma base.
 
-### Cambios en `feat/home-changes` (sin commit)
+### Cambios en `feat/site-improvements`
 
-- [x] Links del proyecto sobre la imagen destacada, con ↗ y menos alto; en el home, en línea y con ↗.
-- [x] Labels "Python Package" y "Jupyter Notebook"; el admin filtra los labels por tipo (`github` / `link`).
-- [x] Página 404 rediseñada.
-- [x] Chat: dictado por voz (Web Speech API), botón "Restart Chat" y respuesta en el idioma de la web.
+- [x] Links del proyecto sobre la imagen destacada, con ↗ y menos alto; en el home, en línea y con ↗. _Commit `4571cf8`, `cd5c0cb`._
+- [x] Labels "Python Package" y "Jupyter Notebook"; el admin filtra los labels por tipo (`github` / `link`). _Commit `46be3bf`._
+- [x] Página 404 rediseñada. _Commit `102cd9d`._
+- [x] Chat: dictado por voz (Web Speech API), botón "Restart Chat" y respuesta en el idioma de la web. _Commit `520031a`, `3db9814`, `c3c0c65`._
 - **Nota:** el dictado no está disponible en Firefox (el botón se oculta) y el menú de la 404 no incluye el CV.
 
 ### Generales
