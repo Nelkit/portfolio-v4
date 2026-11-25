@@ -7,6 +7,7 @@ Contexto, stack y decisiones: ver [CLAUDE.md](CLAUDE.md).
 
 - `[x]` historia terminada · `[ ]` pendiente.
 - Al cerrar una historia: marcarla, anotar el commit y mover a **Pendientes** lo que quedó abierto.
+- `**Nota:**` es una limitación o decisión conocida, no una tarea.
 - Los pendientes se tachan (`[x]`) cuando se resuelven; no se borran, para conservar el historial.
 
 ---
@@ -49,6 +50,36 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
 ---
 
+## Qué falta de verdad
+
+_Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por historia está en **Pendientes**._
+
+**Antes de publicar los cambios locales**
+
+- [x] Cambios llevados a `feat/site-improvements`, creada desde `origin/main`.
+- [ ] Hacer commit, push y PR. No incluir `scripts/projects/data/` ni `backups/` (ambos ignorados).
+- [x] Bug del importador (`screenshotsPosition`): resuelto al borrar el importador, que ya no se usa (sin commit).
+- [x] Respaldo y restauración locales: `pnpm backup` y `pnpm backup:restore` (sin commit).
+- [ ] Probar en el navegador: capturas en "top" (escritorio y móvil), dictado con micrófono real y "Restart Chat".
+
+**Riesgo en producción**
+
+- [ ] Respaldos: confirmar en Vercel `CRON_SECRET` y `R2_BACKUP_BUCKET` (bucket privado), y que el cron diario termina bien. El endpoint rechaza peticiones anónimas (401), pero eso no prueba que el cron funcione.
+- [ ] Rate limiting compartido (login y chat): crear la base de Upstash y confirmar las variables de Upstash en Vercel.
+- [x] Límite de uso del chat: entrada validada, 8/min y 40/día por IP, 300/día en total (sin commit).
+- [ ] Poner un tope de crédito a la API key de OpenRouter, sin recarga automática.
+- [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (sin commit).
+- [ ] Automatizar las migraciones en el deploy.
+
+**Contenido y SEO**
+
+- [ ] El blog en español no tiene posts (hay 1 en inglés).
+- [ ] El CV enlazado es el mismo archivo (`cv-en-…`) en los dos idiomas.
+- [ ] No existe `sitemap.xml` (404).
+- [ ] Soft 404 confirmado en producción: `/en/projects/nope` y `/en/blog/nope` responden 200.
+
+---
+
 ## Pendientes
 
 ### Historia 1 — Login y titular
@@ -60,9 +91,9 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
 ### Historia 2 — Español e inglés
 
-- [ ] Verificar en producción que `/es/no-existe` muestra el 404 en español (en dev el HTML inicial es el shell de error genérico de Next).
+- [x] Verificar en producción que `/es/no-existe` muestra el 404 en español (en dev el HTML inicial es el shell de error genérico de Next). — **Cerrado 2026-11-25:** verificado en un navegador: 404 en español y código 404.
 - [ ] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)).
-- [ ] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe).
+- [x] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe). — **Cerrado 2026-11-25:** responde en el idioma de la web (`response-language.ts`).
 - [x] Node fijado: `.nvmrc` = `22` y `engines.node` = `22.x` (Vercel construye con Node 22).
 - [ ] En tu terminal: `nvm use` (lee `.nvmrc`) y `corepack enable` para que `pnpm` use la 10.14.0; con el pnpm 9 global el proyecto ahora da `ERR_PNPM_BAD_PM_VERSION`.
 - [x] Borrar `app/components/sections/CareerTimeline.tsx` (borrado en la #11).
@@ -70,126 +101,126 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 ### Historia 3 — Perfil
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0001`, tablas del perfil).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0001`, tablas del perfil). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Bucket R2 `portfolio-bucket` (jurisdicción US) con dominio `media.nelkit.dev` y variables `R2_*` + `R2_JURISDICTION=us` configuradas en local; subida y lectura pública verificadas.
 - [x] ⚠️ Resuelto con R2: las subidas ya no quedan en el disco local. Archivos subidos antes a `public/uploads/` (si los hay) siguen solo en tu disco: re-subirlos desde el admin.
 - [ ] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas).
-- [ ] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo).
+- [x] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo). — **Cerrado 2026-11-25:** producción muestra perfil, avatar y CV.
 
 ### Historia 4 — Proyectos
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos).
-- [ ] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran). — **Cerrado 2026-11-25:** 15 proyectos en producción.
 - [ ] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript).
 - [ ] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`.
-- [ ] Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
+- **Nota:** Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
 - [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
 
 ### Historia 5 — Imágenes de proyectos
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0003`: tabla `project_screenshots` y columna `image_key`).
-- [ ] Las imágenes se gestionan en la página de edición del proyecto y se guardan al instante (un request por archivo, máx. 3 MB cada uno). Un proyecto nuevo primero se crea y luego se le agregan imágenes.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0003`: tabla `project_screenshots` y columna `image_key`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- **Nota:** Las imágenes se gestionan en la página de edición del proyecto y se guardan al instante (un request por archivo, máx. 3 MB cada uno). Un proyecto nuevo primero se crea y luego se le agregan imágenes.
 - [ ] Probar en el navegador el flujo completo del admin (subir varias capturas a la vez, reordenar, quitar). En local se probó llamando a los server actions con el mismo protocolo que usa el navegador, no con el navegador real.
-- [ ] La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
-- [ ] Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
+- **Nota:** La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
+- **Nota:** Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
 
 ### Historia 6 — Áreas de expertise
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0004`: tablas de áreas y columna `projects.area_id`).
-- [ ] Crear las áreas en `/admin/areas` y asignarlas a cada proyecto (las de Strapi no se migran).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0004`: tablas de áreas y columna `projects.area_id`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Crear las áreas en `/admin/areas` y asignarlas a cada proyecto (las de Strapi no se migran). — **Cerrado 2026-11-25:** los 15 proyectos tienen categoría en producción.
 - [ ] Probar en el navegador el filtro por chips (home y `/projects`): el filtrado es estado del cliente y en local solo se verificó el HTML inicial (chips, conteos y etiquetas), no el clic.
-- [ ] El filtro solo aparece cuando hay 2 o más áreas con proyectos.
-- [ ] La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
+- **Nota:** El filtro solo aparece cuando hay 2 o más áreas con proyectos.
+- **Nota:** La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
 
 ### Historia 7 — Stack tecnológico
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías).
-- [ ] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran). — **Cerrado 2026-11-25:** visibles en producción.
 - [ ] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics.
-- [ ] Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
+- **Nota:** Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
 - [x] Corregido de paso: `SkillsSection` llamaba a `useState` después de un `return` condicional (violaba las reglas de los hooks).
 
 ### Historia 8 — Skills de los proyectos
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0006`: tabla `project_skills`).
-- [ ] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack").
-- [ ] Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0006`: tabla `project_skills`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack"). — **Cerrado 2026-11-25:** los 15 tienen "Tech stack" en producción.
+- **Nota:** Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
 - [ ] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics).
 
 ### Historia 9 — Trayectoria
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0007`: tablas de trayectoria).
-- [ ] Cargar las entradas reales en `/admin/career` (las de Strapi no se migran).
-- [ ] El orden es automático (puesto actual primero, luego por inicio descendente); no hay orden manual.
-- [ ] Los años de experiencia se calculan al renderizar la página (que se regenera semanalmente); pueden tardar hasta una semana en sumar un año si no editas nada.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0007`: tablas de trayectoria). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Cargar las entradas reales en `/admin/career` (las de Strapi no se migran). — **Cerrado 2026-11-25:** visibles en producción.
+- **Nota:** El orden es automático (puesto actual primero, luego por inicio descendente); no hay orden manual.
+- **Nota:** Los años de experiencia se calculan al renderizar la página (que se regenera semanalmente); pueden tardar hasta una semana en sumar un año si no editas nada.
 - [ ] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`).
 - [x] Corregido de paso: los años de experiencia usaban 2026 escrito a mano y el estado "actual" se deducía buscando "now"/"present" en el texto.
 
 ### Historia 10 — Educación
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0008`: tablas de educación).
-- [ ] Cargar las entradas reales en `/admin/education` (las de Strapi no se migran).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0008`: tablas de educación). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Cargar las entradas reales en `/admin/education` (las de Strapi no se migran). — **Cerrado 2026-11-25:** la sección está en producción (revisión de meses: ver "Migración de contenido").
 - [ ] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador.
-- [ ] La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
+- **Nota:** La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
 
 ### Historia 11 — Editor del blog
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0009`: `posts` y `post_translations`).
-- [ ] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran).
-- [ ] Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
-- [ ] El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
-- [ ] La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0009`: `posts` y `post_translations`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [ ] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran). **2026-11-25:** hay 1 en inglés y 0 en español.
+- **Nota:** Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
+- **Nota:** El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
+- **Nota:** La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
 - [ ] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario.
 - [x] El contenedor del admin pasó de `max-w-3xl` a `max-w-6xl` para que el editor tenga escritura y vista previa lado a lado.
 
 ### Historia 12 — Imágenes del blog
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0010`: tabla `post_images` y columna `posts.cover_key`).
-- [ ] Las imágenes del cuerpo se referencian como `upload:<clave>` y se convierten en URL al renderizar: si cambias de almacenamiento (local → R2) los posts no se rompen. No escribas URLs `/uploads/...` a mano.
-- [ ] Un post nuevo primero se publica (guarda) y luego se le agregan portada e imágenes.
-- [ ] No se puede borrar una imagen que el cuerpo guardado todavía usa; si la quitas del texto, guarda antes de borrarla.
-- [ ] Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
-- [ ] El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0010`: tabla `post_images` y columna `posts.cover_key`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- **Nota:** Las imágenes del cuerpo se referencian como `upload:<clave>` y se convierten en URL al renderizar: si cambias de almacenamiento (local → R2) los posts no se rompen. No escribas URLs `/uploads/...` a mano.
+- **Nota:** Un post nuevo primero se publica (guarda) y luego se le agregan portada e imágenes.
+- **Nota:** No se puede borrar una imagen que el cuerpo guardado todavía usa; si la quitas del texto, guarda antes de borrarla.
+- **Nota:** Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
+- **Nota:** El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
 - [ ] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes.
 
 ### Historia 13 — Tags del blog
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0011`: `tags`, `tag_translations`, `post_tags`).
-- [ ] Crear los tags en `/admin/tags` y marcarlos en cada post.
-- [ ] El filtro de `/blog` solo muestra tags con posts en ese idioma; `?tag=` desconocido muestra todos.
-- [ ] Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0011`: `tags`, `tag_translations`, `post_tags`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- [x] Crear los tags en `/admin/tags` y marcarlos en cada post. — **Cerrado 2026-11-25:** hay tags con posts en `/en/blog`.
+- **Nota:** El filtro de `/blog` solo muestra tags con posts en ese idioma; `?tag=` desconocido muestra todos.
+- **Nota:** Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
 - [ ] Probar en el navegador las casillas de tags del editor y los chips del filtro.
 
 ### Historia 14 — Borradores
 
 - [x] Hacer commit y push.
-- [ ] Correr `pnpm db:migrate` contra tu base de Turso (migración `0012`: columna `posts.status`; los posts existentes quedan publicados).
-- [ ] Un borrador no aparece en listados, home, relacionados ni rutas generadas, y su URL responde como inexistente (404 pintado en el cliente por el `loading.tsx`, igual que el resto de soft 404).
-- [ ] No hay vista previa "en el sitio" de un borrador: se revisa con la vista previa del editor.
-- [ ] El estado es por post, no por idioma (no se puede publicar solo una de las dos versiones).
+- [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0012`: columna `posts.status`; los posts existentes quedan publicados). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
+- **Nota:** Un borrador no aparece en listados, home, relacionados ni rutas generadas, y su URL responde como inexistente (404 pintado en el cliente por el `loading.tsx`, igual que el resto de soft 404).
+- **Nota:** No hay vista previa "en el sitio" de un borrador: se revisa con la vista previa del editor.
+- **Nota:** El estado es por post, no por idioma (no se puede publicar solo una de las dos versiones).
 - [ ] Probar en el navegador los botones Publicar / Guardar borrador / Despublicar.
 
 ### Strapi como fuente opcional
 
 - [x] El home fallaba porque Strapi ya no responde: ahora `getStrapiData` devuelve vacío si `NEXT_PUBLIC_STRAPI_URL` no está definida o Strapi no responde, y las secciones aún no migradas salen vacías.
-- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído.
+- [x] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` para no esperar los reintentos contra un Strapi caído. — **Cerrado 2026-11-25:** duplicado del punto en "Generales".
 - [x] El titular de prueba en caché ya no aplica: en desarrollo no se cachea (`cachedRead`).
 
 ### Migración de contenido desde Strapi
 
 - [x] Contenido de Strapi importado a Turso (`portfolio-db-nelkit`) y R2 con `scripts/import-strapi/` (extract → traducción al español → import).
-- [ ] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre).
-- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron.
+- [ ] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre). **2026-11-25:** proyectos completos; queda revisar los meses de educación.
+- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no.
 
 ### Para historias futuras
 
@@ -201,16 +232,30 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
 ### Historia 15: Reposicionamiento AI Product Engineer
 
-- [ ] Publicar en este orden: `pnpm db:migrate` (migración `0013`) → `pnpm tsx scripts/data/ai-positioning.ts --confirm` → deploy. Si se despliega antes del script, la caché del deploy nuevo guarda los datos viejos hasta el siguiente guardado en el admin.
-- [ ] Mientras tanto no usar el admin del deploy anterior: la `0013` hace obligatoria la categoría y ese código todavía puede crear proyectos sin ella.
-- [ ] La migración `0013` está editada a mano: drizzle-kit generó un `INSERT … SELECT` que leía columnas nuevas de la tabla vieja. Un proyecto sin categoría recibe la primera por posición (cubierto por `app/lib/db/migrations.test.ts`).
-- [ ] Cargar `keyResult` y `role` (EN y ES) de cada proyecto desde `/admin/projects` (quedaron vacíos a propósito).
-- [ ] NKAlert nunca tuvo el tag "SwiftUI" (solo Ryte 2.0); no había nada que quitar.
-- [ ] El link "CocoaPods Pod" de NKAlert pasó a "Website" (no hay label "CocoaPods" en la lista cerrada).
-- [ ] Las subidas muestran "n/total" y un spinner, no un porcentaje: los server actions no exponen progreso (haría falta un endpoint con XHR).
-- [ ] El aviso de cambios sin guardar cubre cerrar o recargar la pestaña y los links internos, no el botón "atrás" del navegador.
-- [ ] Borrar `scripts/import-strapi/data/` de tu disco cuando ya no lo necesites (datos personales fuera de git; el script de import se eliminó) y quitar su línea del `.gitignore`.
+- [x] Publicar en este orden: `pnpm db:migrate` (migración `0013`) → `pnpm tsx scripts/data/ai-positioning.ts --confirm` → deploy. Si se despliega antes del script, la caché del deploy nuevo guarda los datos viejos hasta el siguiente guardado en el admin. — **Cerrado 2026-11-25:** desplegado.
+- [x] Mientras tanto no usar el admin del deploy anterior: la `0013` hace obligatoria la categoría y ese código todavía puede crear proyectos sin ella. — **Cerrado 2026-11-25:** ya no aplica: está desplegado.
+- **Nota:** La migración `0013` está editada a mano: drizzle-kit generó un `INSERT … SELECT` que leía columnas nuevas de la tabla vieja. Un proyecto sin categoría recibe la primera por posición (cubierto por `app/lib/db/migrations.test.ts`).
+- [x] Cargar `keyResult` y `role` (EN y ES) de cada proyecto desde `/admin/projects` (quedaron vacíos a propósito). — **Cerrado 2026-11-25:** `keyResult` en los 15, EN y ES; `role` visible en los 15 (EN).
+- [x] NKAlert nunca tuvo el tag "SwiftUI" (solo Ryte 2.0); no había nada que quitar. — **Cerrado 2026-11-25:** sin acción necesaria.
+- **Nota:** El link "CocoaPods Pod" de NKAlert pasó a "Website" (no hay label "CocoaPods" en la lista cerrada).
+- **Nota:** Las subidas muestran "n/total" y un spinner, no un porcentaje: los server actions no exponen progreso (haría falta un endpoint con XHR).
+- **Nota:** El aviso de cambios sin guardar cubre cerrar o recargar la pestaña y los links internos, no el botón "atrás" del navegador.
+- [x] Borrar `scripts/import-strapi/data/` de tu disco cuando ya no lo necesites (datos personales fuera de git; el script de import se eliminó) y quitar su línea del `.gitignore`. **2026-11-25:** la carpeta ya no está en disco y se quitó la línea del `.gitignore`.
 - [x] Corregidos de paso los errores de lint previos: `any` en `app/api/chat/route.ts` y `ClientWrapper.tsx`, `setState` dentro de un efecto en `useTheme.ts` (ahora `useSyncExternalStore`).
+
+### Posición de capturas en el detalle de proyecto
+
+- [x] Selector top/bottom en el admin; "top" muestra las miniaturas en una sola fila bajo la imagen destacada.
+- [x] Migración `0014` aplicada en la base configurada en `.env`.
+- [x] Si producción usa otra base, correr ahí `pnpm db:migrate` **antes** del deploy. — **Cerrado 2026-11-25:** producción y local muestran los mismos 15 proyectos con las mismas claves de imagen: es casi seguro la misma base.
+
+### Cambios en `feat/home-changes` (sin commit)
+
+- [x] Links del proyecto sobre la imagen destacada, con ↗ y menos alto; en el home, en línea y con ↗.
+- [x] Labels "Python Package" y "Jupyter Notebook"; el admin filtra los labels por tipo (`github` / `link`).
+- [x] Página 404 rediseñada.
+- [x] Chat: dictado por voz (Web Speech API), botón "Restart Chat" y respuesta en el idioma de la web.
+- **Nota:** el dictado no está disponible en Firefox (el botón se oculta) y el menú de la 404 no incluye el CV.
 
 ### Generales
 
@@ -221,7 +266,7 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 - [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
 
 - [ ] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`.
-- [ ] Primer deploy de preview y verificación de punta a punta.
+- [x] Primer deploy de preview y verificación de punta a punta. — **Cerrado 2026-11-25:** el sitio está en producción (`www.nelkit.dev`).
 - [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
 - [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
 - [ ] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo).
