@@ -526,6 +526,12 @@ body {
   padding: 20px 26px 0;
   gap: 16px;
 }
+.chat-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -681,20 +687,44 @@ body {
   padding-top: 18px;
 }
 .new-chat {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-dim);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  transition: 0.15s;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    transform 0.15s var(--ease);
+}
+/* Plain accent text is too light on white. */
+[data-theme="light"] .new-chat:not(:hover) {
+  color: color-mix(in oklab, var(--accent) 70%, #000);
+}
+.new-chat svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
 }
 .new-chat:hover {
-  color: var(--accent);
-  border-color: var(--border-2);
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+.new-chat:active {
+  transform: translateY(1px);
+}
+.new-chat:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .msg {
@@ -3261,8 +3291,15 @@ footer {
   }
 
   .chat-top {
-    flex-direction: column-reverse;
-    align-items: flex-start;
+    /* The pill is hidden here: profile first, restart button beside it. */
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+  .chat-status:not(:has(.new-chat)) {
+    display: none;
+  }
+  .chat-status {
+    flex: none;
   }
   .status-pill {
     display: none;
@@ -3359,9 +3396,11 @@ footer {
     align-items: center;
     gap: 12px;
     width: 100%;
+    min-width: 0;
   }
   .profile .who {
     flex: 1;
+    min-width: 0;
     text-align: left;
   }
   .profile .avatar,

@@ -76,7 +76,7 @@ export const en = {
 		status: 'AI agent · ask about Nelkit',
 		defaultSubtitle: 'AI/ML Engineer',
 		profileAlt: 'Profile',
-		newChat: 'New chat',
+		restartChat: 'Restart Chat',
 		suggestions: {
 			stack: 'What stack do you use?',
 			remote: 'Are you open to remote roles?',

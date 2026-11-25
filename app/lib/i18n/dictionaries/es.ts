@@ -71,7 +71,7 @@ export const es: Dictionary = {
 		status: 'Agente de IA · pregunta sobre Nelkit',
 		defaultSubtitle: 'Ingeniero de IA/ML',
 		profileAlt: 'Perfil',
-		newChat: 'Nuevo chat',
+		restartChat: 'Reiniciar chat',
 		suggestions: {
 			stack: '¿Qué stack usas?',
 			remote: '¿Estás abierto a trabajo remoto?',

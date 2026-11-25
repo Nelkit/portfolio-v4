@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import { trackEvent } from '@/app/lib/analytics';
 import { useVoiceInput } from '@/app/lib/chat/useVoiceInput';
 import {
-	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
+	IMail, IDown, IArrowUp, IPlus, IMic, IRestart, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon, IBot, IUser,
 } from '@/app/components/icons';
 import { LanguageSwitch } from '@/app/components/LanguageSwitch';
@@ -209,8 +209,13 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	return (
 		<main className="chat">
 			<div className="chat-top">
-				<div className="status-pill">
-					<i className="dot-live" /> {t.chat.status}
+				<div className="chat-status">
+					<div className="status-pill">
+						<i className="dot-live" /> {t.chat.status}
+					</div>
+					{started && (
+						<button type="button" className="new-chat" onClick={onReset}><IRestart /> {t.chat.restartChat}</button>
+					)}
 				</div>
 				<div className="profile">
 					{avatarImage?.url ? (
@@ -226,9 +231,6 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 						<b>{title || 'Nelkit Chavez'}</b>
 						<span>{subtitle || t.chat.defaultSubtitle}</span>
 					</div>
-					{started && (
-						<button className="new-chat" onClick={onReset}><ISpark /> {t.chat.newChat}</button>
-					)}
 				</div>
 			</div>
 
