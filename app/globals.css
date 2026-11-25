@@ -1697,8 +1697,7 @@ body {
 }
 .wc-links {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .wc-link {
