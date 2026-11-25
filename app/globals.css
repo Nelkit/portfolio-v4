@@ -933,6 +933,21 @@ body {
   color: var(--text);
   background: var(--surface-2);
 }
+.io-mic.is-listening,
+[data-theme] .io-mic.is-listening:hover {
+  color: var(--accent-ink);
+  background: var(--accent);
+  animation: pulse 1.6s var(--ease) infinite;
+}
+[data-theme="plum"] .io-mic.is-listening {
+  color: var(--accent-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .io-mic.is-listening,
+  [data-theme] .io-mic.is-listening:hover {
+    animation: none;
+  }
+}
 .input-box input {
   width: 100%;
   min-width: 0;

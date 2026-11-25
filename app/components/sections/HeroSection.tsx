@@ -6,6 +6,7 @@ import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { trackEvent } from '@/app/lib/analytics';
+import { useVoiceInput } from '@/app/lib/chat/useVoiceInput';
 import {
 	IMail, IDown, IArrowUp, IPlus, IMic, ISpark,
 	IGithub, ILinkedin, IBriefcase, ILayers, IRoute, IPen, IAt, ISun, IMoon, IBot, IUser,
@@ -137,10 +138,11 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 	onInputFocusChange?: (focused: boolean) => void;
 	chatModel: string;
 }) {
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
 	const threadRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputVal, setInputVal] = useState('');
+	const voice = useVoiceInput(locale, setInputVal);
 
 	const { messages, sendMessage, status } = useChat({
 		transport: new DefaultChatTransport({ api: '/api/chat' }),
@@ -189,6 +191,7 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 
 	const ask = (text: string, source: 'input' | 'suggestion' | 'fab' = 'input') => {
 		if (!text.trim() || isLoading) return;
+		voice.cancel(); // a late transcript must not refill the field
 		sendMessage({ text });
 		setInputVal('');
 		trackEvent('chat_message_sent', { source });
@@ -283,10 +286,13 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 					<input
 						ref={inputRef}
 						value={inputVal}
-						onChange={(e) => setInputVal(e.target.value)}
+						onChange={(e) => {
+							voice.cancel(); // typing takes over from dictation
+							setInputVal(e.target.value);
+						}}
 						onFocus={handleInputFocus}
 						onBlur={handleInputBlur}
-						placeholder={started ? t.chat.placeholderFollowUp : t.chat.placeholder}
+						placeholder={voice.listening ? t.chat.voice.listening : started ? t.chat.placeholderFollowUp : t.chat.placeholder}
 						aria-label={t.chat.messageAria}
 					/>
 					<div className="input-bar">
@@ -295,10 +301,17 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 							{modelName}
 						</span>
 						<div className="input-actions">
-							<button type="button" className="io-mic" aria-label={t.chat.focusInput}
-							        onClick={() => inputRef.current?.focus()}>
-								<IMic />
-							</button>
+							{voice.supported && (
+								<button
+									type="button"
+									className={'io-mic' + (voice.listening ? ' is-listening' : '')}
+									aria-label={voice.listening ? t.chat.voice.stop : t.chat.voice.start}
+									aria-pressed={voice.listening}
+									onClick={() => (voice.listening ? voice.stop() : voice.start(inputVal))}
+								>
+									<IMic />
+								</button>
+							)}
 							<button className="send" type="submit" disabled={!inputVal.trim() || isLoading} aria-label={t.chat.send}>
 								<IArrowUp />
 							</button>
@@ -306,7 +319,9 @@ function ChatMain({ onNav, title, subtitle, description, headline, avatarImage, 
 					</div>
 				</form>
 				<div className="hint">
-					<span>{t.chat.hint}</span>
+					<span role="status">
+						{voice.error ? t.chat.voice.errors[voice.error] : voice.listening ? t.chat.voice.listening : t.chat.hint}
+					</span>
 				</div>
 			</div>
 		</main>
