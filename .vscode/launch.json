@@ -27,6 +27,43 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Backup: create",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm backup",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Backup: list",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm backup:restore",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Restore: latest (dry run)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm backup:restore latest",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Restore: latest (CONFIRM, overwrites the database)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "if [ '${input:confirmRestore}' = 'Yes, restore' ]; then pnpm backup:restore latest --confirm; else echo 'Cancelled: nothing was changed.'; fi",
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "confirmRestore",
+      "type": "pickString",
+      "description": "Replace the database in .env with the latest backup? The current state is saved first.",
+      "options": ["No, cancel", "Yes, restore"],
+      "default": "No, cancel"
     }
   ]
 }
