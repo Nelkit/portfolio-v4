@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BackLink } from '@/app/components/BackLink';
 import { IArrowUR, IArrowLeft } from '@/app/components/icons';
 import { resolveLocale } from '@/app/lib/i18n/server';
 import { getPublishedPosts } from '@/app/lib/content/posts/post-service';
@@ -47,9 +48,9 @@ export default async function BlogPage({
 
 			<div className="blog-wrap">
 				<div className="blog-header">
-					<Link href={href('/#writing')} className="proj-back">
+					<BackLink href={href('/#writing')} className="proj-back">
 						<IArrowLeft /> {t.common.back}
-					</Link>
+					</BackLink>
 					<h1 className="blog-heading">{copy.heading}<span className="ac">.</span></h1>
 					{posts.length === 0 && (
 						<p className="blog-subheading" style={{ opacity: 0.5 }}>{copy.empty}</p>

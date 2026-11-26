@@ -21,6 +21,8 @@ export function LanguageSwitch({ className = 'soc lang-toggle' }: { className?: 
 
 	return (
 		<Link
+			// Replace, not push: Back should leave the page, not return to it in the other language.
+			replace
 			href={switchLocalePath(pathname, target)}
 			className={className}
 			hrefLang={target}
