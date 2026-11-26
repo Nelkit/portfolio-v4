@@ -68,7 +68,7 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 				<div className="link-list">
 					{ctaLinks.map((l) => {
 						const href = l.href?.startsWith('http') ? l.href : `https://${l.href}`;
-						const display = l.href?.replace(/^https?:\/\//, '') || l.label;
+						const display = l.href?.replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '') || l.label;
 						return (
 							<a key={l.href} className="link-row" href={href}
 							   target={l.isExternal ? '_blank' : undefined}
