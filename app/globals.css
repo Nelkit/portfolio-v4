@@ -2244,16 +2244,36 @@ body {
   grid-column: span 2;
   flex-direction: row;
   align-items: stretch;
-  min-height: 280px;
+  /* Lets the cover size itself from the card's width (cqi below). */
+  container-type: inline-size;
 }
+/* Half the card (a fixed 420px left the text a narrow column on tablets). The
+   cover fills the card's height, never shorter than 16:9: no empty bands when
+   the text is taller, it only crops the sides. Same rule as the blog's card. */
 .proj-list-card-feat .proj-list-thumb {
-  width: 420px;
+  width: min(50cqi, 520px);
   flex: none;
-  aspect-ratio: unset;
+  aspect-ratio: auto;
+  min-height: calc(min(50cqi, 520px) * 9 / 16);
 }
 .proj-list-card-feat .proj-list-body {
   padding: 32px;
   justify-content: center;
+}
+/* Tablets: stack the cover above the text. */
+@media (max-width: 860px) {
+  .proj-list-card-feat {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .proj-list-card-feat .proj-list-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+  .proj-list-card-feat .proj-list-body {
+    padding: 24px;
+  }
 }
 .proj-list-title-feat {
   font-size: 26px;
@@ -2288,15 +2308,32 @@ body {
   grid-column: span 2;
   flex-direction: row;
   align-items: stretch;
-  min-height: 260px;
+  /* Lets the cover size itself from the card's width (cqi below). */
+  container-type: inline-size;
 }
+/* Half the card; fills the card's height, never shorter than 16:9 (no empty
+   bands when the text is taller, it only crops the sides). */
 .blog-card-feat .blog-card-img {
-  width: 360px;
+  width: min(50cqi, 520px);
   flex: none;
+  aspect-ratio: auto;
+  min-height: calc(min(50cqi, 520px) * 9 / 16);
 }
 .blog-card-feat .blog-card-body {
   flex: 1;
   padding: 32px;
+}
+/* Tablets: half the card is too small for a 16:9 cover next to the text, so stack them. */
+@media (max-width: 860px) {
+  .blog-card-feat {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .blog-card-feat .blog-card-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
 }
 .blog-card-feat .blog-card-title {
   font-size: 24px;
@@ -2412,7 +2449,7 @@ body {
 .post-wrap {
   position: relative;
   z-index: 1;
-  max-width: 740px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 48px 32px 100px;
 }
@@ -2462,7 +2499,8 @@ body {
 .post-cover-img {
   width: 100%;
   display: block;
-  max-height: 420px;
+  /* Always 16:9; an image with another shape is cropped from the centre. */
+  aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
