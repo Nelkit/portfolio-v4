@@ -9,7 +9,7 @@ export const es: Dictionary = {
 		siteTitle: 'Nelkit Chavez · Ingeniero de IA y ML',
 		siteDescription:
 			'Siete años publicando apps móviles en producción. Ahora construyo productos que piensan, con ML, LLMs y el instinto de lanzar que solo da hacerlo de verdad.',
-		blogTitle: 'Escritos',
+		blogTitle: 'Blog',
 		blogDescription: 'Artículos sobre ingeniería de ML, desarrollo móvil y cómo lanzar productos de IA.',
 		projectsTitle: 'Proyectos',
 		projectsDescription: 'Una colección de proyectos de software, ML e IA de Nelkit Chavez.',
