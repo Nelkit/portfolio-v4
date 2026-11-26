@@ -73,7 +73,8 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (commit `693bf56`).
 - [x] El chat solo leía los primeros 100 bloques de Notion (35 % de la página): ahora lee todo, con tablas y URLs; prompt ajustado y evaluación `pnpm chat:eval`; links y Markdown en las respuestas.
 - [x] Elegir el modelo del chat con `pnpm chat:eval` y usar el mismo en local y producción: `gemini-2.5-flash-lite` (producción) dio 429 de su proveedor en las pruebas. — **Cerrado 2026-11-26:** el propietario eligió `openai/gpt-oss-120b`; el chat de producción lo muestra.
-- [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
+- [x] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo). — **2026-11-26:** `pnpm build` corre `scripts/db/migrate-on-deploy.ts` antes de `next build`, solo en builds de producción de Vercel (las previews comparten la base). Probado sobre una copia de producción (sin cambios) y una base vacía (15 migraciones).
+- [ ] Ver en el log del primer deploy de producción la línea `Migrations: up to date.`
 
 **Contenido y SEO**
 
