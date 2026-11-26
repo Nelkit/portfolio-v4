@@ -91,6 +91,7 @@ export function ClientWrapper({ recentPosts, headline, profile, featuredProjects
 	useEffect(() => {
 		const applied = document.documentElement.getAttribute('data-theme');
 		if (applied === 'plum' || applied === 'light') {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with what the <head> script applied
 			setTheme(applied);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
