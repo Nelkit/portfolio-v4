@@ -1,4 +1,5 @@
 import { FooterButtons, ContactCta } from '@/app/components/FooterButtons';
+import { IArrowUR } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 type CtaLink = { label: string; href: string; isExternal?: boolean; type?: string };
@@ -72,7 +73,7 @@ export function FooterSection({ socialNetworkLinks, ctaSection }: FooterSectionP
 							<a key={l.href} className="link-row" href={href}
 							   target={l.isExternal ? '_blank' : undefined}
 							   rel={l.isExternal ? 'noopener noreferrer' : undefined}>
-								<span className="arr">→</span>
+								<span className="arr" aria-hidden="true"><IArrowUR /></span>
 								<span className="u">{display}</span>
 								<span className="k">{l.label}</span>
 							</a>
