@@ -227,7 +227,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] Contenido de Strapi importado a Turso (`portfolio-db-nelkit`) y R2 con `scripts/import-strapi/` (extract → traducción al español → import).
 - [x] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre). **2026-11-25:** proyectos completos; queda revisar los meses de educación. — **Cerrado 2026-11-26:** meses de educación revisados por el propietario.
-- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no.
+- [x] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no. — **Cerrado 2026-11-26:** el propietario decidió no agregar MongoDB (ningún proyecto la usa).
 
 ### Para historias futuras
 
