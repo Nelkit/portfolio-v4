@@ -3276,13 +3276,18 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Wraps (the sidebar is narrow); 3 lines at most so a long title keeps the card compact. */
 .proj-aside-title {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .proj-aside-go {
   color: var(--text-faint);
@@ -3632,6 +3637,23 @@ footer {
 /* Related posts at the end of a blog post (reuses the project aside cards) */
 .post-related {
   margin-top: 56px;
+}
+/* Related posts span the article's width, so they get a larger 16:9 thumb like the post covers. */
+.post-related .proj-aside-card {
+  grid-template-columns: 96px 1fr auto;
+}
+.post-related .proj-aside-thumb {
+  width: 96px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+@media (max-width: 560px) {
+  .post-related .proj-aside-card {
+    grid-template-columns: 80px 1fr auto;
+  }
+  .post-related .proj-aside-thumb {
+    width: 80px;
+  }
 }
 
 /* ---- 404 page ---- */
