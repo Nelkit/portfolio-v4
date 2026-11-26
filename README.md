@@ -250,7 +250,9 @@ pnpm db:generate     # schema.ts → new SQL file in drizzle/
 pnpm db:migrate      # apply pending migrations to TURSO_DATABASE_URL
 ```
 
-Migrations are manual: run them against production **before** deploying code that needs them.
+**Production migrates itself.** `pnpm build` runs `scripts/db/migrate-on-deploy.ts` before `next build`. In a Vercel **production** build it applies the pending migrations; if one fails, the build fails and the live site is unchanged. Preview and local builds skip it, because they use the same production database and must not change it before a merge. Set `SKIP_DEPLOY_MIGRATIONS=1` in Vercel to turn it off.
+
+The migration runs before the new code is live, so it must work with the code that is live now: add columns and tables in one release, remove old ones in a later release. A Vercel instant rollback does not undo a migration. `pnpm db:migrate` still works by hand (for a new database, or to migrate before merging); both use the same `__drizzle_migrations` table.
 
 ### Chat evaluation (`scripts/chat-eval/`)
 
@@ -291,7 +293,7 @@ pnpm tsx scripts/data/ai-positioning.ts --confirm  # applies them
 The app is deployed on **Vercel**.
 
 1. Set the [required and production variables](#-environment-variables) in Vercel → Settings → Environment Variables (`R2_JURISDICTION` too, if the bucket has one).
-2. Run `pnpm db:migrate` against the production `TURSO_DATABASE_URL` when a release adds migrations.
+2. Migrations apply themselves in production builds (see [Database migrations](#database-migrations)); no manual step.
 3. Vercel Cron (`vercel.json`) calls `GET /api/cron/daily` at **04:00 UTC**. The job reads every table, which keeps the Turso Free database from being archived for inactivity, and writes `backups/YYYY-MM-DD.json` to `R2_BACKUP_BUCKET` when configured.
 
 Server Action bodies are capped at **4 MB** (`next.config.ts`) to stay under Vercel's 4.5 MB request limit; each image is uploaded in its own request.

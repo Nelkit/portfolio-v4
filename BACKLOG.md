@@ -52,7 +52,7 @@ Todo el contenido administrable (#3 a #15) se edita en español y en inglés.
 
 ## Qué falta de verdad
 
-_Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por historia está en **Pendientes**._
+_Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por historia está en **Pendientes**._
 
 **Antes de publicar los cambios locales**
 
@@ -72,13 +72,14 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Guardrail de presupuesto de 5 USD en OpenRouter (según el propietario, 2026-11-25).
 - [x] El login ya no falla si Upstash falla (pasa a memoria); el modelo de respaldo ahora sí se activa con 402/429 (commit `693bf56`).
 - [x] El chat solo leía los primeros 100 bloques de Notion (35 % de la página): ahora lee todo, con tablas y URLs; prompt ajustado y evaluación `pnpm chat:eval`; links y Markdown en las respuestas.
-- [ ] Elegir el modelo del chat con `pnpm chat:eval` y usar el mismo en local y producción: `gemini-2.5-flash-lite` (producción) dio 429 de su proveedor en las pruebas.
-- [ ] Automatizar las migraciones en el deploy.
+- [x] Elegir el modelo del chat con `pnpm chat:eval` y usar el mismo en local y producción: `gemini-2.5-flash-lite` (producción) dio 429 de su proveedor en las pruebas. — **Cerrado 2026-11-26:** el propietario eligió `openai/gpt-oss-120b`; el chat de producción lo muestra.
+- [x] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo). — **2026-11-26:** `pnpm build` corre `scripts/db/migrate-on-deploy.ts` antes de `next build`, solo en builds de producción de Vercel (las previews comparten la base). Probado sobre una copia de producción (sin cambios) y una base vacía (15 migraciones).
+- [ ] Ver en el log del primer deploy de producción la línea `Migrations: up to date.`
 
 **Contenido y SEO**
 
-- [ ] El blog en español no tiene posts (hay 1 en inglés).
-- [ ] El CV enlazado es el mismo archivo (`cv-en-…`) en los dos idiomas.
+- [x] El blog en español no tiene posts (hay 1 en inglés). — **Cerrado 2026-11-26:** 2 posts en cada idioma.
+- [x] El CV enlazado es el mismo archivo (`cv-en-…`) en los dos idiomas. — **Cerrado 2026-11-26:** `/es` enlaza `cv-es-…` y `/en` enlaza `cv-en-…`.
 - [x] `sitemap.xml` y `robots.txt`; las URLs canónicas usan `www.nelkit.dev` (el dominio sin `www` redirige). _Commit `5deb25b`, verificado en producción._
 - [x] Soft 404 corregido: proyectos y posts inexistentes responden 404 (confirmado en producción, `34d148a`).
 
@@ -96,10 +97,10 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 ### Historia 2 — Español e inglés
 
 - [x] Verificar en producción que `/es/no-existe` muestra el 404 en español (en dev el HTML inicial es el shell de error genérico de Next). — **Cerrado 2026-11-25:** verificado en un navegador: 404 en español y código 404.
-- [ ] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)).
+- [x] Revisar las traducciones al español de los textos fijos ([es.ts](app/lib/i18n/dictionaries/es.ts)). — **Cerrado 2026-11-26:** revisadas por el propietario ("Mi blog", "Artículos", contacto), commit `7388003`.
 - [x] Decidir si el chat debe responder en el idioma de la página (hoy el modelo no lo sabe). — **Cerrado 2026-11-25:** responde en el idioma de la web (`response-language.ts`).
 - [x] Node fijado: `.nvmrc` = `22` y `engines.node` = `22.x` (Vercel construye con Node 22).
-- [ ] En tu terminal: `nvm use` (lee `.nvmrc`) y `corepack enable` para que `pnpm` use la 10.14.0; con el pnpm 9 global el proyecto ahora da `ERR_PNPM_BAD_PM_VERSION`.
+- [x] En tu terminal: `nvm use` (lee `.nvmrc`) y `corepack enable` para que `pnpm` use la 10.14.0; con el pnpm 9 global el proyecto ahora da `ERR_PNPM_BAD_PM_VERSION`. — **Cerrado 2026-11-26:** la terminal ya usa pnpm 10.14.0.
 - [x] Borrar `app/components/sections/CareerTimeline.tsx` (borrado en la #11).
 
 ### Historia 3 — Perfil
@@ -180,7 +181,7 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0009`: `posts` y `post_translations`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
-- [ ] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran). **2026-11-25:** hay 1 en inglés y 0 en español.
+- [x] Escribir los posts reales en `/admin/blog` (los de Strapi no se migran). — **Cerrado 2026-11-26:** 2 posts en cada idioma.
 - **Nota:** Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
 - **Nota:** El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
 - **Nota:** La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
@@ -271,9 +272,9 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
 
-- [ ] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`.
+- [x] Configurar en Vercel: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, `ADMIN_PASSWORD_HASH` y las `R2_*`. — **Cerrado 2026-11-26:** producción lee la base, inicia sesión y sube a R2.
 - [x] Primer deploy de preview y verificación de punta a punta. — **Cerrado 2026-11-25:** el sitio está en producción (`www.nelkit.dev`).
-- [ ] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo).
+- [x] Automatizar las migraciones en el deploy. — **Duplicado:** se sigue en "Qué falta de verdad".
 - [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
 - [x] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo). — **Cerrado 2026-11-25:** configurado y probado.
 - [x] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores. — **Cerrado 2026-11-25:** configurado; el respaldo se guardó en él.
