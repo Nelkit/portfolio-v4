@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { BackLink } from '@/app/components/BackLink';
 import { resolveLocale } from '@/app/lib/i18n/server';
 import { SITE_URL } from '@/app/lib/seo/site';
 import { getPublishedProjects } from '@/app/lib/content/projects/project-service';
@@ -48,7 +48,7 @@ export default async function ProjectsPage({ params }: Props) {
 
 			<div className="proj-list-wrap">
 				<div className="blog-header">
-					<Link href={href('/#work')} className="proj-back">← {t.common.back}</Link>
+					<BackLink href={href('/#work')} className="proj-back">← {t.common.back}</BackLink>
 					<h1 className="blog-heading">{copy.heading}<span className="ac">.</span></h1>
 					{projects.length > 0 && (
 						<p className="blog-subheading">{copy.count(projects.length)}</p>

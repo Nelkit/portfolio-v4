@@ -74,7 +74,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] El chat solo leía los primeros 100 bloques de Notion (35 % de la página): ahora lee todo, con tablas y URLs; prompt ajustado y evaluación `pnpm chat:eval`; links y Markdown en las respuestas.
 - [x] Elegir el modelo del chat con `pnpm chat:eval` y usar el mismo en local y producción: `gemini-2.5-flash-lite` (producción) dio 429 de su proveedor en las pruebas. — **Cerrado 2026-11-26:** el propietario eligió `openai/gpt-oss-120b`; el chat de producción lo muestra.
 - [x] Automatizar las migraciones en el deploy (hoy son manuales y deben correr **antes** de que salga el código nuevo). — **2026-11-26:** `pnpm build` corre `scripts/db/migrate-on-deploy.ts` antes de `next build`, solo en builds de producción de Vercel (las previews comparten la base). Probado sobre una copia de producción (sin cambios) y una base vacía (15 migraciones).
-- [ ] Ver en el log del primer deploy de producción la línea `Migrations: up to date.`
+- [x] Ver en el log del primer deploy de producción la línea `Migrations: up to date.` — **Cerrado 2026-11-26:** confirmado por el propietario en el deploy del PR #42.
 
 **Contenido y SEO**
 
@@ -91,7 +91,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] Rate limiting del login: 5 intentos por IP cada 15 min (se comprueba antes de la contraseña), además de los 800 ms por intento fallido.
 - [x] Crear una base Redis en Upstash (o la integración de Vercel) y configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` (o `KV_REST_API_URL`/`KV_REST_API_TOKEN`). Sin ellas el límite vive en la memoria de cada instancia y no se comparte en producción. — **Cerrado 2026-11-25:** conectada en Vercel.
-- [ ] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy.
+- [x] Verificar en un deploy de Vercel que el titular se actualiza al guardar, sin redeploy. — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] `package-lock.json` borrado; el proyecto declara `packageManager: pnpm@10.14.0` (la versión que generó `pnpm-lock.yaml`).
 
 ### Historia 2 — Español e inglés
@@ -109,7 +109,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0001`, tablas del perfil). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Bucket R2 `portfolio-bucket` (jurisdicción US) con dominio `media.nelkit.dev` y variables `R2_*` + `R2_JURISDICTION=us` configuradas en local; subida y lectura pública verificadas.
 - [x] ⚠️ Resuelto con R2: las subidas ya no quedan en el disco local. Archivos subidos antes a `public/uploads/` (si los hay) siguen solo en tu disco: re-subirlos desde el admin.
-- [ ] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas).
+- [x] Decidir si las etiquetas de los links ("GitHub", "Email") deben ser bilingües (hoy son las mismas en los dos idiomas). — **Cerrado 2026-11-26:** ya resuelto: el sitio en español muestra "Correo" (`es.ts`); GitHub y LinkedIn son nombres propios.
 - [x] Cargar el perfil real desde `/admin/profile` (la base nueva arranca vacía y el hero muestra textos de respaldo). — **Cerrado 2026-11-25:** producción muestra perfil, avatar y CV.
 
 ### Historia 4 — Proyectos
@@ -117,17 +117,17 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0002`, tablas de proyectos). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Cargar los proyectos reales desde `/admin/projects` (los de Strapi no se migran). — **Cerrado 2026-11-25:** 15 proyectos en producción.
-- [ ] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript).
+- [x] Reordenar desde la lista solo está cubierto por tests del repositorio; probarlo a mano en el admin (el botón "Save order" llama al server action desde JavaScript). — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] Un slug inexistente (`/en/projects/nope`) responde 200 con el 404 pintado en el cliente (soft 404): el `loading.tsx` de la ruta envía el loader antes del `notFound()`. Ya pasaba con Strapi; lo mismo en `/blog/[slug]`. — **Resuelto:** el `loading.tsx` quedó solo en los listados.
 - **Nota:** Cambiar el slug de un proyecto rompe su URL anterior (sin redirecciones; aceptado porque el SEO no importa).
-- [ ] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11).
+- [x] Los bloques de código del Markdown no tienen resaltado de sintaxis (Shiki ya está en el proyecto; evaluarlo en la #11). — **Cerrado 2026-11-26:** ya resuelto en la #11 (`376a406`): `app/lib/highlight.ts` resalta con Shiki en el servidor.
 
 ### Historia 5 — Imágenes de proyectos
 
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0003`: tabla `project_screenshots` y columna `image_key`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - **Nota:** Las imágenes se gestionan en la página de edición del proyecto y se guardan al instante (un request por archivo, máx. 3 MB cada uno). Un proyecto nuevo primero se crea y luego se le agregan imágenes.
-- [ ] Probar en el navegador el flujo completo del admin (subir varias capturas a la vez, reordenar, quitar). En local se probó llamando a los server actions con el mismo protocolo que usa el navegador, no con el navegador real.
+- [x] Probar en el navegador el flujo completo del admin (subir varias capturas a la vez, reordenar, quitar). En local se probó llamando a los server actions con el mismo protocolo que usa el navegador, no con el navegador real. — **Cerrado 2026-11-26:** hecho por el propietario.
 - **Nota:** La imagen OG usa la URL pública; en local (`/uploads/...`) se resuelve contra `nelkit.dev` y no existe allí. Con R2 la URL ya es absoluta.
 - **Nota:** Las capturas usan como texto alternativo "título — número"; no hay alt text editable por captura.
 
@@ -136,7 +136,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0004`: tablas de áreas y columna `projects.area_id`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Crear las áreas en `/admin/areas` y asignarlas a cada proyecto (las de Strapi no se migran). — **Cerrado 2026-11-25:** los 15 proyectos tienen categoría en producción.
-- [ ] Probar en el navegador el filtro por chips (home y `/projects`): el filtrado es estado del cliente y en local solo se verificó el HTML inicial (chips, conteos y etiquetas), no el clic.
+- [x] Probar en el navegador el filtro por chips (home y `/projects`): el filtrado es estado del cliente y en local solo se verificó el HTML inicial (chips, conteos y etiquetas), no el clic. — **Cerrado 2026-11-26:** hecho por el propietario.
 - **Nota:** El filtro solo aparece cuando hay 2 o más áreas con proyectos.
 - **Nota:** La referencia `projects.area_id` no tiene `ON DELETE SET NULL` en la base (SQLite no lo permite en `ALTER TABLE ADD`); el borrado de áreas lo hace explícito en el repositorio. Si se borra un área fuera del admin, sus proyectos quedarían apuntando a un id inexistente (se muestran sin área).
 
@@ -145,7 +145,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran). — **Cerrado 2026-11-25:** visibles en producción.
-- [ ] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics.
+- [x] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics. — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] Script `pnpm stack:import` que reemplaza las pestañas por las 6 nuevas (IA y Machine Learning, Ciencia de datos, Ingeniería de datos, MLOps y nube, Full-Stack y SIG, Móvil) y conserva las tecnologías que usan los proyectos (commit `f1aa33b`). Probado sobre una copia del backup.
 - [x] Aplicarlo en producción. — **2026-11-26:** el stack nuevo ya estaba en producción al hacer el backup (`backups/2026-11-26T05-52-54Z`, posterior al cambio). Las 191 etiquetas de proyectos siguen intactas y "MapBox" pasó a "Mapbox". El estado anterior está en el respaldo diario de R2 `backups/2026-11-26.json` (04:00 UTC). Se ve en el sitio tras desplegar (el stack está en caché).
 - **Nota:** Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
@@ -157,7 +157,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0006`: tabla `project_skills`). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Asignar los skills a cada proyecto desde su formulario (campo "Tech stack"). — **Cerrado 2026-11-25:** los 15 tienen "Tech stack" en producción.
 - **Nota:** Un proyecto puede usar skills que no están en ninguna categoría (p. ej. Firebase): entran al catálogo y se sugieren, pero no aparecen en la sección del stack.
-- [ ] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics).
+- [x] Probar en el navegador el campo de etiquetas dentro del formulario del proyecto (en local se probó enviando el formulario, no los clics). — **Cerrado 2026-11-26:** hecho por el propietario.
 
 ### Historia 9 — Trayectoria
 
@@ -166,7 +166,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Cargar las entradas reales en `/admin/career` (las de Strapi no se migran). — **Cerrado 2026-11-25:** visibles en producción.
 - **Nota:** El orden es automático (puesto actual primero, luego por inicio descendente); no hay orden manual.
 - **Nota:** Los años de experiencia se calculan al renderizar la página (que se regenera semanalmente); pueden tardar hasta una semana en sumar un año si no editas nada.
-- [ ] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`).
+- [x] Probar en el navegador el selector `type="month"` (en Safari antiguo puede verse como texto libre `YYYY-MM`). — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] Corregido de paso: los años de experiencia usaban 2026 escrito a mano y el estado "actual" se deducía buscando "now"/"present" en el texto.
 
 ### Historia 10 — Educación
@@ -174,7 +174,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Hacer commit y push.
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0008`: tablas de educación). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Cargar las entradas reales en `/admin/education` (las de Strapi no se migran). — **Cerrado 2026-11-25:** la sección está en producción (revisión de meses: ver "Migración de contenido").
-- [ ] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador.
+- [x] Editar y borrar entradas solo se probaron con los tests del repositorio (mismo patrón que Trayectoria); probarlos en el navegador. — **Cerrado 2026-11-26:** hecho por el propietario.
 - **Nota:** La nota "Plus scholarships" / "Más becas" del encabezado es texto fijo del diccionario, no contenido editable.
 
 ### Historia 11 — Editor del blog
@@ -185,7 +185,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - **Nota:** Un post puede estar en uno o ambos idiomas; cada blog lista solo los de su idioma. Si se abre un post en un idioma en que no existe, redirige al listado de ese idioma, pero la redirección ocurre en el cliente (responde 200 por el `loading.tsx` de la ruta, igual que el soft 404).
 - **Nota:** El HTML crudo dentro del Markdown no se ejecuta: se muestra escapado o se descarta (comportamiento de `react-markdown`). Si alguna vez necesitas embeber HTML (iframes, etc.), habría que decidir una lista blanca.
 - **Nota:** La vista previa del editor no resalta el código; el resaltado (Shiki) solo se aplica en el sitio público.
-- [ ] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario.
+- [x] Probar en el navegador el editor (pestañas de idioma, vista previa en vivo); en local se probó enviando el formulario. — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] El contenedor del admin pasó de `max-w-3xl` a `max-w-6xl` para que el editor tenga escritura y vista previa lado a lado.
 
 ### Historia 12 — Imágenes del blog
@@ -197,7 +197,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - **Nota:** No se puede borrar una imagen que el cuerpo guardado todavía usa; si la quitas del texto, guarda antes de borrarla.
 - **Nota:** Al subir una imagen se inserta en el cuerpo, pero el post queda sin guardar hasta pulsar "Save" (el editor lo avisa).
 - **Nota:** El editor del blog ya no funciona sin JavaScript (el formulario envuelve el server action para limpiar ese aviso). En la práctica siempre se usa con JavaScript.
-- [ ] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes.
+- [x] Probar en el navegador la subida múltiple, el "Insert" en la posición del cursor y la vista previa con imágenes. — **Cerrado 2026-11-26:** hecho por el propietario.
 
 ### Historia 13 — Tags del blog
 
@@ -206,7 +206,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Crear los tags en `/admin/tags` y marcarlos en cada post. — **Cerrado 2026-11-25:** hay tags con posts en `/en/blog`.
 - **Nota:** El filtro de `/blog` solo muestra tags con posts en ese idioma; `?tag=` desconocido muestra todos.
 - **Nota:** Los tags no se muestran en las tarjetas del blog ni en "Escritos recientes" del home (no se eligió esa opción); solo en el filtro y en los relacionados.
-- [ ] Probar en el navegador las casillas de tags del editor y los chips del filtro.
+- [x] Probar en el navegador las casillas de tags del editor y los chips del filtro. — **Cerrado 2026-11-26:** hecho por el propietario.
 
 ### Historia 14 — Borradores
 
@@ -215,7 +215,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - **Nota:** Un borrador no aparece en listados, home, relacionados ni rutas generadas, y su URL responde como inexistente (404 pintado en el cliente por el `loading.tsx`, igual que el resto de soft 404).
 - **Nota:** No hay vista previa "en el sitio" de un borrador: se revisa con la vista previa del editor.
 - **Nota:** El estado es por post, no por idioma (no se puede publicar solo una de las dos versiones).
-- [ ] Probar en el navegador los botones Publicar / Guardar borrador / Despublicar.
+- [x] Probar en el navegador los botones Publicar / Guardar borrador / Despublicar. — **Cerrado 2026-11-26:** hecho por el propietario.
 
 ### Strapi como fuente opcional
 
@@ -226,8 +226,14 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 ### Migración de contenido desde Strapi
 
 - [x] Contenido de Strapi importado a Turso (`portfolio-db-nelkit`) y R2 con `scripts/import-strapi/` (extract → traducción al español → import).
-- [ ] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre). **2026-11-25:** proyectos completos; queda revisar los meses de educación.
-- [ ] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no.
+- [x] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre). **2026-11-25:** proyectos completos; queda revisar los meses de educación. — **Cerrado 2026-11-26:** meses de educación revisados por el propietario.
+- [x] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no. — **Cerrado 2026-11-26:** el propietario decidió no agregar MongoDB (ningún proyecto la usa).
+
+### Ajustes de UX (2026-11-26, PR #43)
+
+- [x] Visor de capturas: botones redondos visibles (cerrar, zoom, flechas), margen alrededor de la imagen y animación al abrir (commit `9a40433`).
+- [x] Los botones "Volver" (detalle de proyecto y de post, `/projects`, `/blog`) regresan a la página de donde vino el visitante; si entró directo, usan su URL. El cambio de idioma reemplaza la entrada del historial (commit `727e6c7`).
+- [x] Posts a 900 px con portada 16:9; las tarjetas destacadas de `/projects` y `/blog` ocupan media tarjeta, llenan su altura sin franjas vacías y en tablet ponen la imagen arriba (commit `5726418`). Probado por el propietario.
 
 ### Para historias futuras
 
@@ -268,7 +274,7 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 
 - [x] R2 respondía `NoSuchBucket`/`AccessDenied` con credenciales correctas: el bucket tiene jurisdicción **US explícita** y vive en `<account>.us.r2.cloudflarestorage.com`, pero el código usaba siempre el endpoint por defecto. Ahora se configura con `R2_JURISDICTION` (`us` | `eu` | `fedramp`; vacío = por defecto).
 - [x] Agregar `R2_JURISDICTION=us` en Vercel (además de las otras `R2_*`). — **Cerrado 2026-11-25:** producción escribe en R2.
-- [ ] Borrar en Cloudflare los tokens de R2 de prueba que ya no se usan.
+- [x] Borrar en Cloudflare los tokens de R2 de prueba que ya no se usan. — **Cerrado 2026-11-26:** hecho por el propietario.
 
 - [x] Caché con datos de forma vieja: `unstable_cache` no cambiaba su clave cuando cambiaba la forma de los datos (p. ej. `ProjectView` ganó `skills` en la #8), y el home fallaba con `Cannot read properties of undefined (reading 'join')`. Corregido en `41f6c65`: todas las lecturas pasan por `cachedRead` (`app/lib/cache/cached-read.ts`): sin caché en desarrollo y, en producción, con el id del deploy en la clave (la Data Cache de Vercel persiste entre deploys).
 
@@ -278,6 +284,6 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Cron diario (`vercel.json` → `/api/cron/daily`, 04:00 UTC): lee todas las tablas (mantiene viva la base) y guarda `backups/AAAA-MM-DD.json`.
 - [x] Configurar `CRON_SECRET` en Vercel (sin él, el endpoint rechaza todo). — **Cerrado 2026-11-25:** configurado y probado.
 - [x] Crear un bucket R2 **privado** (sin dominio público) para respaldos, configurar `R2_BACKUP_BUCKET` y ampliar el token de R2 a ese bucket. No usar el bucket de medios: es público y los respaldos incluyen borradores. — **Cerrado 2026-11-25:** configurado; el respaldo se guardó en él.
-- [ ] (Opcional) Regla de ciclo de vida en el bucket de respaldos para borrar los de más de N días.
+- [x] (Opcional) Regla de ciclo de vida en el bucket de respaldos para borrar los de más de N días. — **Cerrado 2026-11-26:** hecho por el propietario.
 - [x] Strapi retirado en la #11: `strapi.ts`, `constant.ts`, `PostBody`, `inlineMarkdown`, los `transform*` de `content.ts`, `CareerTimeline.tsx`, las dependencias `qs`, `@types/qs` y `@strapi/blocks-react-renderer` y los `remotePatterns` de Strapi.
-- [ ] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa).
+- [x] Quitar `NEXT_PUBLIC_STRAPI_URL` de tu `.env` y de Vercel (ya no se usa). — **Cerrado 2026-11-26:** hecho por el propietario.

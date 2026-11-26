@@ -6,6 +6,7 @@ import { LOCALES } from "@/app/lib/i18n/locales";
 import { isLocale } from "@/app/lib/i18n/routing";
 import { getDictionary } from "@/app/lib/i18n/dictionaries";
 import { I18nProvider } from "@/app/lib/i18n/I18nProvider";
+import { NavigationTracker } from "@/app/components/NavigationTracker";
 import { SITE_URL } from "@/app/lib/seo/site";
 import "../globals.css";
 
@@ -101,6 +102,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
       </head>
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
             style={{ fontFamily: "var(--font-space-grotesk, var(--font-sans))" }}>
+        <NavigationTracker />
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
       {gaId && <GoogleAnalytics gaId={gaId} />}

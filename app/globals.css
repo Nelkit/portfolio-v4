@@ -2244,16 +2244,36 @@ body {
   grid-column: span 2;
   flex-direction: row;
   align-items: stretch;
-  min-height: 280px;
+  /* Lets the cover size itself from the card's width (cqi below). */
+  container-type: inline-size;
 }
+/* Half the card (a fixed 420px left the text a narrow column on tablets). The
+   cover fills the card's height, never shorter than 16:9: no empty bands when
+   the text is taller, it only crops the sides. Same rule as the blog's card. */
 .proj-list-card-feat .proj-list-thumb {
-  width: 420px;
+  width: min(50cqi, 520px);
   flex: none;
-  aspect-ratio: unset;
+  aspect-ratio: auto;
+  min-height: calc(min(50cqi, 520px) * 9 / 16);
 }
 .proj-list-card-feat .proj-list-body {
   padding: 32px;
   justify-content: center;
+}
+/* Tablets: stack the cover above the text. */
+@media (max-width: 860px) {
+  .proj-list-card-feat {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .proj-list-card-feat .proj-list-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+  .proj-list-card-feat .proj-list-body {
+    padding: 24px;
+  }
 }
 .proj-list-title-feat {
   font-size: 26px;
@@ -2288,15 +2308,32 @@ body {
   grid-column: span 2;
   flex-direction: row;
   align-items: stretch;
-  min-height: 260px;
+  /* Lets the cover size itself from the card's width (cqi below). */
+  container-type: inline-size;
 }
+/* Half the card; fills the card's height, never shorter than 16:9 (no empty
+   bands when the text is taller, it only crops the sides). */
 .blog-card-feat .blog-card-img {
-  width: 360px;
+  width: min(50cqi, 520px);
   flex: none;
+  aspect-ratio: auto;
+  min-height: calc(min(50cqi, 520px) * 9 / 16);
 }
 .blog-card-feat .blog-card-body {
   flex: 1;
   padding: 32px;
+}
+/* Tablets: half the card is too small for a 16:9 cover next to the text, so stack them. */
+@media (max-width: 860px) {
+  .blog-card-feat {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .blog-card-feat .blog-card-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
 }
 .blog-card-feat .blog-card-title {
   font-size: 24px;
@@ -2412,7 +2449,7 @@ body {
 .post-wrap {
   position: relative;
   z-index: 1;
-  max-width: 740px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 48px 32px 100px;
 }
@@ -2462,7 +2499,8 @@ body {
 .post-cover-img {
   width: 100%;
   display: block;
-  max-height: 420px;
+  /* Always 16:9; an image with another shape is cropped from the centre. */
+  aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
@@ -3076,15 +3114,59 @@ footer {
   opacity: 1;
 }
 
-/* Lightbox accent — match the portfolio theme */
+/* Lightbox — portfolio theme. The image keeps a margin (carousel padding in
+   ScreenshotGallery) so the page shows behind it, and the controls are solid
+   round buttons that stay readable over any screenshot. */
 .yarl__root {
-  --yarl__color_backdrop: rgba(10, 6, 16, 0.94);
+  --yarl__color_backdrop: rgba(10, 6, 16, 0.88);
+  --yarl__color_button: #fff;
+  --yarl__color_button_active: #fff;
+  --yarl__color_button_disabled: rgba(255, 255, 255, 0.35);
+  --yarl__button_background_color: rgba(24, 18, 32, 0.78);
+  --yarl__button_border: 1px solid rgba(255, 255, 255, 0.28);
+  --yarl__button_filter: none;
+  --yarl__button_padding: 11px;
+  --yarl__navigation_button_padding: 11px;
+  --yarl__icon_size: 22px;
+  --yarl__toolbar_padding: 16px;
 }
-.yarl__button {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+.yarl__root .yarl__toolbar {
+  gap: 8px;
 }
-.yarl__button:hover {
-  color: var(--accent);
+.yarl__root .yarl__button {
+  border-radius: 50%;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.yarl__root .yarl__button:not(:disabled):hover,
+.yarl__root .yarl__button:focus-visible {
+  color: var(--accent-ink);
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+.yarl__root .yarl__navigation_prev {
+  left: 16px;
+}
+.yarl__root .yarl__navigation_next {
+  right: 16px;
+}
+/* Opening: the image grows in while the backdrop fades (and shrinks on close). */
+.yarl__portal .yarl__slide {
+  transform: scale(0.92);
+  transition: transform 0.32s var(--ease);
+}
+.yarl__portal_open .yarl__slide {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .yarl__portal .yarl__slide {
+    transform: none;
+    transition: none;
+  }
 }
 
 .proj-layout {

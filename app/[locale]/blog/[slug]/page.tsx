@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { BackLink } from '@/app/components/BackLink';
 import { IArrowLeft } from '@/app/components/icons';
 import { Markdown } from '@/app/components/Markdown';
 import { resolveLocale } from '@/app/lib/i18n/server';
@@ -75,9 +76,9 @@ export default async function BlogPostPage({ params }: Params) {
 			</div>
 
 			<div className="post-wrap">
-				<Link href={href('/blog')} className="proj-back">
+				<BackLink href={href('/blog')} className="proj-back">
 					<IArrowLeft /> {t.blog.allWriting}
-				</Link>
+				</BackLink>
 
 				<PostContent post={post} locale={locale} t={t} />
 			</div>

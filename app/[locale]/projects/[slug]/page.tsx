@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { IArrowLeft, IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
+import { BackLink } from '@/app/components/BackLink';
 import { TrackProjectView } from '@/app/components/TrackProjectView';
 import { Markdown } from '@/app/components/Markdown';
 import { ScreenshotGallery } from '@/app/components/ScreenshotGallery';
@@ -97,9 +98,9 @@ export default async function ProjectPage({ params }: Params) {
 			</div>
 
 			<div className="proj-detail-wrap">
-				<Link href={href('/#work')} className="proj-back">
+				<BackLink href={href('/#work')} className="proj-back">
 					<IArrowLeft /> {copy.backToProjects}
-				</Link>
+				</BackLink>
 
 				<div className="proj-layout">
 					<article className="proj-detail">
