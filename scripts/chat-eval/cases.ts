@@ -21,6 +21,9 @@ export const CASES: EvalCase[] = [
 	{ id: 'who', locale: 'en', messages: ask('who is nelkit'), expect: [/engineer/i, /Sydney/], forbid: [UNKNOWN, /\bshe\b/i] },
 	{ id: 'remote', locale: 'en', messages: ask('hi is open to remote roles?'), expect: [/remote/i, /yes|open/i], forbid: [UNKNOWN] },
 	{ id: 'best-project', locale: 'en', messages: ask('what is his more interested end to end project?'), expect: [/Horus/], forbid: [UNKNOWN] },
+	// Suggested question of the hero
+	{ id: 'suggested-project', locale: 'en', messages: ask("What's your strongest project?"), expect: [/Horus/], forbid: [UNKNOWN] },
+	{ id: 'es-suggested-project', locale: 'es', messages: ask('¿Cuál es tu proyecto más fuerte?'), expect: [/Horus/], forbid: [UNKNOWN] },
 	{ id: 'cv-after-links', locale: 'en', messages: [...AFTER_LINKS, ...ask('give me the link of the cv')], expect: [CV], forbid: [/horus/i] },
 	{ id: 'curriculum', locale: 'en', messages: ask('the curriculum link please?'), expect: [CV] },
 	// Links

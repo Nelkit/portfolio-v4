@@ -74,12 +74,12 @@ export const en = {
 	},
 	chat: {
 		status: 'AI agent · ask about Nelkit',
-		defaultSubtitle: 'AI/ML Engineer',
+		defaultSubtitle: 'AI & ML Engineer',
 		profileAlt: 'Profile',
 		restartChat: 'Restart Chat',
 		suggestions: {
 			stack: 'What stack do you use?',
-			remote: 'Are you open to remote roles?',
+			project: 'What\'s your strongest project?',
 			ml: 'Tell me about your ML work',
 		},
 		placeholder: 'Ask me anything about Nelkit…',
@@ -105,7 +105,7 @@ export const en = {
 				failed: 'Dictation failed. Try again or type your question.',
 			},
 		},
-		hint: '↩ to send · built for academic & learning purposes · responses may not be accurate',
+		hint: '↩ to send · AI agent grounded in my portfolio · verify details on each project page',
 		fallbackHeadline: 'Building <em>AI products</em> that actually ship',
 	},
 	sections: {

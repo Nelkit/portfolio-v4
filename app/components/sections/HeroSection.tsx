@@ -48,7 +48,7 @@ const chatTransport = new DefaultChatTransport({
 	prepareSendMessagesRequest: ({ messages, body }) => ({ body: { ...body, messages: recentTextMessages(messages) } }),
 });
 
-const SUGGESTION_KEYS = ['stack', 'remote', 'ml'] as const;
+const SUGGESTION_KEYS = ['stack', 'project', 'ml'] as const;
 
 const IMenuBars = () => (
 	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
