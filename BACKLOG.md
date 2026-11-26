@@ -145,6 +145,8 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Correr `pnpm db:migrate` contra tu base de Turso (migración `0005`: catálogo de skills y categorías). — **Cerrado 2026-11-25:** aplicada (la `0014`, posterior, ya corrió en orden).
 - [x] Cargar las categorías y skills reales en `/admin/skills` (los de Strapi no se migran). — **Cerrado 2026-11-25:** visibles en producción.
 - [ ] Probar en el navegador el campo de etiquetas (Enter/coma para agregar, ‹ › para reordenar, sugerencias del catálogo) y el cambio de pestaña del stack; en local se verificaron los server actions y el HTML, no los clics.
+- [x] Script `pnpm stack:import` que reemplaza las pestañas por las 6 nuevas (IA y Machine Learning, Ciencia de datos, Ingeniería de datos, MLOps y nube, Full-Stack y SIG, Móvil) y conserva las tecnologías que usan los proyectos (commit `f1aa33b`). Probado sobre una copia del backup.
+- [x] Aplicarlo en producción. — **2026-11-26:** el stack nuevo ya estaba en producción al hacer el backup (`backups/2026-11-26T05-52-54Z`, posterior al cambio). Las 191 etiquetas de proyectos siguen intactas y "MapBox" pasó a "Mapbox". El estado anterior está en el respaldo diario de R2 `backups/2026-11-26.json` (04:00 UTC). Se ve en el sitio tras desplegar (el stack está en caché).
 - **Nota:** Para corregir el nombre de un skill (p. ej. "Pytorch" → "PyTorch") hay que quitarlo y volver a agregarlo en cada categoría; no hay pantalla para renombrar el catálogo.
 - [x] Corregido de paso: `SkillsSection` llamaba a `useState` después de un `return` condicional (violaba las reglas de los hooks).
 
