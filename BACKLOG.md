@@ -59,7 +59,7 @@ _Revisado el 2026-11-25 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Cambios llevados a `feat/site-improvements`, creada desde `origin/main`.
 - [x] Commits y push de `feat/site-improvements`.
 - [x] PR #36 fusionado y desplegado en producción (`bf95b49`, 2026-11-25).
-- [ ] Los previews de Vercel fallan (los de los 3 últimos PR; producción despliega bien): revisar el log.
+- [x] Los previews de Vercel fallan (los de los 3 últimos PR; producción despliega bien): revisar el log. — **Cerrado 2026-11-26 (PR #39, `328bc97`):** la causa era Next 16.0.11, cuyo Turbopack fallaba con las URLs de Google Fonts sin extensión; se arregló actualizando a Next 16.4.6. Opcional: servir las fuentes desde el propio sitio para no depender de Google en el build.
 - [x] Bug del importador (`screenshotsPosition`): resuelto al borrar el importador, que ya no se usa (commit `1afdaf9`).
 - [x] Respaldo y restauración locales: `pnpm backup` y `pnpm backup:restore` (commit `fcf66d2`).
 - [x] Probar en el navegador: capturas en "top" (escritorio y móvil), dictado con micrófono real y "Restart Chat". — **Probado por el propietario, también en iPhone (2026-11-25).**

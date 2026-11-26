@@ -69,12 +69,12 @@ export const es: Dictionary = {
 	},
 	chat: {
 		status: 'Agente de IA · pregunta sobre Nelkit',
-		defaultSubtitle: 'Ingeniero de IA/ML',
+		defaultSubtitle: 'Ingeniero de IA y ML',
 		profileAlt: 'Perfil',
 		restartChat: 'Reiniciar chat',
 		suggestions: {
 			stack: '¿Qué stack usas?',
-			remote: '¿Estás abierto a trabajo remoto?',
+			project: '¿Cuál es tu proyecto más fuerte?',
 			ml: 'Cuéntame sobre tu trabajo en ML',
 		},
 		placeholder: 'Pregúntame lo que quieras sobre Nelkit…',
@@ -100,7 +100,7 @@ export const es: Dictionary = {
 				failed: 'El dictado falló. Inténtalo de nuevo o escribe tu pregunta.',
 			},
 		},
-		hint: '↩ para enviar · hecho con fines académicos y de aprendizaje · las respuestas pueden no ser exactas',
+		hint: '↩ para enviar · agente de IA basado en mi portfolio · verifica los detalles en la página de cada proyecto',
 		fallbackHeadline: 'Construyo <em>productos de IA</em> que de verdad se lanzan',
 	},
 	sections: {
