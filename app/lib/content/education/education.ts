@@ -2,7 +2,15 @@ import { z } from 'zod';
 import { LOCALES, type Locale } from '@/app/lib/i18n/locales';
 import { formatPeriod, monthIndex, parseMonthInput, sortTimeline, type YearMonth } from '@/app/lib/content/dates';
 
-export type EducationTranslation = { degree: string; institution: string; description: string };
+export type EducationTranslation = {
+	degree: string;
+	institution: string;
+	description: string;
+	/** Short badge, e.g. "Summa Cum Laude" ('' = none). */
+	award: string;
+	/** Highlighted line, e.g. a scholarship tied to this degree ('' = none). */
+	note: string;
+};
 /** `inProgress` is explicit; `end` may be the expected graduation (or null while ongoing). */
 export type EducationInput = {
 	start: YearMonth;
@@ -22,15 +30,19 @@ export type EducationView = {
 	degree: string;
 	institution: string;
 	description: string;
+	award: string;
+	note: string;
 };
 
 export const educationField = (key: keyof EducationTranslation, locale: Locale) => `${key}_${locale}`;
-export const EDUCATION_KEYS = ['degree', 'institution', 'description'] as const;
+export const EDUCATION_KEYS = ['degree', 'institution', 'description', 'award', 'note'] as const;
 
 const TEXT = {
 	degree: z.string().trim().min(1, 'Required').max(150, 'Max 150 characters'),
 	institution: z.string().trim().min(1, 'Required').max(120, 'Max 120 characters'),
 	description: z.string().trim().max(300, 'Max 300 characters'),
+	award: z.string().trim().max(60, 'Max 60 characters'),
+	note: z.string().trim().max(300, 'Max 300 characters'),
 } as const;
 
 export type EducationFormResult = { ok: true; value: EducationInput } | { ok: false; errors: Record<string, string> };
@@ -83,5 +95,7 @@ export function toEducationView(
 		degree: t.degree,
 		institution: t.institution,
 		description: t.description,
+		award: t.award,
+		note: t.note,
 	};
 }

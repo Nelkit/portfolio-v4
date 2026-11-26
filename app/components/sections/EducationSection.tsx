@@ -1,6 +1,7 @@
 'use client';
 
 import type { EducationView } from '@/app/lib/content/education/education';
+import { ISpark } from '@/app/components/icons';
 import { navNumber } from '@/app/lib/nav';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
@@ -17,7 +18,6 @@ export function EducationSection({ education }: EducationSectionProps) {
 		<section id="education" className="section">
 			<div className="sec-head">
 				<h2><span className="num">{navNumber('education')}</span> {copy.title}<span className="ac">.</span></h2>
-				<span className="note">{copy.note}</span>
 			</div>
 
 			<div className="edu-list">
@@ -25,7 +25,7 @@ export function EducationSection({ education }: EducationSectionProps) {
 					<span>{copy.period}</span>
 					<span>{copy.degree}</span>
 					<span>{copy.institution}</span>
-					<span>{copy.status}</span>
+					<span>{copy.honours}</span>
 				</div>
 				{education.map((edu) => (
 					<div className="edu-row" key={edu.id}>
@@ -35,9 +35,18 @@ export function EducationSection({ education }: EducationSectionProps) {
 							{edu.description && <span>{edu.description}</span>}
 						</span>
 						<span className="edu-org">{edu.institution}</span>
-						<span className={'badge' + (edu.inProgress ? ' cur' : '')}>
-							{edu.inProgress ? copy.inProgress : copy.completed}
+						{/* Honours: the award badge, and "In progress" while ongoing ("Completed" said nothing). */}
+						<span className="edu-badges">
+							{edu.award && <span className="badge cur">{edu.award}</span>}
+							{edu.inProgress && <span className="badge">{copy.inProgress}</span>}
 						</span>
+						{/* Highlight (e.g. the scholarship): its own full-width row, styled as a pull quote. */}
+						{edu.note && (
+							<p className="edu-note">
+								<ISpark />
+								<span>{edu.note}</span>
+							</p>
+						)}
 					</div>
 				))}
 			</div>

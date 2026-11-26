@@ -11,8 +11,8 @@ const entry = (degree: string, start: [number, number], end: [number, number] | 
 	end: end ? { year: end[0], month: end[1] } : null,
 	inProgress,
 	translations: {
-		en: { degree, institution: 'Uni', description: 'x' },
-		es: { degree: `${degree}-es`, institution: 'Uni', description: '' },
+		en: { degree, institution: 'Uni', description: 'x', award: 'Summa Cum Laude', note: 'Funded by a scholarship' },
+		es: { degree: `${degree}-es`, institution: 'Uni', description: '', award: '', note: '' },
 	},
 });
 

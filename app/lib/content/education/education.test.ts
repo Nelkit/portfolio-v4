@@ -11,6 +11,10 @@ const fields = {
 	institution_es: 'Universidad de Sídney',
 	description_en: 'Scholarship',
 	description_es: 'Becado',
+	award_en: ' Summa Cum Laude ',
+	award_es: 'Summa Cum Laude',
+	note_en: 'HonduFuturo Scholar',
+	note_es: 'Becario HonduFuturo',
 };
 
 describe('parseEducationForm', () => {
@@ -22,8 +26,20 @@ describe('parseEducationForm', () => {
 				end: { year: 2026, month: 12 },
 				inProgress: true,
 				translations: {
-					en: { degree: 'Master of Data Science', institution: 'University of Sydney', description: 'Scholarship' },
-					es: { degree: 'Máster en Ciencia de Datos', institution: 'Universidad de Sídney', description: 'Becado' },
+					en: {
+						degree: 'Master of Data Science',
+						institution: 'University of Sydney',
+						description: 'Scholarship',
+						award: 'Summa Cum Laude',
+						note: 'HonduFuturo Scholar',
+					},
+					es: {
+						degree: 'Máster en Ciencia de Datos',
+						institution: 'Universidad de Sídney',
+						description: 'Becado',
+						award: 'Summa Cum Laude',
+						note: 'Becario HonduFuturo',
+					},
 				},
 			},
 		});
@@ -47,6 +63,16 @@ describe('parseEducationForm', () => {
 		expect(parseEducationForm({ ...fields, start: '2025-13' }).ok).toBe(false);
 	});
 
+	it('keeps award and note optional, with short limits', () => {
+		const empty = parseEducationForm({ ...fields, award_en: '', note_es: undefined });
+		expect(empty.ok && empty.value.translations.en.award).toBe('');
+		expect(empty.ok && empty.value.translations.es.note).toBe('');
+
+		const long = parseEducationForm({ ...fields, award_en: 'x'.repeat(61), note_es: 'x'.repeat(301) });
+		expect(long.ok).toBe(false);
+		if (!long.ok) expect(Object.keys(long.errors).sort()).toEqual(['award_en', 'note_es']);
+	});
+
 	it('requires degree and institution in every language; description is optional', () => {
 		const result = parseEducationForm({ ...fields, degree_es: '', institution_en: ' ', description_en: '' });
 		expect(result.ok).toBe(false);
@@ -60,8 +86,8 @@ const record = (id: number, start: [number, number], end: [number, number] | nul
 	end: end ? { year: end[0], month: end[1] } : null,
 	inProgress,
 	translations: {
-		en: { degree: `d${id}`, institution: `i${id}`, description: '' },
-		es: { degree: `d${id}-es`, institution: `i${id}-es`, description: '' },
+		en: { degree: `d${id}`, institution: `i${id}`, description: '', award: '', note: '' },
+		es: { degree: `d${id}-es`, institution: `i${id}-es`, description: '', award: 'Summa Cum Laude', note: 'Beca' },
 	},
 });
 
@@ -85,6 +111,8 @@ describe('toEducationView', () => {
 			degree: 'd2-es',
 			institution: 'i2-es',
 			description: '',
+			award: 'Summa Cum Laude',
+			note: 'Beca',
 		});
 		expect(toEducationView(record(4, [2025, 2], null, true), 'en', 'en-US', 'Now')?.period).toBe('Feb 2025 — Now');
 	});

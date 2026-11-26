@@ -28,7 +28,13 @@ export function createTursoEducationRepository(db: LibSQLDatabase): EducationRep
 				const translations: Partial<Record<Locale, EducationTranslation>> = {};
 				for (const t of translationRows) {
 					if (t.entryId === row.id && isLocale(t.locale)) {
-						translations[t.locale] = { degree: t.degree, institution: t.institution, description: t.description };
+						translations[t.locale] = {
+							degree: t.degree,
+							institution: t.institution,
+							description: t.description,
+							award: t.award,
+							note: t.note,
+						};
 					}
 				}
 				return {

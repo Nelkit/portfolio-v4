@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default async function EducationAdminPage() {
 	await requireAdmin();
 	const entries = await educationRepository().listEntries();
-	const blank: EducationTranslation = { degree: '', institution: '', description: '' };
+	const blank: EducationTranslation = { degree: '', institution: '', description: '', award: '', note: '' };
 
 	const rows: EducationRow[] = entries.map((e) => ({
 		id: e.id,

@@ -22,8 +22,11 @@ const input =
 const PLACEHOLDERS: Record<(typeof EDUCATION_KEYS)[number], string> = {
 	degree: 'Degree',
 	institution: 'Institution',
-	description: 'Description (scholarship, focus…) — optional',
+	description: 'Description (focus, capstone…) — optional',
+	award: 'Badge, e.g. Summa Cum Laude — optional',
+	note: 'Highlight, e.g. a scholarship for this degree — optional',
 };
+const REQUIRED = new Set<string>(['degree', 'institution']);
 
 function Err({ message }: { message?: string }) {
 	return message ? <span className="text-xs text-red-400">{message}</span> : null;
@@ -66,7 +69,7 @@ function EducationForm({ entry, onSaved }: { entry?: EducationRow; onSaved?: () 
 								<div key={key} className="flex flex-col gap-1">
 									<input
 										name={name}
-										required={key !== 'description'}
+										required={REQUIRED.has(key)}
 										placeholder={PLACEHOLDERS[key]}
 										defaultValue={entry?.texts[locale][key]}
 										aria-invalid={Boolean(errors[name])}
