@@ -229,6 +229,12 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Completar en el admin lo que Strapi no tenía: resumen de 10 proyectos, descripciones de los 12, área de 11 proyectos; revisar los meses de educación (solo había años: enero/diciembre). **2026-11-25:** proyectos completos; queda revisar los meses de educación. — **Cerrado 2026-11-26:** meses de educación revisados por el propietario.
 - [x] Los skills Machine Learning, Postgres y MongoDB no estaban asignados a nada en Strapi y no se importaron. **2026-11-25:** Machine Learning y Postgres ya aparecen en producción; MongoDB no. — **Cerrado 2026-11-26:** el propietario decidió no agregar MongoDB (ningún proyecto la usa).
 
+### Ajustes de UX (2026-11-26, PR #43)
+
+- [x] Visor de capturas: botones redondos visibles (cerrar, zoom, flechas), margen alrededor de la imagen y animación al abrir (commit `9a40433`).
+- [x] Los botones "Volver" (detalle de proyecto y de post, `/projects`, `/blog`) regresan a la página de donde vino el visitante; si entró directo, usan su URL. El cambio de idioma reemplaza la entrada del historial (commit `727e6c7`).
+- [x] Posts a 900 px con portada 16:9; las tarjetas destacadas de `/projects` y `/blog` ocupan media tarjeta, llenan su altura sin franjas vacías y en tablet ponen la imagen arriba (commit `5726418`). Probado por el propietario.
+
 ### Para historias futuras
 
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).
