@@ -211,7 +211,7 @@ export const educationEntries = sqliteTable('education_entries', {
 	inProgress: integer('in_progress', { mode: 'boolean' }).notNull().default(false),
 });
 
-/** Degree, institution and description per locale. */
+/** Degree, institution, description, award badge and highlighted note per locale. */
 export const educationEntryTranslations = sqliteTable(
 	'education_entry_translations',
 	{
@@ -220,6 +220,10 @@ export const educationEntryTranslations = sqliteTable(
 		degree: text('degree').notNull(),
 		institution: text('institution').notNull(),
 		description: text('description').notNull().default(''),
+		/** Short badge in the last column, e.g. "Summa Cum Laude" ('' = none). */
+		award: text('award').notNull().default(''),
+		/** Highlighted line under the description, e.g. a scholarship ('' = none). */
+		note: text('note').notNull().default(''),
 	},
 	(table) => [primaryKey({ columns: [table.entryId, table.locale] })],
 );

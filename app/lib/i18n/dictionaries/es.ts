@@ -126,14 +126,12 @@ export const es: Dictionary = {
 			present: 'Actual',
 		},
 		education: {
-			title: 'Educación',
-			note: 'Más becas',
+			title: 'Educación y distinciones',
 			period: 'Periodo',
 			degree: 'Título',
 			institution: 'Institución',
-			status: 'Estado',
+			honours: 'Distinciones',
 			inProgress: 'En curso',
-			completed: 'Completado',
 		},
 		writing: {
 			title: 'Artículos recientes',

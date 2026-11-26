@@ -235,6 +235,11 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Los botones "Volver" (detalle de proyecto y de post, `/projects`, `/blog`) regresan a la página de donde vino el visitante; si entró directo, usan su URL. El cambio de idioma reemplaza la entrada del historial (commit `727e6c7`).
 - [x] Posts a 900 px con portada 16:9; las tarjetas destacadas de `/projects` y `/blog` ocupan media tarjeta, llenan su altura sin franjas vacías y en tablet ponen la imagen arriba (commit `5726418`). Probado por el propietario.
 
+### Educación y distinciones (2026-11-26)
+
+- [x] Cada entrada tiene una insignia (`award`, p. ej. "Summa Cum Laude") y una cita destacada (`note`, p. ej. la beca) por idioma; la columna "Status" pasa a "Honours" y la sección a "Education & Honours" (commit `232e3f5`, migración `0015`, ya aplicada).
+- [ ] En `/admin/education`: borrar la entrada de la beca HonduFuturo; en UTS poner la insignia "HonduFuturo Scholar", la cita de la beca (con el número de seleccionados) y el proyecto final en la descripción; en UPI, el nombre oficial en inglés, "Politécnica" con tilde y ", Honduras", y "Summa Cum Laude" como insignia.
+
 ### Para historias futuras
 
 - [x] **#5:** resuelto sin URLs prefirmadas: un request por archivo (cada uno bajo el límite de 4 MB del server action).

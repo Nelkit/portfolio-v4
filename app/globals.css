@@ -1989,7 +1989,7 @@ body {
 }
 .edu-row {
   display: grid;
-  grid-template-columns: 150px 1.4fr 1.2fr 120px;
+  grid-template-columns: 150px 1.4fr 1.2fr 160px;
   gap: 20px;
   align-items: start;
   padding: 20px 8px;
@@ -2023,6 +2023,41 @@ body {
 .edu-row .edu-org {
   color: var(--text-dim);
   font-size: 14px;
+}
+/* Highlight (e.g. the scholarship for this degree): a pull quote across all
+   four columns of its row. */
+.edu-row .edu-note {
+  grid-column: 1 / -1;
+  /* Full width on phones too, where the row is a flex column. */
+  align-self: stretch;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 4px 0 0;
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.edu-row .edu-note svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 3px;
+  color: var(--accent);
+}
+/* Honours column: award badge, plus "In progress" while ongoing. */
+.edu-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.edu-badges:empty {
+  display: none;
 }
 /* ≤ 980px — Tablet landscape: education rows drop the org column */
 @media (max-width: 980px) {
@@ -3246,13 +3281,18 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Wraps (the sidebar is narrow); 3 lines at most so a long title keeps the card compact. */
 .proj-aside-title {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .proj-aside-go {
   color: var(--text-faint);
@@ -3602,6 +3642,23 @@ footer {
 /* Related posts at the end of a blog post (reuses the project aside cards) */
 .post-related {
   margin-top: 56px;
+}
+/* Related posts span the article's width, so they get a larger 16:9 thumb like the post covers. */
+.post-related .proj-aside-card {
+  grid-template-columns: 96px 1fr auto;
+}
+.post-related .proj-aside-thumb {
+  width: 96px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+@media (max-width: 560px) {
+  .post-related .proj-aside-card {
+    grid-template-columns: 80px 1fr auto;
+  }
+  .post-related .proj-aside-thumb {
+    width: 80px;
+  }
 }
 
 /* ---- 404 page ---- */

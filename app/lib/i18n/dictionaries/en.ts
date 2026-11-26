@@ -132,14 +132,12 @@ export const en = {
 			present: 'Now',
 		},
 		education: {
-			title: 'Education',
-			note: 'Plus scholarships',
+			title: 'Education & Honours',
 			period: 'Period',
 			degree: 'Degree',
 			institution: 'Institution',
-			status: 'Status',
-			inProgress: 'In Progress',
-			completed: 'Completed',
+			honours: 'Honours',
+			inProgress: 'In progress',
 		},
 		writing: {
 			title: 'Latest posts',
