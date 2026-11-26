@@ -235,10 +235,11 @@ _Revisado el 2026-11-26 contra el código y `www.nelkit.dev`. El detalle por his
 - [x] Los botones "Volver" (detalle de proyecto y de post, `/projects`, `/blog`) regresan a la página de donde vino el visitante; si entró directo, usan su URL. El cambio de idioma reemplaza la entrada del historial (commit `727e6c7`).
 - [x] Posts a 900 px con portada 16:9; las tarjetas destacadas de `/projects` y `/blog` ocupan media tarjeta, llenan su altura sin franjas vacías y en tablet ponen la imagen arriba (commit `5726418`). Probado por el propietario.
 - [x] Contacto en mobile: las filas de GitHub y LinkedIn ya no se salen por la derecha (la URL larga ensanchaba la columna); la URL se corta si no cabe y el desplazamiento del hover solo aplica con mouse (commit `588699e`).
+- [x] Las filas de contacto muestran la URL sin `www.` ni `/` final (`linkedin.com/in/nelkit`); el link sigue siendo la URL completa (commit `295ce77`).
 
 #### Pendientes
 
-- [ ] Probar en un teléfono que las filas de contacto quedan con el mismo margen a ambos lados.
+- [x] Probar en un teléfono que las filas de contacto quedan con el mismo margen a ambos lados. — **Cerrado 2026-11-27:** probado por el propietario.
 
 ### Educación y distinciones (2026-11-26)
 
