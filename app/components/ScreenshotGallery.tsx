@@ -52,9 +52,10 @@ export function ScreenshotGallery({ screenshots, variant = 'grid' }: Props) {
 				plugins={[Zoom]}
 				zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
 				controller={{ closeOnBackdropClick: true }}
-				styles={{
-					container: { backgroundColor: 'rgba(10, 6, 16, 0.94)' },
-				}}
+				// A margin around the image shows the page behind it: clearly an overlay, not a new page.
+				carousel={{ padding: '6%' }}
+				// Fade the backdrop in; globals.css grows the image at the same pace.
+				animation={{ fade: 320 }}
 				render={{
 					// Hide nav arrows when there's a single screenshot
 					buttonPrev: screenshots.length <= 1 ? () => null : undefined,

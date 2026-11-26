@@ -3076,15 +3076,59 @@ footer {
   opacity: 1;
 }
 
-/* Lightbox accent — match the portfolio theme */
+/* Lightbox — portfolio theme. The image keeps a margin (carousel padding in
+   ScreenshotGallery) so the page shows behind it, and the controls are solid
+   round buttons that stay readable over any screenshot. */
 .yarl__root {
-  --yarl__color_backdrop: rgba(10, 6, 16, 0.94);
+  --yarl__color_backdrop: rgba(10, 6, 16, 0.88);
+  --yarl__color_button: #fff;
+  --yarl__color_button_active: #fff;
+  --yarl__color_button_disabled: rgba(255, 255, 255, 0.35);
+  --yarl__button_background_color: rgba(24, 18, 32, 0.78);
+  --yarl__button_border: 1px solid rgba(255, 255, 255, 0.28);
+  --yarl__button_filter: none;
+  --yarl__button_padding: 11px;
+  --yarl__navigation_button_padding: 11px;
+  --yarl__icon_size: 22px;
+  --yarl__toolbar_padding: 16px;
 }
-.yarl__button {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+.yarl__root .yarl__toolbar {
+  gap: 8px;
 }
-.yarl__button:hover {
-  color: var(--accent);
+.yarl__root .yarl__button {
+  border-radius: 50%;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.yarl__root .yarl__button:not(:disabled):hover,
+.yarl__root .yarl__button:focus-visible {
+  color: var(--accent-ink);
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+.yarl__root .yarl__navigation_prev {
+  left: 16px;
+}
+.yarl__root .yarl__navigation_next {
+  right: 16px;
+}
+/* Opening: the image grows in while the backdrop fades (and shrinks on close). */
+.yarl__portal .yarl__slide {
+  transform: scale(0.92);
+  transition: transform 0.32s var(--ease);
+}
+.yarl__portal_open .yarl__slide {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .yarl__portal .yarl__slide {
+    transform: none;
+    transition: none;
+  }
 }
 
 .proj-layout {
