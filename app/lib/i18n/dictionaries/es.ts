@@ -109,7 +109,7 @@ export const es: Dictionary = {
 			all: 'Todos',
 			filterAria: 'Filtrar proyectos por área',
 			note: (n: number) => plural(n, 'proyecto', 'proyectos'),
-			viewAll: (n: number) => (n === 1 ? 'Ver el proyecto →' : `Ver los ${n} proyectos →`),
+			viewAll: (n: number) => (n === 1 ? 'Ver el proyecto' : `Ver los ${n} proyectos`),
 		},
 		stack: {
 			title: 'Stack tecnológico',

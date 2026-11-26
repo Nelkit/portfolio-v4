@@ -2702,8 +2702,13 @@ body {
   padding-left: 24px;
 }
 .link-row .arr {
+  display: inline-flex;
   color: var(--accent);
-  font-family: var(--font-mono);
+}
+/* ↗: these rows open another site (GitHub, LinkedIn). */
+.link-row .arr svg {
+  width: 16px;
+  height: 16px;
 }
 .link-row .u {
   font-family: var(--font-mono);
