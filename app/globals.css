@@ -2732,9 +2732,13 @@ body {
   border-bottom: 1px solid var(--border);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
-.link-row:hover {
-  background: var(--surface);
-  padding-left: 24px;
+/* Only on real pointers: on touch screens :hover sticks after a tap and
+   leaves the row with 24px on the left and 18px on the right. */
+@media (hover: hover) {
+  .link-row:hover {
+    background: var(--surface);
+    padding-left: 24px;
+  }
 }
 .link-row .arr {
   display: inline-flex;
@@ -2748,6 +2752,8 @@ body {
 .link-row .u {
   font-family: var(--font-mono);
   font-size: 14px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .link-row .k {
   font-family: var(--font-mono);
@@ -3333,7 +3339,8 @@ footer {
 /* ≤ 980px — Tablet landscape: collapse 2-col grids, hide desktop nav links */
 @media (max-width: 980px) {
   .contact {
-    grid-template-columns: 1fr;
+    /* minmax(0, …): a long URL in .link-row must not widen the column. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 36px;
   }
   .work-grid {
