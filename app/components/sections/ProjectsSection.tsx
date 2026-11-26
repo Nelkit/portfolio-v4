@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { navNumber } from '@/app/lib/nav';
-import { IArrowUR, IGithub, ILinkedin, IMail } from '@/app/components/icons';
+import { IArrowUR, IChevronRight, IGithub, ILinkedin, IMail } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 import type { ProjectView } from '@/app/lib/content/projects/project';
 import { cardEyebrow, cardTags, homeCardLayout, type CardSize } from '@/app/lib/content/projects/project-display';
@@ -95,7 +95,7 @@ export function ProjectsSection({ title, projects, total }: ProjectsSectionProps
 			</div>
 			<div className="write-foot">
 				<Link href={href('/projects')} className="btn btn-outline write-all">
-					{t.sections.projects.viewAll(total)}
+					{t.sections.projects.viewAll(total)} <IChevronRight />
 				</Link>
 			</div>
 		</section>

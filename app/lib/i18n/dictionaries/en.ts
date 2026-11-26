@@ -114,7 +114,7 @@ export const en = {
 			all: 'All',
 			filterAria: 'Filter projects by area',
 			note: (n: number) => plural(n, 'project', 'projects'),
-			viewAll: (n: number) => `View all ${plural(n, 'project', 'projects')} →`,
+			viewAll: (n: number) => `View all ${plural(n, 'project', 'projects')}`,
 		},
 		stack: {
 			title: 'Tech stack',

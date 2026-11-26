@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { PostSummary } from '@/app/lib/content/posts/post';
 import { navNumber } from '@/app/lib/nav';
-import { IArrowUR } from '@/app/components/icons';
+import { IArrowUR, IChevronRight } from '@/app/components/icons';
 import { useI18n } from '@/app/lib/i18n/I18nProvider';
 
 /** 'YYYY-MM-DD' calendar date, formatted in UTC so it never shifts a day. */
@@ -34,7 +34,7 @@ export function RecentWritingSection({ posts }: { posts: PostSummary[] }) {
 
 			<div className="write-foot">
 				<Link href={href('/blog')} className="btn btn-outline write-all">
-					{copy.viewAll} <IArrowUR />
+					{copy.viewAll} <IChevronRight />
 				</Link>
 			</div>
 		</section>
